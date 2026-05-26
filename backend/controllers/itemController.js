@@ -80,30 +80,31 @@ exports.getItemById = async (req, res) => {
 // UPDATE ITEM
 exports.updateItem = async (req, res) => {
   try {
-    const item = await Item.findByIdAndUpdate(
-      req.params.id,
+    const { id } = req.params;
+
+    const updatedItem = await Item.findByIdAndUpdate(
+      id,
       req.body,
       { new: true }
     );
 
-    if (!item) {
-      return res.status(404).json({
-        message: "Item not found"
-      });
+    if (!updatedItem) {
+      return res.status(404).json({ message: "Item not found" });
     }
 
     res.json({
       message: "Item updated successfully",
-      item
+      item: updatedItem
     });
 
   } catch (error) {
     res.status(500).json({
-      message: "Server error",
+      message: "Error updating item",
       error: error.message
     });
   }
 };
+
 
 // DELETE ITEM
 exports.deleteItem = async (req, res) => {

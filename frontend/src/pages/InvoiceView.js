@@ -4,6 +4,7 @@ import Layout from "../components/Layout";
 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { useNavigate } from "react-router-dom";
 
 export default function InvoiceView() {
   const [invoices, setInvoices] = useState([]);
@@ -11,18 +12,16 @@ export default function InvoiceView() {
 
   const token = localStorage.getItem("token");
   const printRef = useRef();
+  const navigate = useNavigate();
 
   // FETCH ALL INVOICES
   const fetchInvoices = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:5000/api/invoices",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const res = await axios.get("http://localhost:5000/api/invoices", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setInvoices(res.data.invoices);
     } catch (error) {
@@ -60,11 +59,9 @@ export default function InvoiceView() {
 
   return (
     <Layout>
-
       <h2>🧾 Invoice List</h2>
 
       <div style={{ display: "flex", gap: 20 }}>
-
         {/* LEFT SIDE - LIST */}
         <div style={listBox}>
           {invoices.map((inv) => (
@@ -73,7 +70,9 @@ export default function InvoiceView() {
               style={listItem}
               onClick={() => openInvoice(inv)}
             >
-              <p><b>{inv.invoice_number}</b></p>
+              <p>
+                <b>{inv.invoice_number}</b>
+              </p>
               <p>{inv.customer_name}</p>
               <p>₹ {inv.grand_total}</p>
             </div>
@@ -82,38 +81,37 @@ export default function InvoiceView() {
 
         {/* RIGHT SIDE - INVOICE VIEW */}
         <div style={viewBox}>
-
           {selectedInvoice ? (
             <div>
-
               {/* ACTION BUTTONS */}
               <div style={{ marginBottom: 10 }}>
                 <button onClick={printInvoice}>🖨️ Print</button>
                 <button onClick={downloadPDF}>📄 PDF</button>
+                <button
+                  onClick={() =>
+                    navigate(`/invoice-edit/${selectedInvoice._id}`)
+                  }
+                >
+                  ✏️ Edit
+                </button>
               </div>
 
               {/* INVOICE */}
               <div ref={printRef} style={invoiceBox}>
-
-                <h2 style={{ textAlign: "center" }}>
-                  🧾 INVOICE
-                </h2>
+                <h2 style={{ textAlign: "center" }}>🧾 INVOICE</h2>
 
                 <hr />
 
                 <p>
-                  <b>Invoice No:</b>{" "}
-                  {selectedInvoice.invoice_number}
+                  <b>Invoice No:</b> {selectedInvoice.invoice_number}
                 </p>
 
                 <p>
-                  <b>Customer:</b>{" "}
-                  {selectedInvoice.customer_name}
+                  <b>Customer:</b> {selectedInvoice.customer_name}
                 </p>
 
                 <p>
-                  <b>Mobile:</b>{" "}
-                  {selectedInvoice.customer_mobile}
+                  <b>Mobile:</b> {selectedInvoice.customer_mobile}
                 </p>
 
                 <hr />
@@ -122,6 +120,7 @@ export default function InvoiceView() {
                 <table width="100%" border="1">
                   <thead>
                     <tr>
+                      <th>Customer</th>
                       <th>Item</th>
                       <th>Qty</th>
                       <th>Price</th>
@@ -132,6 +131,10 @@ export default function InvoiceView() {
                   <tbody>
                     {selectedInvoice.items.map((it, index) => (
                       <tr key={index}>
+                        <td>
+                          {selectedInvoice.customer?.customer_name ||
+                            selectedInvoice.customer_name}
+                        </td>
                         <td>{it.item_name}</td>
                         <td>{it.qty}</td>
                         <td>₹ {it.price}</td>
@@ -156,8 +159,8 @@ export default function InvoiceView() {
                 {selectedInvoice.gst_enabled && (
                   <>
                     <p>
-                      <b>GST ({selectedInvoice.gst_rate}%):</b>{" "}
-                      ₹ {selectedInvoice.gst_amount}
+                      <b>GST ({selectedInvoice.gst_rate}%):</b> ₹{" "}
+                      {selectedInvoice.gst_amount}
                     </p>
                   </>
                 )}
@@ -166,21 +169,28 @@ export default function InvoiceView() {
                   Grand Total: ₹ {selectedInvoice.grand_total}
                 </h2>
 
-                <hr />
-
-                <p style={{ textAlign: "center" }}>
-                  🙏 Thank You Visit Again
+                <p>
+                  <b>Paid:</b> ₹ {selectedInvoice.paid_amount}
                 </p>
 
+                <p>
+                  <b>Due:</b> ₹ {selectedInvoice.due_amount}
+                </p>
+
+                <p>
+                  <b>Status:</b> {selectedInvoice.payment_status}
+                </p>
+
+                <hr />
+
+                <p style={{ textAlign: "center" }}>🙏 Thank You Visit Again</p>
               </div>
             </div>
           ) : (
             <h3>Select Invoice to View</h3>
           )}
-
         </div>
       </div>
-
     </Layout>
   );
 }
@@ -192,22 +202,22 @@ const listBox = {
   border: "1px solid #ddd",
   padding: 10,
   height: "80vh",
-  overflowY: "scroll"
+  overflowY: "scroll",
 };
 
 const listItem = {
   padding: 10,
   borderBottom: "1px solid #eee",
-  cursor: "pointer"
+  cursor: "pointer",
 };
 
 const viewBox = {
   width: "70%",
-  padding: 10
+  padding: 10,
 };
 
 const invoiceBox = {
   padding: 20,
   background: "#fff",
-  border: "1px solid #ddd"
+  border: "1px solid #ddd",
 };

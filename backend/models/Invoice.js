@@ -3,23 +3,28 @@ const mongoose = require("mongoose");
 const invoiceItemSchema = new mongoose.Schema({
   item_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Item"
+    ref: "Item",
   },
   item_name: String,
   qty: Number,
   price: Number,
-  total: Number
+  total: Number,
 });
 
 const invoiceSchema = new mongoose.Schema(
   {
     invoice_number: {
       type: String,
-      unique: true
+      unique: true,
     },
 
     customer_name: String,
     customer_mobile: String,
+
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+    },
 
     items: [invoiceItemSchema],
 
@@ -27,33 +32,53 @@ const invoiceSchema = new mongoose.Schema(
 
     discount: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     // 🔥 NEW FIELD (MAIN FEATURE)
     gst_enabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
 
     gst_rate: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     gst_amount: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     grand_total: Number,
 
+    paid_amount: {
+      type: Number,
+
+      default: 0,
+    },
+
+    due_amount: {
+      type: Number,
+
+      default: 0,
+    },
+
+    payment_status: {
+      type: String,
+
+      enum: ["PAID", "PARTIAL", "DUE"],
+
+      default: "PAID",
+    },
+
     created_by: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }
+      ref: "User",
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Invoice", invoiceSchema);
