@@ -7,7 +7,7 @@ const authMiddleware = (req, res, next) => {
 
     if (!authHeader) {
       return res.status(401).json({
-        message: "No token, access denied"
+        message: "No token, access denied",
       });
     }
 
@@ -16,7 +16,7 @@ const authMiddleware = (req, res, next) => {
 
     if (!token) {
       return res.status(401).json({
-        message: "Invalid token format"
+        message: "Invalid token format",
       });
     }
 
@@ -27,10 +27,9 @@ const authMiddleware = (req, res, next) => {
     req.user = decoded;
 
     next();
-
   } catch (error) {
     return res.status(401).json({
-      message: "Token invalid or expired"
+      message: "Token invalid or expired",
     });
   }
 };

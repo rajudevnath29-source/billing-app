@@ -11,6 +11,8 @@ import Items from "./pages/Items";
 import AddItem from "./pages/AddItem";
 import EditItem from "./pages/EditItem";
 
+import StockHistory from "./pages/StockHistory";
+
 import Customers from "./pages/Customers";
 import AddCustomer from "./pages/AddCustomer";
 import PurchaseCreate from "./pages/PurchaseCreate";
@@ -181,6 +183,15 @@ function App() {
           element={
             <ProtectedRoute>
               <EditInvoice />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/stock-history"
+          element={
+            <ProtectedRoute>
+              <StockHistory />
             </ProtectedRoute>
           }
         />

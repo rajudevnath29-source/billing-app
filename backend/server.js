@@ -19,6 +19,7 @@ const expenseRoutes = require("./routes/expenseRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const accountRoutes = require("./routes/accountRoutes");
 const voucherRoutes = require("./routes/voucherRoutes");
+const stockHistoryRoutes = require("./routes/stockHistoryRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/mid", middleRoutes);
@@ -30,6 +31,7 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/accounts", accountRoutes);
 app.use("/api/vouchers", voucherRoutes);
+app.use("/api/stock-history", stockHistoryRoutes);
 
 app.get("/", (req, res) => {
   res.send("Billing API (Backend) Running...");

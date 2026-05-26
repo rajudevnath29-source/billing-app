@@ -2,7 +2,6 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// REGISTER CONTROLLER
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -43,7 +42,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// LOGIN CONTROLLER
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -66,10 +64,7 @@ exports.login = async (req, res) => {
 
     // 3. create JWT token
     const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-      },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" },
     );

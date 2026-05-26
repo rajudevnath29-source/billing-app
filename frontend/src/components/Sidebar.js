@@ -20,6 +20,9 @@ export default function Sidebar() {
           <p style={styles.section}>Accounts</p>
           <Link style={styles.link} to="/accounts">🏦 Accounts</Link>
           <Link style={styles.link} to="/vouchers">💳 Vouchers</Link>
+
+          <p style={styles.section}>Items Stock</p>
+          <Link style={styles.link} to="/stock-history">📊 Stock History</Link>
         </>
         
       )}
