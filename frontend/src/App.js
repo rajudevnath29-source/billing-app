@@ -29,6 +29,7 @@ import Accounts from "./pages/Accounts";
 import Vouchers from "./pages/Vouchers";
 import UserList from "./pages/UserList";
 import EditUser from "./pages/EditUser";
+import Profile from "./pages/Profile";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleGuard from "./components/RoleGuard";
@@ -40,7 +41,6 @@ function App() {
       <Routes>
         {/* 🔐 AUTH */}
         <Route path="/" element={<Login />} />
-        {/* <Route path="/auth" element={<AuthPage />} /> */}
 
         {/* 📊 DASHBOARD */}
         <Route
@@ -48,6 +48,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />
@@ -216,7 +225,9 @@ function App() {
           path="/invoice-edit/:id"
           element={
             <ProtectedRoute>
-              <RoleGuard allowedRoles={["SUPER_ADMIN", "INVOICE_USER"]}></RoleGuard>
+              <RoleGuard
+                allowedRoles={["SUPER_ADMIN", "INVOICE_USER"]}
+              ></RoleGuard>
               <EditInvoice />
             </ProtectedRoute>
           }
@@ -239,7 +250,7 @@ function App() {
           element={
             <ProtectedRoute>
               <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
-                  <UserList />
+                <UserList />
               </RoleGuard>
             </ProtectedRoute>
           }
@@ -250,7 +261,7 @@ function App() {
           element={
             <ProtectedRoute>
               <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
-                  <EditUser />
+                <EditUser />
               </RoleGuard>
             </ProtectedRoute>
           }

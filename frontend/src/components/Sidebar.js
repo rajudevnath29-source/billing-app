@@ -40,6 +40,10 @@ export default function Sidebar() {
         📊 Dashboard
       </Link>
 
+      <Link style={styles.link} to="/profile">
+        👤 My Profile
+      </Link>
+
       {/* ADMIN ONLY */}
       {isAdmin() && (
         <>
