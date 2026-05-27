@@ -1,141 +1,154 @@
 import { Link, useNavigate } from "react-router-dom";
 import { isAdmin, isItemManager, isInvoiceUser, getUser } from "../utils/role";
 
-export default function Sidebar() {
+export default function Sidebar({
+  collapsed,
+  setCollapsed,
+  hovered,
+  setHovered,
+}) {
   const navigate = useNavigate();
-
   const user = getUser();
+  const expanded = !collapsed || hovered;
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     navigate("/");
   };
 
   return (
-    <div style={styles.sidebar}>
-      {/* USER BLOCK */}
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        ...styles.sidebar,
+        width: expanded ? 260 : 80,
+      }}
+    >
+      {/* LOGO + TOGGLE */}
+      <h2>{expanded ? "🧾 ERP" : "🧾"}</h2>
+
+      {/* USER */}
       <div style={styles.userBox}>
         <img
           src={
             user?.profile_image
               ? `http://localhost:5000/uploads/${user.profile_image}`
-              : "https://i.pravatar.cc/100"
+              : "https://i.pravatar.cc/80"
           }
-          alt="profile"
           style={styles.image}
         />
 
-        <h3>{user?.name}</h3>
-
-        <p>{user?.email}</p>
-
-        <small>{user?.role}</small>
+        {!collapsed && (
+          <>
+            <p>{user?.name}</p>
+            <small>{user?.role}</small>
+          </>
+        )}
       </div>
 
-      <h2 style={styles.logo}>🧾 ERP</h2>
-
+      {/* MENU */}
       <Link style={styles.link} to="/dashboard">
-        📊 Dashboard
+        📊 {!expanded ? "" : "Dashboard"}
       </Link>
-
       <Link style={styles.link} to="/profile">
-        👤 My Profile
+        👤 {!expanded ? "" : "Profile"}
       </Link>
 
-      {/* ADMIN ONLY */}
+      {/* ADMIN MENU */}
       {isAdmin() && (
         <>
-          <p style={styles.section}>Reports</p>
-          <Link style={styles.link} to="/reports">
-            📊 Reports
+          {expanded && <p style={styles.section}>Reports</p>}
+          <Link style={styles.link} style={styles.link} to="/reports">
+            📊 {!expanded ? "" : "Reports"}
           </Link>
 
-          <p style={styles.section}>Accounts</p>
+          {expanded && <p style={styles.section}>Accounts</p>}
           <Link style={styles.link} to="/expenses">
-            💸 Expenses
+            💸 {!expanded ? "" : "Expenses"}
           </Link>
-
           <Link style={styles.link} to="/accounts">
-            🏦 Bank Accounts
+            🏦 {!expanded ? "" : "Accounts"}
           </Link>
           <Link style={styles.link} to="/vouchers">
-            💳 Vouchers
+            💳 {!expanded ? "" : "Vouchers"}
           </Link>
 
-          <p style={styles.section}>Items Stock</p>
+          {expanded && <p style={styles.section}>Items Stock</p>}
           <Link style={styles.link} to="/stock-history">
-            📊 Stock History
+            📊 {!expanded ? "" : "Stock History"}
           </Link>
 
-          <p style={styles.section}>Users</p>
+          {expanded && <p style={styles.section}>Users</p>}
           <Link style={styles.link} to="/users">
-            👥 User Management
+            👥 {!expanded ? "" : "User Management"}
           </Link>
         </>
       )}
 
-      {/* ITEM MANAGER + ADMIN */}
+      {/* INVENTORY */}
       {(isAdmin() || isItemManager()) && (
         <>
-          <p style={styles.section}>Inventory</p>
-
+          {expanded && <p style={styles.section}>Inventory</p>}
           <Link style={styles.link} to="/items">
-            📦 View Items
+            📦 {!expanded ? "" : "Items"}
           </Link>
-
           <Link style={styles.link} to="/items/add">
-            ➕ Add Item
+            ➕ {!expanded ? "" : "Add Item"}
           </Link>
-
           <Link style={styles.link} to="/purchase">
-            🛒 Purchase
+            🛒 {!expanded ? "" : "Purchase"}
           </Link>
-
           <Link style={styles.link} to="/purchase-view">
-            📄 Purchase History
+            📄 {!expanded ? "" : "Purchase History"}
           </Link>
         </>
       )}
 
-      {/* INVOICE USER + ADMIN */}
+      {/* INVOICE */}
       {(isAdmin() || isInvoiceUser()) && (
         <>
-          <p style={styles.section}>Invoices</p>
+          {expanded && <p style={styles.section}>Invoices</p>}
           <Link style={styles.link} to="/invoice">
-            ➕ Create Invoice
+            ➕ {!expanded ? "" : "Create Invoice"}
           </Link>
           <Link style={styles.link} to="/invoice-view">
-            📄 Invoice List
+            📄 {!expanded ? "" : "Invoice List"}
           </Link>
 
-          <p style={styles.section}>Customers</p>
+          {expanded && <p style={styles.section}>Customers</p>}
           <Link style={styles.link} to="/customers">
-            👥 Customers
+            👥 {!expanded ? "" : "Customers"}
           </Link>
           <Link style={styles.link} to="/customer-ledger">
-            📒 Customer Ledger
+            📒 {!expanded ? "" : "Customer Ledger"}
           </Link>
           <Link style={styles.link} to="/payments">
-            💰 Payment Collection
+            💰 {!expanded ? "" : "Payment Collection"}
           </Link>
         </>
       )}
-      <button style={styles.logoutBtn} onClick={logout}>
-        Logout
+
+      <button onClick={logout} style={styles.logout}>
+        {!expanded ? "🚪" : "Logout"}
       </button>
     </div>
   );
 }
 
 const styles = {
+
   sidebar: {
-    width: 260,
+    height: "100vh",
     background: "#1e293b",
     color: "#fff",
-    padding: 20,
-    minHeight: "100vh",
+    padding: 10,
+    position: "fixed",
+    top: 0,
+    left: 0,
+    transition: "width 0.3s ease",
+    overflow: "hidden",
   },
 
   userBox: {
@@ -147,15 +160,9 @@ const styles = {
   },
 
   image: {
-    width: 70,
-    height: 70,
+    width: 50,
+    height: 50,
     borderRadius: "50%",
-    objectFit: "cover",
-    marginBottom: 10,
-  },
-
-  logo: {
-    marginBottom: 20,
   },
 
   section: {
@@ -166,21 +173,19 @@ const styles = {
     textTransform: "uppercase",
   },
 
+  logout: {
+    marginTop: 20,
+    width: "100%",
+    padding: 10,
+    background: "red",
+    color: "#fff",
+    border: "none",
+    borderRadius: 8,
+  },
   link: {
     display: "block",
     padding: "10px 0",
     color: "#fff",
     textDecoration: "none",
-  },
-
-  logoutBtn: {
-    marginTop: 30,
-    width: "100%",
-    padding: 10,
-    border: "none",
-    borderRadius: 8,
-    background: "#ef4444",
-    color: "#fff",
-    cursor: "pointer",
   },
 };

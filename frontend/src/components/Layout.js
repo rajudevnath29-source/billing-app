@@ -1,29 +1,41 @@
+import { useState } from "react";
 import Sidebar from "./Sidebar";
+import Header from "./Header";
 
 export default function Layout({ children }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [hovered, setHovered] = useState(false);
+
+  const expanded = !collapsed || hovered;
+
   return (
-    <div style={styles.wrapper}>
+    <div style={{ display: "flex" }}>
 
-      <Sidebar />
+      <Sidebar
+        collapsed={collapsed}
+        hovered={hovered}
+        setHovered={setHovered}
+      />
 
-      <div style={styles.main}>
-        {children}
+      <div
+        style={{
+          flex: 1,
+          marginLeft: expanded ? 260 : 80,
+          transition: "0.3s",
+          background: "#f1f5f9",
+          minHeight: "100vh",
+        }}
+      >
+        <Header
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+        />
+
+        <div style={{ padding: 20 }}>
+          {children}
+        </div>
       </div>
 
     </div>
   );
 }
-
-const styles = {
-  wrapper: {
-    display: "flex",
-    minHeight: "100vh",
-    background: "#f4f6f9",
-    fontFamily: "Arial"
-  },
-
-  main: {
-    flex: 1,
-    padding: 20
-  }
-};
