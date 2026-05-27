@@ -1,116 +1,251 @@
+import toast from "react-hot-toast";
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import "../styles/auth.css";
 
 export default function Login() {
-  const navigate = useNavigate();
+  const [isActive, setIsActive] = useState(false);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // LOGIN STATE
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const [loading, setLoading] = useState(false);
+  // REGISTER STATE
+  const [registerData, setRegisterData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "INVOICE_USER",
+  });
+  // =========================
+  // LOGIN
+  // =========================
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  const handleLogin = async () => {
     try {
-      setLoading(true);
-
       const res = await axios.post(
         "http://localhost:5000/api/auth/login",
-        {
-          email,
-          password
-        }
+        loginData,
       );
-
-      // ✅ SAVE AUTH DATA
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", res.data.user.role);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-
-      // 🎯 ROLE BASED REDIRECT
-      const role = res.data.user.role;
-
-      if (role === "SUPER_ADMIN") {
-        navigate("/dashboard");
-      } else {
-        navigate("/invoice");
-      }
-
+      toast.success("Login Successful");
+      window.location.href = "/dashboard";
     } catch (error) {
-      alert(
-        error?.response?.data?.message || "Login Failed"
-      );
-    } finally {
-      setLoading(false);
+      toast.error(error.response?.data?.message || "Login failed");
+    }
+  };
+
+  // =========================
+  // REGISTER
+  // =========================
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    try {
+      await axios.post("http://localhost:5000/api/auth/register", registerData);
+      toast.success("Registration Successful");
+      setIsActive(false);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Register failed");
     }
   };
 
   return (
-    <div style={container}>
+    <div className="auth-page">
+      <div className={`container ${isActive ? "active" : ""}`}>
+        {/* LOGIN */}
+        <div className="form-box login">
+          <form onSubmit={handleLogin}>
+            <h1>Login</h1>
 
-      <div style={box}>
-        <h2>🔐 Login</h2>
+            <div className="input-box">
+              <input
+                type="text"
+                placeholder="email"
+                required
+                onChange={(e) =>
+                  setLoginData({
+                    ...loginData,
+                    email: e.target.value,
+                  })
+                }
+              />
+              <i className="bx bxs-user"></i>
+            </div>
 
-        <input
-          style={input}
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+            <div className="input-box">
+              <input
+                type="password"
+                placeholder="Password"
+                required
+                onChange={(e) =>
+                  setLoginData({
+                    ...loginData,
+                    password: e.target.value,
+                  })
+                }
+              />
+              <i className="bx bxs-lock-alt"></i>
+            </div>
 
-        <input
-          style={input}
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+            <div className="forgot-link">
+              <button type="button" className="forgot-btn">
+                Forgot Password?
+              </button>
+            </div>
 
-        <button
-          style={button}
-          onClick={handleLogin}
-          disabled={loading}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
+            <button type="submit" className="btn">
+              Login
+            </button>
+            <p>or login with social platforms</p>
+
+            <div className="social-icons">
+              <button type="button">
+                <i className="bx bxl-google"></i>
+              </button>
+
+              <button type="button">
+                <i className="bx bxl-facebook"></i>
+              </button>
+
+              <button type="button">
+                <i className="bx bxl-github"></i>
+              </button>
+
+              <button type="button">
+                <i className="bx bxl-linkedin"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* REGISTER */}
+        <div className="form-box register">
+          <form onSubmit={handleRegister}>
+            <h1>Registration</h1>
+
+            <div className="input-box">
+              <input
+                type="text"
+                placeholder="Full Name"
+                required
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    name: e.target.value,
+                  })
+                }
+              />
+              <i className="bx bxs-user"></i>
+            </div>
+
+            <div className="input-box">
+              <input
+                type="email"
+                placeholder="Email"
+                required
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    email: e.target.value,
+                  })
+                }
+              />
+              <i className="bx bxs-envelope"></i>
+            </div>
+
+            <div className="input-box">
+              <input
+                type="password"
+                placeholder="Password"
+                required
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    password: e.target.value,
+                  })
+                }
+              />
+              <i className="bx bxs-lock-alt"></i>
+            </div>
+
+            <div className="input-box">
+              <select
+                value={registerData.role}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    role: e.target.value,
+                  })
+                }
+              >
+                <option value="INVOICE_USER">Invoice User</option>
+                <option value="ITEM_MANAGER">Item Manager</option>
+              </select>
+
+              <i className="bx bx-user-pin"></i>
+            </div>
+
+            <button type="submit" className="btn">
+              Register
+            </button>
+            <p>or login with social platforms</p>
+
+            <div className="social-icons">
+              <button type="button">
+                <i className="bx bxl-google"></i>
+              </button>
+
+              <button type="button">
+                <i className="bx bxl-facebook"></i>
+              </button>
+
+              <button type="button">
+                <i className="bx bxl-github"></i>
+              </button>
+
+              <button type="button">
+                <i className="bx bxl-linkedin"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* TOGGLE */}
+        <div className="toggle-box">
+          <div className="toggle-panel toggle-left">
+            <h1>Hello, Welcome!</h1>
+
+            <p>Don't have an account?</p>
+
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setIsActive(true)}
+            >
+              Register
+            </button>
+          </div>
+
+          <div className="toggle-panel toggle-right">
+            <h1>Welcome Back!</h1>
+
+            <p>Already have an account?</p>
+
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setIsActive(false)}
+            >
+              Login
+            </button>
+          </div>
+        </div>
       </div>
-
     </div>
   );
 }
-
-// 🎨 STYLES
-const container = {
-  height: "100vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  background: "#f5f5f5"
-};
-
-const box = {
-  padding: 30,
-  background: "#fff",
-  borderRadius: 10,
-  width: 300,
-  boxShadow: "0 0 10px rgba(0,0,0,0.1)"
-};
-
-const input = {
-  width: "100%",
-  padding: 10,
-  marginTop: 10,
-  marginBottom: 10,
-  borderRadius: 5,
-  border: "1px solid #ccc"
-};
-
-const button = {
-  width: "100%",
-  padding: 10,
-  background: "#000",
-  color: "#fff",
-  border: "none",
-  borderRadius: 5,
-  cursor: "pointer"
-};

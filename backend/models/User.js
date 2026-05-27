@@ -4,24 +4,28 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     email: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     password: {
       type: String,
-      required: true
+      required: true,
     },
     role: {
       type: String,
       enum: ["SUPER_ADMIN", "ITEM_MANAGER", "INVOICE_USER"],
-      default: "INVOICE_USER"
-    }
+      default: "INVOICE_USER",
+    },
+    profile_image: {
+      type: String,
+      default: "",
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("User", userSchema);

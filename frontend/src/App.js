@@ -1,3 +1,4 @@
+import { Toaster } from "react-hot-toast";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login";
@@ -26,15 +27,20 @@ import CustomerLedger from "./pages/CustomerLedger";
 import Payments from "./pages/Payments";
 import Accounts from "./pages/Accounts";
 import Vouchers from "./pages/Vouchers";
+import UserList from "./pages/UserList";
+import EditUser from "./pages/EditUser";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import RoleGuard from "./components/RoleGuard";
 
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" />
       <Routes>
         {/* 🔐 AUTH */}
         <Route path="/" element={<Login />} />
+        {/* <Route path="/auth" element={<AuthPage />} /> */}
 
         {/* 📊 DASHBOARD */}
         <Route
@@ -51,7 +57,9 @@ function App() {
           path="/items"
           element={
             <ProtectedRoute>
-              <Items />
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "ITEM_MANAGER"]}>
+                <Items />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
@@ -60,7 +68,9 @@ function App() {
           path="/items/add"
           element={
             <ProtectedRoute>
-              <AddItem />
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "ITEM_MANAGER"]}>
+                <AddItem />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
@@ -69,7 +79,29 @@ function App() {
           path="/items/edit/:id"
           element={
             <ProtectedRoute>
-              <EditItem />
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "ITEM_MANAGER"]}>
+                <EditItem />
+              </RoleGuard>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/purchase"
+          element={
+            <ProtectedRoute>
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "ITEM_MANAGER"]}>
+                <PurchaseCreate />
+              </RoleGuard>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/purchase-view"
+          element={
+            <ProtectedRoute>
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "ITEM_MANAGER"]}>
+                <PurchaseView />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
@@ -79,16 +111,19 @@ function App() {
           path="/invoice"
           element={
             <ProtectedRoute>
-              <InvoiceCreate />
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "INVOICE_USER"]}>
+                <InvoiceCreate />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/invoice-view"
           element={
             <ProtectedRoute>
-              <InvoiceView />
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "INVOICE_USER"]}>
+                <InvoiceView />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
@@ -96,32 +131,19 @@ function App() {
           path="/customers"
           element={
             <ProtectedRoute>
-              <Customers />
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "INVOICE_USER"]}>
+                <Customers />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/customers/add"
           element={
             <ProtectedRoute>
-              <AddCustomer />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/purchase"
-          element={
-            <ProtectedRoute>
-              <PurchaseCreate />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/purchase-view"
-          element={
-            <ProtectedRoute>
-              <PurchaseView />
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "INVOICE_USER"]}>
+                <AddCustomer />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
@@ -129,7 +151,9 @@ function App() {
           path="/reports"
           element={
             <ProtectedRoute>
-              <Reports />
+              <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                <Reports />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
@@ -137,7 +161,9 @@ function App() {
           path="/expenses"
           element={
             <ProtectedRoute>
-              <Expenses />
+              <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                <Expenses />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
@@ -146,7 +172,9 @@ function App() {
           path="/customer-ledger"
           element={
             <ProtectedRoute>
-              <CustomerLedger />
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "INVOICE_USER"]}>
+                <CustomerLedger />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
@@ -155,7 +183,9 @@ function App() {
           path="/payments"
           element={
             <ProtectedRoute>
-              <Payments />
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "INVOICE_USER"]}>
+                <Payments />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
@@ -164,7 +194,9 @@ function App() {
           path="/accounts"
           element={
             <ProtectedRoute>
-              <Accounts />
+              <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                <Accounts />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
@@ -173,7 +205,9 @@ function App() {
           path="/vouchers"
           element={
             <ProtectedRoute>
-              <Vouchers />
+              <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                <Vouchers />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />
@@ -182,6 +216,7 @@ function App() {
           path="/invoice-edit/:id"
           element={
             <ProtectedRoute>
+              <RoleGuard allowedRoles={["SUPER_ADMIN", "INVOICE_USER"]}></RoleGuard>
               <EditInvoice />
             </ProtectedRoute>
           }
@@ -191,7 +226,32 @@ function App() {
           path="/stock-history"
           element={
             <ProtectedRoute>
-              <StockHistory />
+              <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                <StockHistory />
+              </RoleGuard>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* USERS */}
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                  <UserList />
+              </RoleGuard>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/users/edit/:id"
+          element={
+            <ProtectedRoute>
+              <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                  <EditUser />
+              </RoleGuard>
             </ProtectedRoute>
           }
         />

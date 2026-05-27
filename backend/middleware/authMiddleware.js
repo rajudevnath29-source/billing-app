@@ -11,7 +11,7 @@ const authMiddleware = (req, res, next) => {
       });
     }
 
-    // 2. extract token (Bearer token)
+    // 2. extract token
     const token = authHeader.split(" ")[1];
 
     if (!token) {
@@ -23,7 +23,7 @@ const authMiddleware = (req, res, next) => {
     // 3. verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 4. attach user to request
+    // 4. attach user
     req.user = decoded;
 
     next();
