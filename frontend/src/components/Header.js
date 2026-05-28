@@ -50,7 +50,7 @@ export default function Header({ collapsed, setCollapsed }) {
 
         {/* POWER / LOGOUT */}
         <div style={styles.powerBtn} onClick={logout} title="Logout">
-          🔌
+          <i className="fa fa-power-off" style={{ fontSize: "24px", color: "#f35959" }}></i>
         </div>
       </div>
     </div>
