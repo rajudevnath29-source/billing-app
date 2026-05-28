@@ -210,7 +210,6 @@ export default function EditInvoice() {
   }
 
   return (
-    <Layout>
       <div style={page}>
         <h1>✏️ Edit Invoice</h1>
 
@@ -325,7 +324,6 @@ export default function EditInvoice() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }
 

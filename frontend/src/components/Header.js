@@ -16,12 +16,8 @@ export default function Header({ collapsed, setCollapsed }) {
 
   return (
     <div style={styles.header}>
-
       {/* LEFT TOGGLE */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        style={styles.menuBtn}
-      >
+      <button onClick={() => setCollapsed(!collapsed)} style={styles.menuBtn}>
         ☰
       </button>
 
@@ -29,16 +25,15 @@ export default function Header({ collapsed, setCollapsed }) {
 
       {/* RIGHT SIDE ACTIONS */}
       <div style={styles.right}>
-
         {/* PROFILE */}
         <div style={styles.profileWrapper}>
-
           <img
             src={
               user?.profile_image
                 ? `http://localhost:5000/uploads/${user.profile_image}`
                 : "https://i.pravatar.cc/40"
             }
+            alt="User Profile"
             style={styles.avatar}
             onClick={() => setProfileOpen(!profileOpen)}
           />
@@ -46,35 +41,23 @@ export default function Header({ collapsed, setCollapsed }) {
           {/* DROPDOWN */}
           {profileOpen && (
             <div style={styles.dropdown}>
-              <p onClick={() => navigate("/profile")}>
-                👤 My Profile
-              </p>
+              <p onClick={() => navigate("/profile")}>👤 My Profile</p>
 
-              <p onClick={() => navigate("/profile/edit")}>
-                ✏️ Edit Profile
-              </p>
+              <p onClick={() => navigate("/profile/edit")}>✏️ Edit Profile</p>
             </div>
           )}
-
         </div>
 
         {/* POWER / LOGOUT */}
-        <div
-          style={styles.powerBtn}
-          onClick={logout}
-          title="Logout"
-        >
+        <div style={styles.powerBtn} onClick={logout} title="Logout">
           🔌
         </div>
-
       </div>
-
     </div>
   );
 }
 
 const styles = {
-
   header: {
     height: 60,
     background: "#fff",

@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema(
       enum: ["SUPER_ADMIN", "ITEM_MANAGER", "INVOICE_USER"],
       default: "INVOICE_USER",
     },
+    permissions: {
+      type: [String],
+      default: [],
+    },
     profile_image: {
       type: String,
       default: "",

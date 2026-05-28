@@ -1,16 +1,13 @@
 import { useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
 
 export default function AddCustomer() {
-
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
 
   const [form, setForm] = useState({
-
     customer_name: "",
     phone: "",
     email: "",
@@ -19,59 +16,41 @@ export default function AddCustomer() {
     city: "",
     state: "",
     pincode: "",
-    opening_balance: 0
-
+    opening_balance: 0,
   });
 
   // HANDLE CHANGE
   const handleChange = (e) => {
-
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
-
   };
 
   // SUBMIT
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     try {
-
-      await axios.post(
-        "http://localhost:5000/api/customers",
-        form,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      await axios.post("http://localhost:5000/api/customers", form, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       alert("Customer added");
 
       navigate("/customers");
-
     } catch (err) {
-
       alert("Error adding customer");
-
     }
-
   };
 
   return (
-    <Layout>
-
+    <>
       <h2>➕ Add Customer</h2>
 
-      <form
-        onSubmit={handleSubmit}
-        style={styles.form}
-      >
-
+      <form onSubmit={handleSubmit} style={styles.form}>
         <input
           type="text"
           name="customer_name"
@@ -144,30 +123,25 @@ export default function AddCustomer() {
           style={styles.input}
         />
 
-        <button style={styles.btn}>
-          Save Customer
-        </button>
-
+        <button style={styles.btn}>Save Customer</button>
       </form>
-
-    </Layout>
+    </>
   );
 }
 
 const styles = {
-
   form: {
     display: "flex",
     flexDirection: "column",
     gap: 12,
     width: 400,
-    marginTop: 20
+    marginTop: 20,
   },
 
   input: {
     padding: 12,
     borderRadius: 6,
-    border: "1px solid #ccc"
+    border: "1px solid #ccc",
   },
 
   btn: {
@@ -176,7 +150,6 @@ const styles = {
     color: "#fff",
     border: "none",
     borderRadius: 6,
-    cursor: "pointer"
-  }
-
+    cursor: "pointer",
+  },
 };

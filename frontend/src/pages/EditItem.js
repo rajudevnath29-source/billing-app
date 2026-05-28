@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
 import { useParams, useNavigate } from "react-router-dom";
 
 export default function EditItem() {
@@ -15,24 +14,20 @@ export default function EditItem() {
     sales_price: "",
     purchase_price: "",
     opening_stock: "",
-    low_stock_alert: ""
+    low_stock_alert: "",
   });
 
   // GET SINGLE ITEM
   const fetchItem = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/items`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const res = await axios.get(`http://localhost:5000/api/items`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const item = res.data.items.find((i) => i._id === id);
       setForm(item);
-
     } catch (err) {
       console.log(err);
     }
@@ -46,49 +41,38 @@ export default function EditItem() {
   const handleChange = (e) => {
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   // UPDATE ITEM
   const updateItem = async () => {
     try {
-      await axios.put(
-        `http://localhost:5000/api/items/${id}`,
-        form,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      await axios.put(`http://localhost:5000/api/items/${id}`, form, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       alert("Item Updated Successfully");
       navigate("/items");
-
     } catch (err) {
       alert("Error updating item");
     }
   };
 
   return (
-    <Layout>
-
+    <>
       <h2>✏️ Edit Item</h2>
 
       <div style={formBox}>
-
         <input
           name="item_name"
           value={form.item_name}
           onChange={handleChange}
         />
 
-        <input
-          name="unit"
-          value={form.unit}
-          onChange={handleChange}
-        />
+        <input name="unit" value={form.unit} onChange={handleChange} />
 
         <input
           name="sales_price"
@@ -114,13 +98,9 @@ export default function EditItem() {
           onChange={handleChange}
         />
 
-        <button onClick={updateItem}>
-          Update Item
-        </button>
-
+        <button onClick={updateItem}>Update Item</button>
       </div>
-
-    </Layout>
+    </>
   );
 }
 
@@ -128,5 +108,5 @@ const formBox = {
   display: "flex",
   flexDirection: "column",
   gap: 10,
-  width: 300
+  width: 300,
 };

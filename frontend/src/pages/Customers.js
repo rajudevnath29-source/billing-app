@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
 
 export default function Customers() {
@@ -69,7 +68,7 @@ export default function Customers() {
   );
 
   return (
-    <Layout>
+    <>
 
       {/* TOP BAR */}
       <div style={styles.topBar}>
@@ -177,7 +176,7 @@ export default function Customers() {
 
       </table>
 
-    </Layout>
+    </>
   );
 }
 

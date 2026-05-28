@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
 
 export default function AddItem() {
@@ -45,7 +44,7 @@ export default function AddItem() {
   };
 
   return (
-    <Layout>
+    <>
 
       <h2>➕ Add Item</h2>
 
@@ -93,7 +92,7 @@ export default function AddItem() {
 
       </div>
 
-    </Layout>
+    </>
   );
 }
 

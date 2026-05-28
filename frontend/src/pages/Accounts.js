@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 
 import axios from "axios";
 
-import Layout from "../components/Layout";
-
 export default function Accounts() {
   const [accounts, setAccounts] = useState([]);
 
@@ -87,73 +85,71 @@ export default function Accounts() {
   );
 
   return (
-    <Layout>
-      <div style={page}>
-        <h1>🏦 Bank / Cash Accounts</h1>
+    <div style={page}>
+      <h1>🏦 Bank / Cash Accounts</h1>
 
-        {/* FORM */}
+      {/* FORM */}
 
-        <div style={formBox}>
-          <input
-            placeholder="Account Name"
-            value={account_name}
-            onChange={(e) => setAccountName(e.target.value)}
-          />
+      <div style={formBox}>
+        <input
+          placeholder="Account Name"
+          value={account_name}
+          onChange={(e) => setAccountName(e.target.value)}
+        />
 
-          <select
-            value={account_type}
-            onChange={(e) => setAccountType(e.target.value)}
-          >
-            <option value="CASH">CASH</option>
+        <select
+          value={account_type}
+          onChange={(e) => setAccountType(e.target.value)}
+        >
+          <option value="CASH">CASH</option>
 
-            <option value="BANK">BANK</option>
-          </select>
+          <option value="BANK">BANK</option>
+        </select>
 
-          <input
-            type="number"
-            placeholder="Opening Balance"
-            value={balance}
-            onChange={(e) => setBalance(e.target.value)}
-          />
+        <input
+          type="number"
+          placeholder="Opening Balance"
+          value={balance}
+          onChange={(e) => setBalance(e.target.value)}
+        />
 
-          <button onClick={createAccount}>Create</button>
-        </div>
-
-        {/* TOTAL */}
-
-        <div style={card}>
-          <h2>Total Balance</h2>
-
-          <h1>₹ {totalBalance.toFixed(2)}</h1>
-        </div>
-
-        {/* TABLE */}
-
-        <table style={table}>
-          <thead>
-            <tr>
-              <th>Account</th>
-
-              <th>Type</th>
-
-              <th>Balance</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {accounts.map((acc) => (
-              <tr key={acc._id}>
-                <td>{acc.account_name}</td>
-
-                <td>{acc.account_type}</td>
-
-                <td>₹ {acc.balance}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <button onClick={createAccount}>Create</button>
       </div>
-    </Layout>
+
+      {/* TOTAL */}
+
+      <div style={card}>
+        <h2>Total Balance</h2>
+
+        <h1>₹ {totalBalance.toFixed(2)}</h1>
+      </div>
+
+      {/* TABLE */}
+
+      <table style={table}>
+        <thead>
+          <tr>
+            <th>Account</th>
+
+            <th>Type</th>
+
+            <th>Balance</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {accounts.map((acc) => (
+            <tr key={acc._id}>
+              <td>{acc.account_name}</td>
+
+              <td>{acc.account_type}</td>
+
+              <td>₹ {acc.balance}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

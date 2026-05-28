@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 
 import axios from "axios";
 
-import Layout from "../components/Layout";
-
 import {
   BarChart,
   Bar,
@@ -166,150 +164,148 @@ export default function Reports() {
   ];
 
   return (
-    <Layout>
-      <div style={pageStyle}>
-        <h1 style={heading}>📊 ERP Reports</h1>
+    <div style={pageStyle}>
+      <h1 style={heading}>📊 ERP Reports</h1>
 
-        {/* TOP CARDS */}
-        <div style={cardGrid}>
-          <div style={card}>
-            <h3>Total Sales</h3>
+      {/* TOP CARDS */}
+      <div style={cardGrid}>
+        <div style={card}>
+          <h3>Total Sales</h3>
 
-            <h1>₹ {totalSales.toFixed(2)}</h1>
-          </div>
-
-          <div style={card}>
-            <h3>Total Purchase</h3>
-
-            <h1>₹ {totalPurchases.toFixed(2)}</h1>
-          </div>
-
-          <div style={card}>
-            <h3>Total Expenses</h3>
-
-            <h1>₹ {totalExpenses.toFixed(2)}</h1>
-          </div>
-
-          <div
-            style={{ ...card, background: profit >= 0 ? "#dcfce7" : "#fee2e2" }}
-          >
-            <h3>Profit</h3>
-
-            <h1>₹ {profit.toFixed(2)}</h1>
-          </div>
-
-          <div style={card}>
-            <h3>Low Stock</h3>
-
-            <h1>{lowStockItems.length}</h1>
-          </div>
+          <h1>₹ {totalSales.toFixed(2)}</h1>
         </div>
 
-        {/* GST REPORT */}
-        <div style={reportBox}>
-          <h2>🧾 GST Report</h2>
+        <div style={card}>
+          <h3>Total Purchase</h3>
 
-          <table style={table}>
-            <thead>
-              <tr>
-                <th>Type</th>
-
-                <th>GST Amount</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr>
-                <td>GST Collected</td>
-
-                <td>₹ {totalGSTSales.toFixed(2)}</td>
-              </tr>
-
-              <tr>
-                <td>GST Paid</td>
-
-                <td>₹ {totalGSTPurchase.toFixed(2)}</td>
-              </tr>
-            </tbody>
-          </table>
+          <h1>₹ {totalPurchases.toFixed(2)}</h1>
         </div>
 
-        {/* LOW STOCK */}
-        <div style={reportBox}>
-          <h2>⚠️ Low Stock Report</h2>
+        <div style={card}>
+          <h3>Total Expenses</h3>
 
-          <table style={table}>
-            <thead>
-              <tr>
-                <th>Item</th>
-
-                <th>Stock</th>
-
-                <th>Alert</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {lowStockItems.map((item) => (
-                <tr key={item._id}>
-                  <td>{item.item_name}</td>
-
-                  <td>{item.opening_stock}</td>
-
-                  <td>{item.low_stock_alert}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <h1>₹ {totalExpenses.toFixed(2)}</h1>
         </div>
 
-        {/* SALES CHART */}
+        <div
+          style={{ ...card, background: profit >= 0 ? "#dcfce7" : "#fee2e2" }}
+        >
+          <h3>Profit</h3>
 
-        <div style={reportBox}>
-          <h2>📈 Business Analytics</h2>
-
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-
-              <XAxis dataKey="name" />
-
-              <YAxis />
-
-              <Tooltip />
-
-              <Bar dataKey="amount" />
-            </BarChart>
-          </ResponsiveContainer>
+          <h1>₹ {profit.toFixed(2)}</h1>
         </div>
 
-        {/* STOCK PIE CHART */}
+        <div style={card}>
+          <h3>Low Stock</h3>
 
-        <div style={reportBox}>
-          <h2>📦 Inventory Analytics</h2>
-
-          <ResponsiveContainer width="100%" height={350}>
-            <PieChart>
-              <Pie
-                data={stockData}
-                dataKey="value"
-                nameKey="name"
-                outerRadius={120}
-                label
-              >
-                {stockData.map((entry, index) => (
-                  <Cell key={index} />
-                ))}
-              </Pie>
-
-              <Tooltip />
-
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+          <h1>{lowStockItems.length}</h1>
         </div>
       </div>
-    </Layout>
+
+      {/* GST REPORT */}
+      <div style={reportBox}>
+        <h2>🧾 GST Report</h2>
+
+        <table style={table}>
+          <thead>
+            <tr>
+              <th>Type</th>
+
+              <th>GST Amount</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>GST Collected</td>
+
+              <td>₹ {totalGSTSales.toFixed(2)}</td>
+            </tr>
+
+            <tr>
+              <td>GST Paid</td>
+
+              <td>₹ {totalGSTPurchase.toFixed(2)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* LOW STOCK */}
+      <div style={reportBox}>
+        <h2>⚠️ Low Stock Report</h2>
+
+        <table style={table}>
+          <thead>
+            <tr>
+              <th>Item</th>
+
+              <th>Stock</th>
+
+              <th>Alert</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {lowStockItems.map((item) => (
+              <tr key={item._id}>
+                <td>{item.item_name}</td>
+
+                <td>{item.opening_stock}</td>
+
+                <td>{item.low_stock_alert}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* SALES CHART */}
+
+      <div style={reportBox}>
+        <h2>📈 Business Analytics</h2>
+
+        <ResponsiveContainer width="100%" height={350}>
+          <BarChart data={monthlyData}>
+            <CartesianGrid strokeDasharray="3 3" />
+
+            <XAxis dataKey="name" />
+
+            <YAxis />
+
+            <Tooltip />
+
+            <Bar dataKey="amount" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* STOCK PIE CHART */}
+
+      <div style={reportBox}>
+        <h2>📦 Inventory Analytics</h2>
+
+        <ResponsiveContainer width="100%" height={350}>
+          <PieChart>
+            <Pie
+              data={stockData}
+              dataKey="value"
+              nameKey="name"
+              outerRadius={120}
+              label
+            >
+              {stockData.map((entry, index) => (
+                <Cell key={index} />
+              ))}
+            </Pie>
+
+            <Tooltip />
+
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 }
 

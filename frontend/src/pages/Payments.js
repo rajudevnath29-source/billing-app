@@ -1,337 +1,181 @@
-import {
-  useEffect,
-  useState
-} from "react";
+import { useEffect, useState } from "react";
 
 import axios from "axios";
 
-import Layout from "../components/Layout";
-
 export default function Payments() {
+  const [invoices, setInvoices] = useState([]);
 
-  const [invoices, setInvoices] =
-    useState([]);
+  const [payments, setPayments] = useState([]);
 
-  const [payments, setPayments] =
-    useState([]);
+  const [selectedInvoice, setSelectedInvoice] = useState("");
 
-  const [selectedInvoice,
-    setSelectedInvoice] =
-    useState("");
+  const [amount, setAmount] = useState("");
 
-  const [amount, setAmount] =
-    useState("");
+  const [note, setNote] = useState("");
 
-  const [note, setNote] =
-    useState("");
-
-  const token =
-    localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   // ====================================
   // LOAD
   // ====================================
 
-  const loadData =
-    async () => {
+  const loadData = async () => {
+    try {
+      // DUE INVOICES
 
-      try {
+      const invoiceRes = await axios.get(
+        "http://localhost:5000/api/invoices",
 
-        // DUE INVOICES
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-        const invoiceRes =
-          await axios.get(
+      const dueInvoices = invoiceRes.data.invoices.filter(
+        (inv) => inv.due_amount > 0,
+      );
 
-            "http://localhost:5000/api/invoices",
+      setInvoices(dueInvoices);
 
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`
-              }
-            }
+      // PAYMENTS
 
-          );
+      const paymentRes = await axios.get(
+        "http://localhost:5000/api/payments",
 
-        const dueInvoices =
-          invoiceRes.data.invoices
-            .filter(
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-              (inv) =>
-                inv.due_amount > 0
-
-            );
-
-        setInvoices(
-          dueInvoices
-        );
-
-        // PAYMENTS
-
-        const paymentRes =
-          await axios.get(
-
-            "http://localhost:5000/api/payments",
-
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`
-              }
-            }
-
-          );
-
-        setPayments(
-          paymentRes.data.payments
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-
-    };
+      setPayments(paymentRes.data.payments);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
-
     loadData();
-
   }, []);
 
   // ====================================
   // CREATE PAYMENT
   // ====================================
 
-  const collectPayment =
-    async () => {
+  const collectPayment = async () => {
+    try {
+      const invoiceData = invoices.find((i) => i._id === selectedInvoice);
 
-      try {
+      await axios.post(
+        "http://localhost:5000/api/payments",
 
-        const invoiceData =
-          invoices.find(
+        {
+          customer: invoiceData.customer,
 
-            (i) =>
-              i._id ===
-              selectedInvoice
+          invoice: invoiceData._id,
 
-          );
+          amount,
 
-        await axios.post(
+          note,
+        },
 
-          "http://localhost:5000/api/payments",
-
-          {
-
-            customer:
-              invoiceData.customer,
-
-            invoice:
-              invoiceData._id,
-
-            amount,
-
-            note
-
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
+        },
+      );
 
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`
-            }
-          }
+      alert("Payment collected");
 
-        );
+      setSelectedInvoice("");
+      setAmount("");
+      setNote("");
 
-        alert(
-          "Payment collected"
-        );
-
-        setSelectedInvoice("");
-        setAmount("");
-        setNote("");
-
-        loadData();
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-
-    };
+      loadData();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
+    <div style={page}>
+      <h1>💰 Payment Collection</h1>
 
-    <Layout>
+      {/* FORM */}
 
-      <div style={page}>
+      <div style={formBox}>
+        <select
+          value={selectedInvoice}
+          onChange={(e) => setSelectedInvoice(e.target.value)}
+        >
+          <option value="">Select Invoice</option>
 
-        <h1>
-          💰 Payment Collection
-        </h1>
+          {invoices.map((inv) => (
+            <option key={inv._id} value={inv._id}>
+              {inv.invoice_number}
 
-        {/* FORM */}
+              {" - "}
 
-        <div style={formBox}>
+              {inv.customer_name}
 
-          <select
-            value={selectedInvoice}
-            onChange={(e) =>
-              setSelectedInvoice(
-                e.target.value
-              )
-            }
-          >
+              {" - Due ₹"}
 
-            <option value="">
-              Select Invoice
+              {inv.due_amount}
             </option>
+          ))}
+        </select>
 
-            {invoices.map((inv) => (
+        <input
+          type="number"
+          placeholder="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
 
-              <option
-                key={inv._id}
-                value={inv._id}
-              >
+        <input
+          placeholder="Note"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
 
-                {
-                  inv.invoice_number
-                }
-
-                {" - "}
-
-                {
-                  inv.customer_name
-                }
-
-                {" - Due ₹"}
-
-                {
-                  inv.due_amount
-                }
-
-              </option>
-
-            ))}
-
-          </select>
-
-          <input
-            type="number"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) =>
-              setAmount(
-                e.target.value
-              )
-            }
-          />
-
-          <input
-            placeholder="Note"
-            value={note}
-            onChange={(e) =>
-              setNote(
-                e.target.value
-              )
-            }
-          />
-
-          <button
-            onClick={
-              collectPayment
-            }
-          >
-            Collect
-          </button>
-
-        </div>
-
-        {/* PAYMENT HISTORY */}
-
-        <table style={table}>
-
-          <thead>
-
-            <tr>
-
-              <th>
-                Invoice
-              </th>
-
-              <th>
-                Amount
-              </th>
-
-              <th>
-                Date
-              </th>
-
-              <th>
-                Note
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {payments.map((pay) => (
-
-              <tr key={pay._id}>
-
-                <td>
-
-                  {
-                    pay.invoice
-                      ?.invoice_number
-                  }
-
-                </td>
-
-                <td>
-
-                  ₹
-                  {" "}
-
-                  {
-                    pay.amount
-                  }
-
-                </td>
-
-                <td>
-
-                  {
-                    new Date(
-                      pay.createdAt
-                    ).toLocaleDateString()
-                  }
-
-                </td>
-
-                <td>
-                  {pay.note}
-                </td>
-
-              </tr>
-
-            ))}
-
-          </tbody>
-
-        </table>
-
+        <button onClick={collectPayment}>Collect</button>
       </div>
 
-    </Layout>
+      {/* PAYMENT HISTORY */}
 
+      <table style={table}>
+        <thead>
+          <tr>
+            <th>Invoice</th>
+
+            <th>Amount</th>
+
+            <th>Date</th>
+
+            <th>Note</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {payments.map((pay) => (
+            <tr key={pay._id}>
+              <td>{pay.invoice?.invoice_number}</td>
+
+              <td>₹ {pay.amount}</td>
+
+              <td>{new Date(pay.createdAt).toLocaleDateString()}</td>
+
+              <td>{pay.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
-
 }
 
 /* ====================================
@@ -339,19 +183,18 @@ export default function Payments() {
 ==================================== */
 
 const page = {
-  padding: 20
+  padding: 20,
 };
 
 const formBox = {
   display: "grid",
-  gridTemplateColumns:
-    "2fr 1fr 2fr 1fr",
+  gridTemplateColumns: "2fr 1fr 2fr 1fr",
   gap: 10,
-  marginBottom: 20
+  marginBottom: 20,
 };
 
 const table = {
   width: "100%",
   borderCollapse: "collapse",
-  background: "#fff"
+  background: "#fff",
 };

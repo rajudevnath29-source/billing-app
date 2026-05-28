@@ -5,8 +5,6 @@ import {
 
 import axios from "axios";
 
-import Layout from "../components/Layout";
-
 export default function CustomerLedger() {
 
   const [customers, setCustomers] =
@@ -118,9 +116,6 @@ export default function CustomerLedger() {
     );
 
   return (
-
-    <Layout>
-
       <div style={page}>
 
         <h1>
@@ -285,9 +280,6 @@ export default function CustomerLedger() {
         </div>
 
       </div>
-
-    </Layout>
-
   );
 
 }

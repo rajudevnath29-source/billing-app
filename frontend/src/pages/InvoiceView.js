@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -58,7 +57,7 @@ export default function InvoiceView() {
   };
 
   return (
-    <Layout>
+    <>
       <h2>🧾 Invoice List</h2>
 
       <div style={{ display: "flex", gap: 20 }}>
@@ -191,7 +190,7 @@ export default function InvoiceView() {
           )}
         </div>
       </div>
-    </Layout>
+    </>
   );
 }
 

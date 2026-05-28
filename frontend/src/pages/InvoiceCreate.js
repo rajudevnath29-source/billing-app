@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
 
 export default function InvoiceCreate() {
   const [items, setItems] = useState([]);
@@ -169,150 +168,148 @@ export default function InvoiceCreate() {
   };
 
   return (
-    <Layout>
-      <div style={styles.page}>
-        <h2 style={styles.heading}>🧾 Create Invoice</h2>
+    <div style={styles.page}>
+      <h2 style={styles.heading}>🧾 Create Invoice</h2>
 
-        {/* CUSTOMER */}
-        <div style={styles.customerBox}>
-          <select
-            value={selectedCustomer}
-            onChange={(e) => handleCustomerSelect(e.target.value)}
-            style={styles.input}
-          >
-            <option value="">Select Customer</option>
+      {/* CUSTOMER */}
+      <div style={styles.customerBox}>
+        <select
+          value={selectedCustomer}
+          onChange={(e) => handleCustomerSelect(e.target.value)}
+          style={styles.input}
+        >
+          <option value="">Select Customer</option>
 
-            {customers.map((customer) => (
-              <option key={customer._id} value={customer._id}>
-                {customer.customer_name}
-              </option>
-            ))}
-          </select>
+          {customers.map((customer) => (
+            <option key={customer._id} value={customer._id}>
+              {customer.customer_name}
+            </option>
+          ))}
+        </select>
 
-          <input
-            placeholder="Customer Name"
-            value={customer_name}
-            onChange={(e) => setCustomerName(e.target.value)}
-            style={styles.input}
-          />
+        <input
+          placeholder="Customer Name"
+          value={customer_name}
+          onChange={(e) => setCustomerName(e.target.value)}
+          style={styles.input}
+        />
 
-          <input
-            placeholder="Mobile"
-            value={customer_mobile}
-            onChange={(e) => setCustomerMobile(e.target.value)}
-            style={styles.input}
-          />
+        <input
+          placeholder="Mobile"
+          value={customer_mobile}
+          onChange={(e) => setCustomerMobile(e.target.value)}
+          style={styles.input}
+        />
+      </div>
+
+      <div style={styles.mainGrid}>
+        {/* ITEMS */}
+        <div style={styles.leftBox}>
+          <h3>📦 Items</h3>
+
+          {items.map((item) => (
+            <div key={item._id} style={styles.itemCard}>
+              <div>
+                <b>{item.item_name}</b>
+
+                <p>₹ {item.sales_price}</p>
+              </div>
+
+              <button style={styles.addBtn} onClick={() => addToCart(item)}>
+                Add
+              </button>
+            </div>
+          ))}
         </div>
 
-        <div style={styles.mainGrid}>
-          {/* ITEMS */}
-          <div style={styles.leftBox}>
-            <h3>📦 Items</h3>
+        {/* CART */}
+        <div style={styles.rightBox}>
+          <h3>🛒 Invoice Cart</h3>
 
-            {items.map((item) => (
-              <div key={item._id} style={styles.itemCard}>
-                <div>
-                  <b>{item.item_name}</b>
+          {cart.map((c) => (
+            <div key={c.item_id} style={styles.cartCard}>
+              <div>
+                <b>{c.item_name}</b>
 
-                  <p>₹ {item.sales_price}</p>
-                </div>
-
-                <button style={styles.addBtn} onClick={() => addToCart(item)}>
-                  Add
-                </button>
+                <p>₹ {c.price}</p>
               </div>
-            ))}
+
+              <input
+                type="number"
+                value={c.qty}
+                onChange={(e) => changeQty(c.item_id, e.target.value)}
+                style={styles.qty}
+              />
+
+              <p>₹ {c.price * c.qty}</p>
+
+              <button
+                style={styles.deleteBtn}
+                onClick={() => removeItem(c.item_id)}
+              >
+                ❌
+              </button>
+            </div>
+          ))}
+
+          {/* DISCOUNT */}
+          <input
+            placeholder="Discount"
+            value={discount}
+            onChange={(e) => setDiscount(e.target.value)}
+            style={styles.input}
+          />
+
+          <input
+            type="number"
+            placeholder="Paid Amount"
+            value={paidAmount}
+            onChange={(e) => setPaidAmount(e.target.value)}
+          />
+
+          {/* GST */}
+          <div style={styles.gstBox}>
+            <label>
+              <input
+                type="checkbox"
+                checked={gstEnabled}
+                onChange={(e) => setGstEnabled(e.target.checked)}
+              />
+              Enable GST
+            </label>
+
+            {gstEnabled && (
+              <input
+                type="number"
+                value={gstRate}
+                onChange={(e) => setGstRate(e.target.value)}
+                placeholder="GST %"
+                style={styles.gstInput}
+              />
+            )}
           </div>
 
-          {/* CART */}
-          <div style={styles.rightBox}>
-            <h3>🛒 Invoice Cart</h3>
+          {/* TOTALS */}
+          <div style={styles.totalBox}>
+            <p>Subtotal: ₹ {subTotal.toFixed(2)}</p>
 
-            {cart.map((c) => (
-              <div key={c.item_id} style={styles.cartCard}>
-                <div>
-                  <b>{c.item_name}</b>
+            <p>Paid: ₹ {paidAmount}</p>
 
-                  <p>₹ {c.price}</p>
-                </div>
+            <p>Due: ₹ {(grandTotal - paidAmount).toFixed(2)}</p>
 
-                <input
-                  type="number"
-                  value={c.qty}
-                  onChange={(e) => changeQty(c.item_id, e.target.value)}
-                  style={styles.qty}
-                />
+            <p>Discount: ₹ {discount}</p>
 
-                <p>₹ {c.price * c.qty}</p>
+            <p>GST: ₹ {gstAmount.toFixed(2)}</p>
 
-                <button
-                  style={styles.deleteBtn}
-                  onClick={() => removeItem(c.item_id)}
-                >
-                  ❌
-                </button>
-              </div>
-            ))}
-
-            {/* DISCOUNT */}
-            <input
-              placeholder="Discount"
-              value={discount}
-              onChange={(e) => setDiscount(e.target.value)}
-              style={styles.input}
-            />
-
-            <input
-              type="number"
-              placeholder="Paid Amount"
-              value={paidAmount}
-              onChange={(e) => setPaidAmount(e.target.value)}
-            />
-
-            {/* GST */}
-            <div style={styles.gstBox}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={gstEnabled}
-                  onChange={(e) => setGstEnabled(e.target.checked)}
-                />
-                Enable GST
-              </label>
-
-              {gstEnabled && (
-                <input
-                  type="number"
-                  value={gstRate}
-                  onChange={(e) => setGstRate(e.target.value)}
-                  placeholder="GST %"
-                  style={styles.gstInput}
-                />
-              )}
-            </div>
-
-            {/* TOTALS */}
-            <div style={styles.totalBox}>
-              <p>Subtotal: ₹ {subTotal.toFixed(2)}</p>
-
-              <p>Paid: ₹ {paidAmount}</p>
-
-              <p>Due: ₹ {(grandTotal - paidAmount).toFixed(2)}</p>
-
-              <p>Discount: ₹ {discount}</p>
-
-              <p>GST: ₹ {gstAmount.toFixed(2)}</p>
-
-              <h2>Grand Total: ₹ {grandTotal.toFixed(2)}</h2>
-            </div>
-
-            <button style={styles.invoiceBtn} onClick={createInvoice}>
-              Generate Invoice
-            </button>
+            <h2>Grand Total: ₹ {grandTotal.toFixed(2)}</h2>
           </div>
+
+          <button style={styles.invoiceBtn} onClick={createInvoice}>
+            Generate Invoice
+          </button>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 }
 

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
 
 export default function Items() {
@@ -17,17 +16,13 @@ export default function Items() {
   // FETCH ITEMS
   const fetchItems = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:5000/api/items",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const res = await axios.get("http://localhost:5000/api/items", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setItems(res.data.items);
-
     } catch (err) {
       console.log(err);
     }
@@ -40,17 +35,13 @@ export default function Items() {
   // DELETE ITEM
   const deleteItem = async (id) => {
     try {
-      await axios.delete(
-        `http://localhost:5000/api/items/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      await axios.delete(`http://localhost:5000/api/items/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       fetchItems();
-
     } catch (err) {
       alert("Delete failed");
     }
@@ -58,7 +49,7 @@ export default function Items() {
 
   // SEARCH FILTER
   const filteredItems = items.filter((item) =>
-    item.item_name.toLowerCase().includes(search.toLowerCase())
+    item.item_name.toLowerCase().includes(search.toLowerCase()),
   );
 
   // SORTING
@@ -74,18 +65,12 @@ export default function Items() {
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
 
-  const currentItems = sortedItems.slice(
-    indexOfFirst,
-    indexOfLast
-  );
+  const currentItems = sortedItems.slice(indexOfFirst, indexOfLast);
 
-  const totalPages = Math.ceil(
-    sortedItems.length / itemsPerPage
-  );
+  const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
 
   return (
-    <Layout>
-
+    <>
       {/* HEADER */}
       <div style={styles.topBar}>
         <h2>📦 Items</h2>
@@ -100,7 +85,6 @@ export default function Items() {
 
       {/* SEARCH + SORT */}
       <div style={styles.toolbar}>
-
         <input
           type="text"
           placeholder="Search item..."
@@ -117,12 +101,10 @@ export default function Items() {
           <option value="asc">Sort A-Z</option>
           <option value="desc">Sort Z-A</option>
         </select>
-
       </div>
 
       {/* TABLE */}
       <table style={styles.table}>
-
         <thead>
           <tr>
             <th style={styles.th}>Name</th>
@@ -136,20 +118,17 @@ export default function Items() {
         </thead>
 
         <tbody>
-
           {currentItems.map((item) => (
-
             <tr
               key={item._id}
               style={{
                 background:
                   item.opening_stock <= item.low_stock_alert
                     ? "#fff5f5"
-                    : "#fff"
+                    : "#fff",
               }}
               className="table-row"
             >
-
               <td style={styles.td}>{item.item_name}</td>
               <td style={styles.td}>{item.unit}</td>
               <td style={styles.td}>₹ {item.sales_price}</td>
@@ -158,12 +137,9 @@ export default function Items() {
               <td style={styles.td}>{item.low_stock_alert}</td>
 
               <td style={styles.td}>
-
                 <button
                   style={styles.editBtn}
-                  onClick={() =>
-                    navigate(`/items/edit/${item._id}`)
-                  }
+                  onClick={() => navigate(`/items/edit/${item._id}`)}
                 >
                   ✏️
                 </button>
@@ -174,73 +150,58 @@ export default function Items() {
                 >
                   ❌
                 </button>
-
               </td>
-
             </tr>
-
           ))}
-
         </tbody>
-
       </table>
 
       {/* PAGINATION */}
       <div style={styles.pagination}>
-
         {Array.from({ length: totalPages }, (_, i) => (
           <button
             key={i}
             style={{
               ...styles.pageBtn,
-              background:
-                currentPage === i + 1
-                  ? "#2563eb"
-                  : "#e5e7eb",
-              color:
-                currentPage === i + 1
-                  ? "#fff"
-                  : "#000"
+              background: currentPage === i + 1 ? "#2563eb" : "#e5e7eb",
+              color: currentPage === i + 1 ? "#fff" : "#000",
             }}
             onClick={() => setCurrentPage(i + 1)}
           >
             {i + 1}
           </button>
         ))}
-
       </div>
-
-    </Layout>
+    </>
   );
 }
 
 /* ================= STYLES ================= */
 
 const styles = {
-
   topBar: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20
+    marginBottom: 20,
   },
 
   toolbar: {
     display: "flex",
     gap: 10,
-    marginBottom: 20
+    marginBottom: 20,
   },
 
   search: {
     padding: 10,
     width: 250,
     borderRadius: 6,
-    border: "1px solid #ccc"
+    border: "1px solid #ccc",
   },
 
   select: {
     padding: 10,
-    borderRadius: 6
+    borderRadius: 6,
   },
 
   table: {
@@ -249,19 +210,19 @@ const styles = {
     background: "#fff",
     borderRadius: 10,
     overflow: "hidden",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
 
   th: {
     background: "#0f172a",
     color: "#fff",
     padding: 14,
-    textAlign: "left"
+    textAlign: "left",
   },
 
   td: {
     padding: 14,
-    borderBottom: "1px solid #eee"
+    borderBottom: "1px solid #eee",
   },
 
   primaryBtn: {
@@ -270,7 +231,7 @@ const styles = {
     border: "none",
     padding: "10px 14px",
     borderRadius: 6,
-    cursor: "pointer"
+    cursor: "pointer",
   },
 
   editBtn: {
@@ -278,26 +239,26 @@ const styles = {
     border: "none",
     padding: 8,
     borderRadius: 5,
-    cursor: "pointer"
+    cursor: "pointer",
   },
 
   deleteBtn: {
     border: "none",
     padding: 8,
     borderRadius: 5,
-    cursor: "pointer"
+    cursor: "pointer",
   },
 
   pagination: {
     marginTop: 20,
     display: "flex",
-    gap: 10
+    gap: 10,
   },
 
   pageBtn: {
     padding: "8px 12px",
     border: "none",
     borderRadius: 5,
-    cursor: "pointer"
-  }
+    cursor: "pointer",
+  },
 };

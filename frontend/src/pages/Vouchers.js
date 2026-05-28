@@ -1,394 +1,203 @@
-import {
-  useEffect,
-  useState
-} from "react";
+import { useEffect, useState } from "react";
 
 import axios from "axios";
 
-import Layout from "../components/Layout";
-
 export default function Vouchers() {
+  const [accounts, setAccounts] = useState([]);
 
-  const [accounts, setAccounts] =
-    useState([]);
+  const [vouchers, setVouchers] = useState([]);
 
-  const [vouchers, setVouchers] =
-    useState([]);
+  const [voucher_type, setVoucherType] = useState("CREDIT");
 
-  const [voucher_type,
-    setVoucherType] =
-    useState("CREDIT");
+  const [account, setAccount] = useState("");
 
-  const [account,
-    setAccount] =
-    useState("");
+  const [to_account, setToAccount] = useState("");
 
-  const [to_account,
-    setToAccount] =
-    useState("");
+  const [amount, setAmount] = useState("");
 
-  const [amount,
-    setAmount] =
-    useState("");
+  const [note, setNote] = useState("");
 
-  const [note,
-    setNote] =
-    useState("");
-
-  const token =
-    localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   // ====================================
   // LOAD
   // ====================================
 
-  const loadData =
-    async () => {
+  const loadData = async () => {
+    try {
+      const accRes = await axios.get(
+        "http://localhost:5000/api/accounts",
 
-      try {
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-        const accRes =
-          await axios.get(
+      setAccounts(accRes.data.accounts);
 
-            "http://localhost:5000/api/accounts",
+      const vouRes = await axios.get(
+        "http://localhost:5000/api/vouchers",
 
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`
-              }
-            }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-          );
-
-        setAccounts(
-          accRes.data.accounts
-        );
-
-        const vouRes =
-          await axios.get(
-
-            "http://localhost:5000/api/vouchers",
-
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`
-              }
-            }
-
-          );
-
-        setVouchers(
-          vouRes.data.vouchers
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-
-    };
+      setVouchers(vouRes.data.vouchers);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
-
     loadData();
-
   }, []);
 
   // ====================================
   // CREATE
   // ====================================
 
-  const createVoucher =
-    async () => {
+  const createVoucher = async () => {
+    try {
+      await axios.post(
+        "http://localhost:5000/api/vouchers",
 
-      try {
+        {
+          voucher_type,
 
-        await axios.post(
+          account,
 
-          "http://localhost:5000/api/vouchers",
+          to_account,
 
-          {
+          amount,
 
-            voucher_type,
+          note,
+        },
 
-            account,
-
-            to_account,
-
-            amount,
-
-            note
-
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
+        },
+      );
 
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`
-            }
-          }
+      alert("Voucher added");
 
-        );
+      setAmount("");
+      setNote("");
 
-        alert(
-          "Voucher added"
-        );
-
-        setAmount("");
-        setNote("");
-
-        loadData();
-
-      } catch (error) {
-
-        alert(
-
-          error?.response
-            ?.data?.message
-
-        );
-
-      }
-
-    };
+      loadData();
+    } catch (error) {
+      alert(error?.response?.data?.message);
+    }
+  };
 
   return (
+    <div style={page}>
+      <h1>💳 Voucher Entry</h1>
 
-    <Layout>
+      {/* FORM */}
 
-      <div style={page}>
+      <div style={formBox}>
+        <select
+          value={voucher_type}
+          onChange={(e) => setVoucherType(e.target.value)}
+        >
+          <option value="CREDIT">CREDIT</option>
 
-        <h1>
-          💳 Voucher Entry
-        </h1>
+          <option value="DEBIT">DEBIT</option>
 
-        {/* FORM */}
+          <option value="TRANSFER">TRANSFER</option>
+        </select>
 
-        <div style={formBox}>
+        {/* ACCOUNT */}
 
+        <select value={account} onChange={(e) => setAccount(e.target.value)}>
+          <option value="">Select Account</option>
+
+          {accounts.map((acc) => (
+            <option key={acc._id} value={acc._id}>
+              {acc.account_name}
+
+              {" - ₹"}
+
+              {acc.balance}
+            </option>
+          ))}
+        </select>
+
+        {/* TRANSFER */}
+
+        {voucher_type === "TRANSFER" && (
           <select
-            value={voucher_type}
-            onChange={(e) =>
-              setVoucherType(
-                e.target.value
-              )
-            }
+            value={to_account}
+            onChange={(e) => setToAccount(e.target.value)}
           >
-
-            <option value="CREDIT">
-              CREDIT
-            </option>
-
-            <option value="DEBIT">
-              DEBIT
-            </option>
-
-            <option value="TRANSFER">
-              TRANSFER
-            </option>
-
-          </select>
-
-          {/* ACCOUNT */}
-
-          <select
-            value={account}
-            onChange={(e) =>
-              setAccount(
-                e.target.value
-              )
-            }
-          >
-
-            <option value="">
-              Select Account
-            </option>
+            <option value="">To Account</option>
 
             {accounts.map((acc) => (
-
-              <option
-                key={acc._id}
-                value={acc._id}
-              >
-
-                {
-                  acc.account_name
-                }
-
-                {" - ₹"}
-
-                {
-                  acc.balance
-                }
-
+              <option key={acc._id} value={acc._id}>
+                {acc.account_name}
               </option>
-
             ))}
-
           </select>
+        )}
 
-          {/* TRANSFER */}
+        <input
+          type="number"
+          placeholder="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
 
-          {voucher_type ===
-            "TRANSFER" && (
+        <input
+          placeholder="Note"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
 
-            <select
-              value={to_account}
-              onChange={(e) =>
-                setToAccount(
-                  e.target.value
-                )
-              }
-            >
-
-              <option value="">
-                To Account
-              </option>
-
-              {accounts.map((acc) => (
-
-                <option
-                  key={acc._id}
-                  value={acc._id}
-                >
-
-                  {
-                    acc.account_name
-                  }
-
-                </option>
-
-              ))}
-
-            </select>
-
-          )}
-
-          <input
-            type="number"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) =>
-              setAmount(
-                e.target.value
-              )
-            }
-          />
-
-          <input
-            placeholder="Note"
-            value={note}
-            onChange={(e) =>
-              setNote(
-                e.target.value
-              )
-            }
-          />
-
-          <button
-            onClick={
-              createVoucher
-            }
-          >
-            Save
-          </button>
-
-        </div>
-
-        {/* TABLE */}
-
-        <table style={table}>
-
-          <thead>
-
-            <tr>
-
-              <th>
-                Type
-              </th>
-
-              <th>
-                Account
-              </th>
-
-              <th>
-                To
-              </th>
-
-              <th>
-                Amount
-              </th>
-
-              <th>
-                Note
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {vouchers.map((vou) => (
-
-              <tr key={vou._id}>
-
-                <td>
-                  {
-                    vou.voucher_type
-                  }
-                </td>
-
-                <td>
-
-                  {
-                    vou.account
-                      ?.account_name
-                  }
-
-                </td>
-
-                <td>
-
-                  {
-                    vou.to_account
-                      ?.account_name
-                  }
-
-                </td>
-
-                <td>
-
-                  ₹
-                  {" "}
-
-                  {
-                    vou.amount
-                  }
-
-                </td>
-
-                <td>
-                  {vou.note}
-                </td>
-
-              </tr>
-
-            ))}
-
-          </tbody>
-
-        </table>
-
+        <button onClick={createVoucher}>Save</button>
       </div>
 
-    </Layout>
+      {/* TABLE */}
 
+      <table style={table}>
+        <thead>
+          <tr>
+            <th>Type</th>
+
+            <th>Account</th>
+
+            <th>To</th>
+
+            <th>Amount</th>
+
+            <th>Note</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {vouchers.map((vou) => (
+            <tr key={vou._id}>
+              <td>{vou.voucher_type}</td>
+
+              <td>{vou.account?.account_name}</td>
+
+              <td>{vou.to_account?.account_name}</td>
+
+              <td>₹ {vou.amount}</td>
+
+              <td>{vou.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
-
 }
 
 /* ====================================
@@ -396,19 +205,18 @@ export default function Vouchers() {
 ==================================== */
 
 const page = {
-  padding: 20
+  padding: 20,
 };
 
 const formBox = {
   display: "grid",
-  gridTemplateColumns:
-    "1fr 1fr 1fr 1fr 2fr 1fr",
+  gridTemplateColumns: "1fr 1fr 1fr 1fr 2fr 1fr",
   gap: 10,
-  marginBottom: 20
+  marginBottom: 20,
 };
 
 const table = {
   width: "100%",
   borderCollapse: "collapse",
-  background: "#fff"
+  background: "#fff",
 };

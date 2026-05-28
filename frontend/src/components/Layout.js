@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { Outlet } from "react-router-dom";
+
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 
-export default function Layout({ children }) {
+export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
   const [hovered, setHovered] = useState(false);
 
@@ -10,7 +12,6 @@ export default function Layout({ children }) {
 
   return (
     <div style={{ display: "flex" }}>
-
       <Sidebar
         collapsed={collapsed}
         hovered={hovered}
@@ -26,16 +27,12 @@ export default function Layout({ children }) {
           minHeight: "100vh",
         }}
       >
-        <Header
-          collapsed={collapsed}
-          setCollapsed={setCollapsed}
-        />
+        <Header collapsed={collapsed} setCollapsed={setCollapsed} />
 
         <div style={{ padding: 20 }}>
-          {children}
+          <Outlet />
         </div>
       </div>
-
     </div>
   );
 }

@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 
 import axios from "axios";
 
-import Layout from "../components/Layout";
-
 export default function StockHistory() {
   const [history, setHistory] = useState([]);
 
@@ -72,78 +70,76 @@ export default function StockHistory() {
   };
 
   return (
-    <Layout>
-      <div style={page}>
-        <h1>📦 Stock History</h1>
+    <div style={page}>
+      <h1>📦 Stock History</h1>
 
-        {/* SEARCH */}
+      {/* SEARCH */}
 
-        <input
-          placeholder="Search Item..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={searchBox}
-        />
+      <input
+        placeholder="Search Item..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={searchBox}
+      />
 
-        {/* TABLE */}
+      {/* TABLE */}
 
-        <table style={table}>
-          <thead>
-            <tr>
-              <th>Item</th>
+      <table style={table}>
+        <thead>
+          <tr>
+            <th>Item</th>
 
-              <th>Type</th>
+            <th>Type</th>
 
-              <th>Qty</th>
+            <th>Qty</th>
 
-              <th>Prev Stock</th>
+            <th>Prev Stock</th>
 
-              <th>New Stock</th>
+            <th>New Stock</th>
 
-              <th>Note</th>
+            <th>Note</th>
 
-              <th>Date</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {filtered.map((h) => (
+            <tr key={h._id}>
+              <td>{h.item?.item_name}</td>
+
+              <td>
+                <span
+                  style={{
+                    background: getColor(h.type),
+
+                    color: "#fff",
+
+                    padding: "4px 8px",
+
+                    borderRadius: 6,
+
+                    fontSize: 12,
+                  }}
+                >
+                  {h.type}
+                </span>
+              </td>
+
+              <td>{h.qty}</td>
+
+              <td>{h.previous_stock}</td>
+
+              <td>{h.new_stock}</td>
+
+              <td>{h.note}</td>
+
+              <td>{new Date(h.createdAt).toLocaleString()}</td>
             </tr>
-          </thead>
-
-          <tbody>
-            {filtered.map((h) => (
-              <tr key={h._id}>
-                <td>{h.item?.item_name}</td>
-
-                <td>
-                  <span
-                    style={{
-                      background: getColor(h.type),
-
-                      color: "#fff",
-
-                      padding: "4px 8px",
-
-                      borderRadius: 6,
-
-                      fontSize: 12,
-                    }}
-                  >
-                    {h.type}
-                  </span>
-                </td>
-
-                <td>{h.qty}</td>
-
-                <td>{h.previous_stock}</td>
-
-                <td>{h.new_stock}</td>
-
-                <td>{h.note}</td>
-
-                <td>{new Date(h.createdAt).toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </Layout>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

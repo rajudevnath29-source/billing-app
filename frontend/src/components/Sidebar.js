@@ -1,21 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
-import { isAdmin, isItemManager, isInvoiceUser, getUser } from "../utils/role";
+import { Link } from "react-router-dom";
 
-export default function Sidebar({
-  collapsed,
-  setCollapsed,
-  hovered,
-  setHovered,
-}) {
-  const navigate = useNavigate();
+import { getUser } from "../utils/role";
+import { hasPermission } from "../utils/permissions";
+
+export default function Sidebar({ collapsed, hovered, setHovered }) {
   const user = getUser();
-  const expanded = !collapsed || hovered;
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/");
-  };
+  const expanded = !collapsed || hovered;
 
   return (
     <div
@@ -26,8 +17,8 @@ export default function Sidebar({
         width: expanded ? 260 : 80,
       }}
     >
-      {/* LOGO + TOGGLE */}
-      <h2>{expanded ? "🧾 ERP" : "🧾"}</h2>
+      {/* LOGO */}
+      <h2 style={styles.logo}>{expanded ? "🧾 ERP" : "🧾"}</h2>
 
       {/* USER */}
       <div style={styles.userBox}>
@@ -37,108 +28,145 @@ export default function Sidebar({
               ? `http://localhost:5000/uploads/${user.profile_image}`
               : "https://i.pravatar.cc/80"
           }
+          alt="profile"
           style={styles.image}
         />
 
-        {!collapsed && (
+        {expanded && (
           <>
-            <p>{user?.name}</p>
+            <h4>{user?.name}</h4>
+
             <small>{user?.role}</small>
           </>
         )}
       </div>
 
-      {/* MENU */}
+      {/* DASHBOARD */}
       <Link style={styles.link} to="/dashboard">
-        📊 {!expanded ? "" : "Dashboard"}
+        📊 {expanded && "Dashboard"}
       </Link>
+
+      {/* PROFILE */}
       <Link style={styles.link} to="/profile">
-        👤 {!expanded ? "" : "Profile"}
+        👤 {expanded && "Profile"}
       </Link>
 
-      {/* ADMIN MENU */}
-      {isAdmin() && (
-        <>
-          {expanded && <p style={styles.section}>Reports</p>}
-          <Link style={styles.link} style={styles.link} to="/reports">
-            📊 {!expanded ? "" : "Reports"}
-          </Link>
-
-          {expanded && <p style={styles.section}>Accounts</p>}
-          <Link style={styles.link} to="/expenses">
-            💸 {!expanded ? "" : "Expenses"}
-          </Link>
-          <Link style={styles.link} to="/accounts">
-            🏦 {!expanded ? "" : "Accounts"}
-          </Link>
-          <Link style={styles.link} to="/vouchers">
-            💳 {!expanded ? "" : "Vouchers"}
-          </Link>
-
-          {expanded && <p style={styles.section}>Items Stock</p>}
-          <Link style={styles.link} to="/stock-history">
-            📊 {!expanded ? "" : "Stock History"}
-          </Link>
-
-          {expanded && <p style={styles.section}>Users</p>}
-          <Link style={styles.link} to="/users">
-            👥 {!expanded ? "" : "User Management"}
-          </Link>
-        </>
-      )}
-
-      {/* INVENTORY */}
-      {(isAdmin() || isItemManager()) && (
+      {/* ITEMS MODULE */}
+      {hasPermission("ITEMS_MODULE") && (
         <>
           {expanded && <p style={styles.section}>Inventory</p>}
+
           <Link style={styles.link} to="/items">
-            📦 {!expanded ? "" : "Items"}
+            📦 {expanded && "Items"}
           </Link>
-          <Link style={styles.link} to="/items/add">
-            ➕ {!expanded ? "" : "Add Item"}
-          </Link>
-          <Link style={styles.link} to="/purchase">
-            🛒 {!expanded ? "" : "Purchase"}
-          </Link>
-          <Link style={styles.link} to="/purchase-view">
-            📄 {!expanded ? "" : "Purchase History"}
-          </Link>
+
+          {hasPermission("ADD_ITEM") && (
+            <Link style={styles.link} to="/items/add">
+              ➕ {expanded && "Add Item"}
+            </Link>
+          )}
+
+          {hasPermission("PURCHASE_MODULE") && (
+            <Link style={styles.link} to="/purchase">
+              🛒 {expanded && "Purchase"}
+            </Link>
+          )}
+
+          {hasPermission("VIEW_PURCHASE") && (
+            <Link style={styles.link} to="/purchase-view">
+              📄 {expanded && "Purchase History"}
+            </Link>
+          )}
         </>
       )}
 
-      {/* INVOICE */}
-      {(isAdmin() || isInvoiceUser()) && (
+      {/* INVOICE MODULE */}
+      {hasPermission("INVOICE_MODULE") && (
         <>
           {expanded && <p style={styles.section}>Invoices</p>}
-          <Link style={styles.link} to="/invoice">
-            ➕ {!expanded ? "" : "Create Invoice"}
-          </Link>
+
+          {hasPermission("CREATE_INVOICE") && (
+            <Link style={styles.link} to="/invoice">
+              ➕ {expanded && "Create Invoice"}
+            </Link>
+          )}
+
           <Link style={styles.link} to="/invoice-view">
-            📄 {!expanded ? "" : "Invoice List"}
+            📄 {expanded && "Invoice List"}
           </Link>
 
           {expanded && <p style={styles.section}>Customers</p>}
+
           <Link style={styles.link} to="/customers">
-            👥 {!expanded ? "" : "Customers"}
+            👥 {expanded && "Customers"}
           </Link>
+
           <Link style={styles.link} to="/customer-ledger">
-            📒 {!expanded ? "" : "Customer Ledger"}
+            📒 {expanded && "Customer Ledger"}
           </Link>
+
           <Link style={styles.link} to="/payments">
-            💰 {!expanded ? "" : "Payment Collection"}
+            💰 {expanded && "Payments"}
           </Link>
         </>
       )}
 
-      <button onClick={logout} style={styles.logout}>
-        {!expanded ? "🚪" : "Logout"}
-      </button>
+      {/* REPORTS */}
+      {hasPermission("REPORTS_MODULE") && (
+        <>
+          {expanded && <p style={styles.section}>Reports</p>}
+
+          <Link style={styles.link} to="/reports">
+            📊 {expanded && "Reports"}
+          </Link>
+        </>
+      )}
+
+      {/* ACCOUNTS */}
+      {hasPermission("ACCOUNTS_MODULE") && (
+        <>
+          {expanded && <p style={styles.section}>Accounts</p>}
+
+          <Link style={styles.link} to="/expenses">
+            💸 {expanded && "Expenses"}
+          </Link>
+
+          <Link style={styles.link} to="/accounts">
+            🏦 {expanded && "Accounts"}
+          </Link>
+
+          <Link style={styles.link} to="/vouchers">
+            💳 {expanded && "Vouchers"}
+          </Link>
+        </>
+      )}
+
+      {/* STOCK */}
+      {hasPermission("STOCK_MODULE") && (
+        <>
+          {expanded && <p style={styles.section}>Stock</p>}
+
+          <Link style={styles.link} to="/stock-history">
+            📊 {expanded && "Stock History"}
+          </Link>
+        </>
+      )}
+
+      {/* USERS */}
+      {hasPermission("USERS_MODULE") && (
+        <>
+          {expanded && <p style={styles.section}>Users</p>}
+
+          <Link style={styles.link} to="/users">
+            👥 {expanded && "User Management"}
+          </Link>
+        </>
+      )}
     </div>
   );
 }
 
 const styles = {
-
   sidebar: {
     height: "100vh",
     background: "#1e293b",
@@ -147,22 +175,29 @@ const styles = {
     position: "fixed",
     top: 0,
     left: 0,
-    transition: "width 0.3s ease",
-    overflow: "hidden",
+    overflowY: "auto",
+    overflowX: "hidden",
+    transition: "0.3s",
+  },
+
+  logo: {
+    marginBottom: 20,
   },
 
   userBox: {
     background: "#334155",
     padding: 15,
-    borderRadius: 12,
+    borderRadius: 16,
     textAlign: "center",
     marginBottom: 20,
   },
 
   image: {
-    width: 50,
-    height: 50,
+    width: 55,
+    height: 55,
     borderRadius: "50%",
+    objectFit: "cover",
+    marginBottom: 10,
   },
 
   section: {
@@ -173,15 +208,6 @@ const styles = {
     textTransform: "uppercase",
   },
 
-  logout: {
-    marginTop: 20,
-    width: "100%",
-    padding: 10,
-    background: "red",
-    color: "#fff",
-    border: "none",
-    borderRadius: 8,
-  },
   link: {
     display: "block",
     padding: "10px 0",
