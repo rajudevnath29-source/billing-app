@@ -76,7 +76,7 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     // CHECK USER
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate("permissions");
 
     if (!user) {
       return res.status(400).json({
@@ -135,7 +135,7 @@ exports.login = async (req, res) => {
 // ==========================
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user.id).populate("permissions").select("-password");
 
     res.json(user);
   } catch (error) {

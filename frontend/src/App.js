@@ -1,12 +1,13 @@
 import { Toaster } from "react-hot-toast";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { refreshUser } from "./utils/authRefresh";
 
 import Layout from "./components/Layout";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import PermissionGuard from "./components/PermissionGuard";
 
-import { hasPermission } from "./utils/permissions";
 
 // PAGES
 import Login from "./pages/Login";
@@ -43,9 +44,13 @@ import UserList from "./pages/UserList";
 import EditUser from "./pages/EditUser";
 import PermissionManager from "./pages/PermissionManager";
 
+
 import RoleManager from "./pages/RoleManager";
 
 function App() {
+  useEffect(() => {
+    refreshUser();
+  }, []);
   return (
     <BrowserRouter>
       <Toaster position="top-right" />
@@ -72,7 +77,7 @@ function App() {
           <Route
             path="/items"
             element={
-              <PermissionGuard hasAccess={hasPermission("ITEMS_MODULE")}>
+              <PermissionGuard permission="ITEMS_MODULE">
                 <Items />
               </PermissionGuard>
             }
@@ -81,7 +86,7 @@ function App() {
           <Route
             path="/items/add"
             element={
-              <PermissionGuard hasAccess={hasPermission("ADD_ITEM")}>
+              <PermissionGuard permission="ADD_ITEM">
                 <AddItem />
               </PermissionGuard>
             }
@@ -90,7 +95,7 @@ function App() {
           <Route
             path="/items/edit/:id"
             element={
-              <PermissionGuard hasAccess={hasPermission("EDIT_ITEM")}>
+              <PermissionGuard permission="EDIT_ITEM">
                 <EditItem />
               </PermissionGuard>
             }
@@ -100,7 +105,7 @@ function App() {
           <Route
             path="/purchase"
             element={
-              <PermissionGuard hasAccess={hasPermission("PURCHASE_MODULE")}>
+              <PermissionGuard permission="PURCHASE_MODULE">
                 <PurchaseCreate />
               </PermissionGuard>
             }
@@ -109,7 +114,7 @@ function App() {
           <Route
             path="/purchase-view"
             element={
-              <PermissionGuard hasAccess={hasPermission("VIEW_PURCHASE")}>
+              <PermissionGuard permission="VIEW_PURCHASE">
                 <PurchaseView />
               </PermissionGuard>
             }
@@ -147,7 +152,7 @@ function App() {
           <Route
             path="/customers"
             element={
-              <PermissionGuard hasAccess={hasPermission("CUSTOMERS_MODULE")}>
+              <PermissionGuard permission="CUSTOMERS_MODULE">
                 <Customers />
               </PermissionGuard>
             }
@@ -156,7 +161,7 @@ function App() {
           <Route
             path="/customers/add"
             element={
-              <PermissionGuard hasAccess={hasPermission("ADD_CUSTOMER")}>
+              <PermissionGuard permission="ADD_CUSTOMER">
                 <AddCustomer />
               </PermissionGuard>
             }
@@ -165,7 +170,7 @@ function App() {
           <Route
             path="/customer-ledger"
             element={
-              <PermissionGuard hasAccess={hasPermission("CUSTOMER_LEDGER")}>
+              <PermissionGuard permission="CUSTOMER_LEDGER">
                 <CustomerLedger />
               </PermissionGuard>
             }
@@ -175,7 +180,7 @@ function App() {
           <Route
             path="/payments"
             element={
-              <PermissionGuard hasAccess={hasPermission("PAYMENTS_MODULE")}>
+              <PermissionGuard permission="PAYMENTS_MODULE">
                 <Payments />
               </PermissionGuard>
             }
@@ -185,7 +190,7 @@ function App() {
           <Route
             path="/reports"
             element={
-              <PermissionGuard hasAccess={hasPermission("REPORTS_MODULE")}>
+              <PermissionGuard permission="REPORTS_MODULE">
                 <Reports />
               </PermissionGuard>
             }
@@ -195,7 +200,7 @@ function App() {
           <Route
             path="/expenses"
             element={
-              <PermissionGuard hasAccess={hasPermission("EXPENSES_MODULE")}>
+              <PermissionGuard permission="EXPENSES_MODULE">
                 <Expenses />
               </PermissionGuard>
             }
@@ -205,7 +210,7 @@ function App() {
           <Route
             path="/accounts"
             element={
-              <PermissionGuard hasAccess={hasPermission("ACCOUNTS_MODULE")}>
+              <PermissionGuard permission="ACCOUNTS_MODULE">
                 <Accounts />
               </PermissionGuard>
             }
@@ -215,7 +220,7 @@ function App() {
           <Route
             path="/vouchers"
             element={
-              <PermissionGuard hasAccess={hasPermission("VOUCHERS_MODULE")}>
+              <PermissionGuard permission="VOUCHERS_MODULE">
                 <Vouchers />
               </PermissionGuard>
             }
@@ -225,7 +230,7 @@ function App() {
           <Route
             path="/stock-history"
             element={
-              <PermissionGuard hasAccess={hasPermission("STOCK_MODULE")}>
+              <PermissionGuard permission="STOCK_MODULE">
                 <StockHistory />
               </PermissionGuard>
             }
@@ -235,7 +240,7 @@ function App() {
           <Route
             path="/users"
             element={
-              <PermissionGuard hasAccess={hasPermission("USERS_MODULE")}>
+              <PermissionGuard permission="USERS_MODULE">
                 <UserList />
               </PermissionGuard>
             }
@@ -244,7 +249,7 @@ function App() {
           <Route
             path="/users/edit/:id"
             element={
-              <PermissionGuard hasAccess={hasPermission("EDIT_USER")}>
+              <PermissionGuard permission="EDIT_USER">
                 <EditUser />
               </PermissionGuard>
             }
@@ -254,7 +259,7 @@ function App() {
           <Route
             path="/roles"
             element={
-              <PermissionGuard hasAccess={hasPermission("MANAGE_ROLES")}>
+              <PermissionGuard permission="MANAGE_ROLES">
                 <RoleManager />
               </PermissionGuard>
             }
@@ -264,19 +269,19 @@ function App() {
           <Route
             path="/permissions"
             element={
-              <PermissionGuard hasAccess={hasPermission("MANAGE_PERMISSIONS")}>
+              <PermissionGuard permission="MANAGE_PERMISSIONS">
                 <PermissionManager />
               </PermissionGuard>
             }
           />
-          <Route
+          {/* <Route
             path="/permission-manager"
             element={
-              <PermissionGuard>
+              <PermissionGuard permission="">
                 <PermissionManager />
               </PermissionGuard>
             }
-          />
+          /> */}
         </Route>
       </Routes>
     </BrowserRouter>

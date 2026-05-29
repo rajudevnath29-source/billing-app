@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 
 export default function EditUser() {
   const { id } = useParams();
-
+  console.log('raju');
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
@@ -50,13 +50,16 @@ export default function EditUser() {
       ]);
       console.log(userRes);
       console.log(roleRes.data);
-      console.log(userRes.data.role);
+      console.log(userRes.data);
       console.log(permissionRes.data);
       setFormData({
         name: userRes.data.name,
         email: userRes.data.email,
         role: userRes.data.role,
-        permissions: userRes.data.permissions || [],
+        permissions:
+          userRes.data.permissions?.map(
+            (permission) => permission.name,
+          ) || [],
       });
 
       setAllPermissions(permissionRes.data);
