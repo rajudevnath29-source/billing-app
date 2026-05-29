@@ -1,5 +1,7 @@
-export default function PermissionGuard({ hasAccess, children }) {
-  if (!hasAccess) {
+import { hasPermission } from "../utils/permissions";
+
+export default function PermissionGuard({ permission, children }) {
+  if (!hasPermission(permission)) {
     return (
       <div style={styles.container}>
         <div style={styles.card}>

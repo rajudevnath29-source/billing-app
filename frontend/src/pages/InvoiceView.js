@@ -4,6 +4,7 @@ import axios from "axios";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useNavigate } from "react-router-dom";
+import { hasPermission } from "../utils/permissions";
 
 export default function InvoiceView() {
   const [invoices, setInvoices] = useState([]);
@@ -84,15 +85,23 @@ export default function InvoiceView() {
             <div>
               {/* ACTION BUTTONS */}
               <div style={{ marginBottom: 10 }}>
-                <button onClick={printInvoice}>🖨️ Print</button>
-                <button onClick={downloadPDF}>📄 PDF</button>
-                <button
-                  onClick={() =>
-                    navigate(`/invoice-edit/${selectedInvoice._id}`)
-                  }
-                >
-                  ✏️ Edit
-                </button>
+                {hasPermission("PRINT_INVOICE") && (
+                  <button onClick={printInvoice}>🖨️ Print</button>
+                )}
+
+                {hasPermission("DOWNLOAD_INVOICE_PDF") && (
+                  <button onClick={downloadPDF}>📄 PDF</button>
+                )}
+
+                {hasPermission("EDIT_INVOICE") && (
+                  <button
+                    onClick={() =>
+                      navigate(`/invoice-edit/${selectedInvoice._id}`)
+                    }
+                  >
+                    ✏️ Edit
+                  </button>
+                )}
               </div>
 
               {/* INVOICE */}

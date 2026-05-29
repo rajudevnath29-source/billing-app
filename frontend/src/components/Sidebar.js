@@ -153,13 +153,25 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       )}
 
       {/* USERS */}
-      {hasPermission("USERS_MODULE") && (
+      {hasPermission("VIEW_USERS") && (
         <>
           {expanded && <p style={styles.section}>Users</p>}
 
           <Link style={styles.link} to="/users">
-            👥 {expanded && "User Management"}
+            👥 {!expanded ? "" : "User List"}
           </Link>
+
+          {hasPermission("MANAGE_ROLES") && (
+            <Link style={styles.link} to="/roles">
+              👑 {!expanded ? "" : "Roles"}
+            </Link>
+          )}
+
+          {hasPermission("MANAGE_PERMISSIONS") && (
+            <Link style={styles.link} to="/permissions">
+              🛡️ {!expanded ? "" : "Permissions"}
+            </Link>
+          )}
         </>
       )}
     </div>

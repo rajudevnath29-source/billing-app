@@ -6,24 +6,30 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
     email: {
       type: String,
       required: true,
       unique: true,
     },
+
     password: {
       type: String,
       required: true,
     },
+
     role: {
       type: String,
-      enum: ["SUPER_ADMIN", "ITEM_MANAGER", "INVOICE_USER"],
-      default: "INVOICE_USER",
+      default: "",
     },
-    permissions: {
-      type: [String],
-      default: [],
-    },
+
+    permissions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Permission",
+      },
+    ],
+
     profile_image: {
       type: String,
       default: "",

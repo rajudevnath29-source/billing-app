@@ -12,13 +12,21 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const upload = require("../middleware/upload");
 
+// ==========================
+// AUTH
+// ==========================
+
 // REGISTER
 router.post("/register", register);
 
 // LOGIN
 router.post("/login", login);
 
+// ==========================
 // PROFILE
+// ==========================
+
+// GET PROFILE
 router.get("/profile", authMiddleware, getProfile);
 
 // UPDATE PROFILE IMAGE
@@ -29,4 +37,7 @@ router.put(
   updateProfileImage,
 );
 
+// ==========================
+// EXPORT
+// ==========================
 module.exports = router;

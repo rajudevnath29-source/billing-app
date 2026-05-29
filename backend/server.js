@@ -22,6 +22,8 @@ const accountRoutes = require("./routes/accountRoutes");
 const voucherRoutes = require("./routes/voucherRoutes");
 const stockHistoryRoutes = require("./routes/stockHistoryRoutes");
 const userRoutes = require("./routes/userRoutes");
+const permissionRoutes = require("./routes/permissionRoutes");
+const roleRoutes = require("./routes/roleRoutes");
 
 // USE ROUTES
 app.use("/api/auth", authRoutes);
@@ -36,6 +38,8 @@ app.use("/api/accounts", accountRoutes);
 app.use("/api/vouchers", voucherRoutes);
 app.use("/api/stock-history", stockHistoryRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/permissions", permissionRoutes);
+app.use("/api/roles", roleRoutes);
 
 // STATIC UPLOADS
 app.use("/uploads", express.static("uploads"));

@@ -1,144 +1,292 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function EditUser() {
   const { id } = useParams();
 
   const navigate = useNavigate();
 
+  const token = localStorage.getItem("token");
+
+  const [loading, setLoading] = useState(true);
+
+  const [search, setSearch] = useState("");
+
+  const [allPermissions, setAllPermissions] = useState([]);
+  const [allRoles, setAllRoles] = useState([]);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     role: "",
+    permissions: [],
   });
 
-  // FETCH USER
-  const fetchUser = async () => {
+  // =========================
+  // GET USER + PERMISSIONS
+  // =========================
+  const getData = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const [userRes, permissionRes, roleRes] = await Promise.all([
+        axios.get(`http://localhost:5000/api/users/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
 
-      const res = await axios.get(`http://localhost:5000/api/users/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+        axios.get("http://localhost:5000/api/permissions", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
 
+        axios.get("http://localhost:5000/api/roles", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      ]);
+      console.log(userRes);
+      console.log(roleRes.data);
+      console.log(userRes.data.role);
+      console.log(permissionRes.data);
       setFormData({
-        name: res.data.name,
-        email: res.data.email,
-        role: res.data.role,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // UPDATE USER
-  const updateUser = async (e) => {
-    e.preventDefault();
-
-    try {
-      const token = localStorage.getItem("token");
-
-      await axios.put(`http://localhost:5000/api/users/${id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        name: userRes.data.name,
+        email: userRes.data.email,
+        role: userRes.data.role,
+        permissions: userRes.data.permissions || [],
       });
 
-      alert("User updated");
+      setAllPermissions(permissionRes.data);
+      setAllRoles(roleRes.data);
 
-      navigate("/users");
+      setLoading(false);
     } catch (error) {
-      console.log(error);
+      toast.error("Failed to load data");
     }
   };
 
   useEffect(() => {
-    fetchUser();
+    getData();
   }, []);
 
+  // =========================
+  // HANDLE PERMISSION
+  // =========================
+  const handlePermission = (permissionName) => {
+    const exists = formData.permissions.includes(permissionName);
+
+    if (exists) {
+      setFormData({
+        ...formData,
+        permissions: formData.permissions.filter((p) => p !== permissionName),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        permissions: [...formData.permissions, permissionName],
+      });
+    }
+  };
+
+  // =========================
+  // FILTERED PERMISSIONS
+  // =========================
+  const filteredPermissions = useMemo(() => {
+    return allPermissions.filter((permission) =>
+      permission.name.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [allPermissions, search]);
+
+  // =========================
+  // UPDATE USER
+  // =========================
+  const updateUser = async (e) => {
+    e.preventDefault();
+    try {
+      const selectedPermissionIds = allPermissions
+        .filter((p) => formData.permissions.includes(p.name))
+        .map((p) => p._id);
+
+      const payload = {
+        ...formData,
+        permissions: selectedPermissionIds,
+      };
+
+      await axios.put(`http://localhost:5000/api/users/${id}`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success("User updated successfully");
+
+      navigate("/users");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Update failed");
+    }
+  };
+
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
+
   return (
-    <div style={styles.container}>
-      <h2>Edit User</h2>
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <h1 style={styles.title}>👤 Edit User</h1>
 
-      <form onSubmit={updateUser} style={styles.form}>
-        <input
-          type="text"
-          placeholder="Name"
-          value={formData.name}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              name: e.target.value,
-            })
-          }
-          style={styles.input}
-        />
+        <form onSubmit={updateUser}>
+          {/* NAME */}
+          <div style={styles.inputGroup}>
+            <label>Name</label>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              email: e.target.value,
-            })
-          }
-          style={styles.input}
-        />
+            <input
+              type="text"
+              value={formData.name}
+              disabled
+              style={styles.input}
+            />
+          </div>
 
-        <select
-          value={formData.role}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              role: e.target.value,
-            })
-          }
-          style={styles.input}
-        >
-          <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+          {/* EMAIL */}
+          <div style={styles.inputGroup}>
+            <label>Email</label>
 
-          <option value="ITEM_MANAGER">ITEM_MANAGER</option>
+            <input
+              type="email"
+              value={formData.email}
+              disabled
+              style={styles.input}
+            />
+          </div>
 
-          <option value="INVOICE_USER">INVOICE_USER</option>
-        </select>
+          {/* ROLE */}
+          <div style={styles.inputGroup}>
+            <label>Role</label>
+            <select
+              value={formData.role}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  role: e.target.value,
+                })
+              }
+              style={styles.input}
+            >
+              <option value="">Select Role</option>
 
-        <button type="submit" style={styles.button}>
-          Update User
-        </button>
-      </form>
+              {allRoles.map((role) => (
+                <option key={role._id} value={role.name}>
+                  {role.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* SEARCH */}
+          <div style={styles.inputGroup}>
+            <label>Search Permission</label>
+
+            <input
+              type="text"
+              placeholder="Search permission..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={styles.input}
+            />
+          </div>
+
+          {/* PERMISSIONS */}
+          <div style={styles.permissionBox}>
+            <h3>Permissions</h3>
+
+            <div style={styles.permissionsGrid}>
+              {filteredPermissions.map((permission) => (
+                <label key={permission._id} style={styles.permissionItem}>
+                  <input
+                    type="checkbox"
+                    checked={formData.permissions.includes(permission.name)}
+                    onChange={() => handlePermission(permission.name)}
+                  />
+
+                  {permission.name}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <button type="submit" style={styles.button}>
+            Save Changes
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
 
 const styles = {
-  container: {
+  page: {
     padding: 20,
   },
 
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 15,
-    maxWidth: 400,
+  card: {
+    background: "#fff",
+    padding: 30,
+    borderRadius: 20,
+    boxShadow: "0 5px 20px rgba(0,0,0,0.08)",
+  },
+
+  title: {
+    marginBottom: 30,
+  },
+
+  inputGroup: {
+    marginBottom: 20,
   },
 
   input: {
+    width: "100%",
     padding: 12,
-    borderRadius: 8,
-    border: "1px solid #ccc",
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    marginTop: 8,
+    outline: "none",
+  },
+
+  permissionBox: {
+    marginTop: 30,
+  },
+
+  permissionsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
+    gap: 12,
+    marginTop: 20,
+  },
+
+  permissionItem: {
+    background: "#f8fafc",
+    padding: 12,
+    borderRadius: 10,
+    display: "flex",
+    gap: 10,
+    alignItems: "center",
+    border: "1px solid #e2e8f0",
+    fontSize: 14,
   },
 
   button: {
-    padding: 12,
+    marginTop: 30,
+    width: "100%",
+    padding: 14,
     border: "none",
-    borderRadius: 8,
-    background: "#3b82f6",
+    borderRadius: 12,
+    background: "#2563eb",
     color: "#fff",
+    fontSize: 16,
     cursor: "pointer",
+    fontWeight: "bold",
   },
 };

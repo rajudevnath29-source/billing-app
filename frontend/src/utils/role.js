@@ -6,6 +6,13 @@ export const getRole = () => {
   return getUser()?.role;
 };
 
-// export const getToken = () => {
-//   return localStorage.getItem("token");
-// };
+export const getPermissions = () => {
+  return getUser()?.permissions || [];
+};
+
+// ==========================
+// SUPER ADMIN
+// ==========================
+export const isSuperAdmin = () => {
+  return getRole() === "SUPER_ADMIN";
+};

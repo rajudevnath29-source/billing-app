@@ -1,10 +1,9 @@
 const User = require("../models/User");
 
-// GET ALL USERS
+// GET USERS
 exports.getUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
-
+    const users = await User.find().populate("permissions").select("-password");
     res.json(users);
   } catch (error) {
     res.status(500).json({
@@ -16,7 +15,9 @@ exports.getUsers = async (req, res) => {
 // GET SINGLE USER
 exports.getSingleUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
+    const user = await User.findById(req.params.id)
+      .populate("permissions")
+      .select("-password");
 
     if (!user) {
       return res.status(404).json({
@@ -33,9 +34,60 @@ exports.getSingleUser = async (req, res) => {
 };
 
 // UPDATE USER
+// exports.updateUser = async (req, res) => {
+//   try {
+//     const { name, email } = req.body;
+
+//     const user = await User.findById(req.params.id);
+
+//     if (!user) {
+//       return res.status(404).json({
+//         message: "User not found",
+//       });
+//     }
+
+//     user.name = name;
+//     user.email = email;
+
+//     await user.save();
+
+//     res.json({
+//       message: "User updated successfully",
+//       user,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: error.message,
+//     });
+//   }
+// };
 exports.updateUser = async (req, res) => {
   try {
-    const { name, email, role } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true },
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      message: "User updated successfully",
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+// UPDATE USER ACCESS
+exports.updateUserAccess = async (req, res) => {
+  try {
+    const { roles, permissions } = req.body;
 
     const user = await User.findById(req.params.id);
 
@@ -45,14 +97,14 @@ exports.updateUser = async (req, res) => {
       });
     }
 
-    user.name = name;
-    user.email = email;
-    user.role = role;
+    user.roles = roles || [];
+
+    user.permissions = permissions || [];
 
     await user.save();
 
     res.json({
-      message: "User updated successfully",
+      message: "User access updated",
       user,
     });
   } catch (error) {

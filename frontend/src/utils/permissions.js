@@ -73,23 +73,15 @@
 //   return allPermissions.includes(permission);
 // };
 
-import { getUser } from "./role";
+import { getPermissions, isSuperAdmin } from "./role";
 
 export const hasPermission = (permission) => {
-  const user = getUser();
-
-  // NOT LOGGED IN
-  if (!user) {
-    return false;
-  }
-
   // SUPER ADMIN
-  if (user.role === "SUPER_ADMIN") {
+  if (isSuperAdmin()) {
     return true;
   }
 
-  // USER PERMISSIONS
-  const permissions = user.permissions || [];
+  const permissions = getPermissions();
 
   return permissions.includes(permission);
 };

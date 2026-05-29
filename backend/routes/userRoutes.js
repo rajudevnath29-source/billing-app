@@ -1,35 +1,51 @@
 const express = require("express");
+
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
-const roleMiddleware = require("../middleware/roleMiddleware");
+
+const permissionMiddleware = require("../middleware/permissionMiddleware");
 
 const {
   getUsers,
   getSingleUser,
   updateUser,
+  updateUserAccess,
   deleteUser,
 } = require("../controllers/userController");
 
-// ALL USERS
-router.get("/", authMiddleware, roleMiddleware(["SUPER_ADMIN"]), getUsers);
+// GET USERS
+router.get("/", authMiddleware, permissionMiddleware("VIEW_USERS"), getUsers);
 
-// SINGLE USER
+// GET SINGLE USER
 router.get(
   "/:id",
   authMiddleware,
-  roleMiddleware(["SUPER_ADMIN"]),
+  permissionMiddleware("VIEW_USERS"),
   getSingleUser,
 );
 
 // UPDATE USER
-router.put("/:id", authMiddleware, roleMiddleware(["SUPER_ADMIN"]), updateUser);
+router.put(
+  "/:id",
+  authMiddleware,
+  permissionMiddleware("EDIT_USER"),
+  updateUser,
+);
+
+// UPDATE ACCESS
+router.put(
+  "/:id/access",
+  authMiddleware,
+  permissionMiddleware("MANAGE_USER_ACCESS"),
+  updateUserAccess,
+);
 
 // DELETE USER
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(["SUPER_ADMIN"]),
+  permissionMiddleware("DELETE_USER"),
   deleteUser,
 );
 

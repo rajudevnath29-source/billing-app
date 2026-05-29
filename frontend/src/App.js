@@ -41,6 +41,9 @@ import StockHistory from "./pages/StockHistory";
 
 import UserList from "./pages/UserList";
 import EditUser from "./pages/EditUser";
+import PermissionManager from "./pages/PermissionManager";
+
+import RoleManager from "./pages/RoleManager";
 
 function App() {
   return (
@@ -116,7 +119,7 @@ function App() {
           <Route
             path="/invoice"
             element={
-              <PermissionGuard hasAccess={hasPermission("CREATE_INVOICE")}>
+              <PermissionGuard permission="CREATE_INVOICE">
                 <InvoiceCreate />
               </PermissionGuard>
             }
@@ -125,7 +128,7 @@ function App() {
           <Route
             path="/invoice-view"
             element={
-              <PermissionGuard hasAccess={hasPermission("INVOICE_MODULE")}>
+              <PermissionGuard permission="VIEW_INVOICE">
                 <InvoiceView />
               </PermissionGuard>
             }
@@ -134,7 +137,7 @@ function App() {
           <Route
             path="/invoice-edit/:id"
             element={
-              <PermissionGuard hasAccess={hasPermission("EDIT_INVOICE")}>
+              <PermissionGuard permission="EDIT_INVOICE">
                 <EditInvoice />
               </PermissionGuard>
             }
@@ -243,6 +246,34 @@ function App() {
             element={
               <PermissionGuard hasAccess={hasPermission("EDIT_USER")}>
                 <EditUser />
+              </PermissionGuard>
+            }
+          />
+
+          {/* ROLES */}
+          <Route
+            path="/roles"
+            element={
+              <PermissionGuard hasAccess={hasPermission("MANAGE_ROLES")}>
+                <RoleManager />
+              </PermissionGuard>
+            }
+          />
+
+          {/* PERMISSIONS */}
+          <Route
+            path="/permissions"
+            element={
+              <PermissionGuard hasAccess={hasPermission("MANAGE_PERMISSIONS")}>
+                <PermissionManager />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/permission-manager"
+            element={
+              <PermissionGuard>
+                <PermissionManager />
               </PermissionGuard>
             }
           />

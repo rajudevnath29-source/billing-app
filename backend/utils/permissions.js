@@ -1,0 +1,45 @@
+const ROLE_PERMISSIONS = {
+  SUPER_ADMIN: ["ALL"],
+
+  ITEM_MANAGER: [
+    // MODULE
+    "ITEMS_MODULE",
+
+    // ITEMS
+    "VIEW_ITEMS",
+    "ADD_ITEM",
+    "EDIT_ITEM",
+    "DELETE_ITEM",
+
+    // PURCHASE
+    "VIEW_PURCHASE",
+    "CREATE_PURCHASE",
+    "EDIT_PURCHASE",
+    "DELETE_PURCHASE",
+  ],
+
+  INVOICE_USER: [
+    // MODULE
+    "INVOICE_MODULE",
+
+    // INVOICE
+    "VIEW_INVOICE",
+    "CREATE_INVOICE",
+    "EDIT_INVOICE",
+    "DELETE_INVOICE",
+
+    // CUSTOMERS
+    "CUSTOMERS_MODULE",
+    "VIEW_CUSTOMERS",
+    "ADD_CUSTOMER",
+    "EDIT_CUSTOMER",
+    "DELETE_CUSTOMER",
+
+    // PAYMENTS
+    "PAYMENTS_MODULE",
+    "VIEW_PAYMENTS",
+    "ADD_PAYMENT",
+  ],
+};
+
+module.exports = ROLE_PERMISSIONS;
