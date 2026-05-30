@@ -1,42 +1,40 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function PurchaseCreate() {
-  const [items, setItems] = useState([]);
-
-  const [cart, setCart] = useState([]);
-
-  const [supplier_name, setSupplierName] = useState("");
-
-  const [supplier_mobile, setSupplierMobile] = useState("");
-
-  const [discount, setDiscount] = useState(0);
-
-  const [gstEnabled, setGstEnabled] = useState(false);
-
-  const [gstRate, setGstRate] = useState(18);
-
   const token = localStorage.getItem("token");
 
-  // ====================================
+  const [items, setItems] = useState([]);
+  const [cart, setCart] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+  const [search, setSearch] = useState("");
+
+  const [supplier_name, setSupplierName] = useState("");
+  const [supplier_mobile, setSupplierMobile] = useState("");
+
+  const [gstEnabled, setGstEnabled] = useState(false);
+  const [gstRate, setGstRate] = useState(18);
+
+  // =========================
   // FETCH ITEMS
-  // ====================================
+  // =========================
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:5000/api/items",
-
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const res = await axios.get("http://localhost:5000/api/items", {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
-      setItems(res.data.items);
+      setItems(res.data.items || []);
     } catch (error) {
-      console.log(error);
+      toast.error("Failed to load items");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,9 +42,19 @@ export default function PurchaseCreate() {
     fetchItems();
   }, []);
 
-  // ====================================
+  // =========================
+  // SEARCH ITEMS
+  // =========================
+
+  const filteredItems = useMemo(() => {
+    return items.filter((item) =>
+      item.item_name.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [items, search]);
+
+  // =========================
   // ADD TO CART
-  // ====================================
+  // =========================
 
   const addToCart = (item) => {
     const exists = cart.find((c) => c.item_id === item._id);
@@ -62,26 +70,25 @@ export default function PurchaseCreate() {
             : c,
         ),
       );
-    } else {
-      setCart([
-        ...cart,
 
-        {
-          item_id: item._id,
-
-          item_name: item.item_name,
-
-          purchase_price: item.purchase_price,
-
-          qty: 1,
-        },
-      ]);
+      return;
     }
+
+    setCart([
+      ...cart,
+      {
+        item_id: item._id,
+        item_name: item.item_name,
+        purchase_price: Number(item.purchase_price) || 0,
+        qty: 1,
+        serial_numbers: [],
+      },
+    ]);
   };
 
-  // ====================================
+  // =========================
   // CHANGE QTY
-  // ====================================
+  // =========================
 
   const changeQty = (id, qty) => {
     setCart(
@@ -96,9 +103,9 @@ export default function PurchaseCreate() {
     );
   };
 
-  // ====================================
+  // =========================
   // CHANGE PRICE
-  // ====================================
+  // =========================
 
   const changePrice = (id, price) => {
     setCart(
@@ -113,53 +120,53 @@ export default function PurchaseCreate() {
     );
   };
 
-  // ====================================
+  // =========================
   // REMOVE ITEM
-  // ====================================
+  // =========================
 
   const removeItem = (id) => {
     setCart(cart.filter((c) => c.item_id !== id));
+
+    toast.success("Item removed");
   };
 
-  // ====================================
-  // TOTALS
-  // ====================================
+  // =========================
+  // CALCULATIONS
+  // =========================
 
   const subTotal = cart.reduce(
-    (sum, i) => sum + i.purchase_price * i.qty,
-
+    (sum, item) => sum + item.purchase_price * item.qty,
     0,
   );
 
-  const afterDiscount = subTotal - Number(discount);
+  const gstAmount = gstEnabled ? (subTotal * Number(gstRate)) / 100 : 0;
 
-  const gstAmount = gstEnabled ? (afterDiscount * gstRate) / 100 : 0;
-
-  const grandTotal = afterDiscount + gstAmount;
-
-  // ====================================
+  const grandTotal = subTotal + gstAmount;
+  // =========================
   // CREATE PURCHASE
-  // ====================================
+  // =========================
 
   const createPurchase = async () => {
+    if (!supplier_name.trim()) {
+      toast.error("Supplier name is required");
+      return;
+    }
+
+    if (cart.length === 0) {
+      toast.error("Please add items");
+      return;
+    }
+
     try {
       await axios.post(
         "http://localhost:5000/api/purchases",
-
         {
           supplier_name,
-
           supplier_mobile,
-
           items: cart,
-
-          discount,
-
           gst_enabled: gstEnabled,
-
           gst_rate: gstRate,
         },
-
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -167,65 +174,89 @@ export default function PurchaseCreate() {
         },
       );
 
-      alert("Purchase Created Successfully");
+      toast.success("Purchase saved successfully");
 
-      // RESET
       setCart([]);
-
       setSupplierName("");
-
       setSupplierMobile("");
-
-      setDiscount(0);
-
       setGstEnabled(false);
-
       setGstRate(18);
 
       fetchItems();
     } catch (error) {
-      alert(error?.response?.data?.message || "Error creating purchase");
+      toast.error(
+        error?.response?.data?.message || "Failed to create purchase",
+      );
     }
   };
 
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
+
   return (
-    <div style={pageStyle}>
-      <h1 style={heading}>📦 Purchase Entry</h1>
+    <div style={styles.page}>
+      <div style={styles.header}>
+        <h1 style={styles.title}>📦 Purchase Entry</h1>
 
-      {/* SUPPLIER */}
-      <div style={topBox}>
-        <input
-          style={input}
-          placeholder="Supplier Name"
-          value={supplier_name}
-          onChange={(e) => setSupplierName(e.target.value)}
-        />
-
-        <input
-          style={input}
-          placeholder="Supplier Mobile"
-          value={supplier_mobile}
-          onChange={(e) => setSupplierMobile(e.target.value)}
-        />
+        <p style={styles.subtitle}>Manage supplier purchases and stock</p>
       </div>
 
-      <div style={mainBox}>
+      <div style={styles.card}>
+        <h3 style={styles.sectionTitle}>Supplier Information</h3>
+
+        <div style={styles.grid}>
+          <div>
+            <label>Supplier Name</label>
+
+            <input
+              style={styles.input}
+              value={supplier_name}
+              onChange={(e) => setSupplierName(e.target.value)}
+              placeholder="Supplier name"
+            />
+          </div>
+
+          <div>
+            <label>Supplier Mobile</label>
+
+            <input
+              style={styles.input}
+              value={supplier_mobile}
+              onChange={(e) => setSupplierMobile(e.target.value)}
+              placeholder="Mobile number"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div style={styles.mainGrid}>
         {/* LEFT */}
-        <div style={leftBox}>
-          <h3>Items</h3>
 
-          {items.map((item) => (
-            <div key={item._id} style={itemCard}>
+        <div style={styles.card}>
+          <div style={styles.itemHeader}>
+            <h3>Available Items</h3>
+
+            <input
+              style={styles.search}
+              placeholder="Search item..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          {filteredItems.map((item) => (
+            <div key={item._id} style={styles.itemCard}>
               <div>
-                <h4>{item.item_name}</h4>
+                <h4 style={{ margin: 0 }}>{item.item_name}</h4>
 
-                <p>
+                <p style={styles.stockText}>
                   Stock:
                   {item.opening_stock}
                 </p>
               </div>
 
-              <button style={addBtn} onClick={() => addToCart(item)}>
+              <button style={styles.addBtn} onClick={() => addToCart(item)}>
                 Add
               </button>
             </div>
@@ -233,182 +264,382 @@ export default function PurchaseCreate() {
         </div>
 
         {/* RIGHT */}
-        <div style={rightBox}>
-          <h3>Purchase Cart</h3>
+        <div style={styles.card}>
+          <h2 style={styles.cartTitle}>Purchase Cart</h2>
 
-          {cart.map((c) => (
-            <div key={c.item_id} style={cartCard}>
-              <div>
-                <h4>{c.item_name}</h4>
-
-                <p>Qty:</p>
-
-                <input
-                  style={smallInput}
-                  type="number"
-                  value={c.qty}
-                  onChange={(e) => changeQty(c.item_id, e.target.value)}
-                />
-
-                <p>Purchase Price:</p>
-
-                <input
-                  style={smallInput}
-                  type="number"
-                  value={c.purchase_price}
-                  onChange={(e) => changePrice(c.item_id, e.target.value)}
-                />
-
-                <p>Total: ₹{c.purchase_price * c.qty}</p>
+          {cart.length === 0 ? (
+            <div style={styles.empty}>No items selected</div>
+          ) : (
+            <>
+              {/* Header */}
+              <div style={styles.cartHeader}>
+                <div>Item Name</div>
+                <div>Qty</div>
+                <div>Purchase Price</div>
+                <div>Sr. No. (comma separated)</div>
+                <div>Action</div>
               </div>
 
-              <button style={deleteBtn} onClick={() => removeItem(c.item_id)}>
-                ❌
+              {cart.map((item) => (
+                <div key={item.item_id}>
+                  <div style={styles.cartRow}>
+                    <div style={styles.itemName}>{item.item_name}</div>
+
+                    <div>
+                      <input
+                        type="number"
+                        value={item.qty}
+                        style={styles.qtyInput}
+                        onChange={(e) =>
+                          changeQty(item.item_id, e.target.value)
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <input
+                        type="number"
+                        value={item.purchase_price}
+                        style={styles.priceInput}
+                        onChange={(e) =>
+                          changePrice(item.item_id, e.target.value)
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <input
+                        type="text"
+                        value={item.serial_numbers?.join(",") || ""}
+                        style={styles.serialInput}
+                        placeholder="SN001,SN002"
+                        onChange={(e) =>
+                          setCart(
+                            cart.map((c) =>
+                              c.item_id === item.item_id
+                                ? {
+                                    ...c,
+                                    serial_numbers: e.target.value.split(","),
+                                  }
+                                : c,
+                            ),
+                          )
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <button
+                        style={styles.removeBtn}
+                        onClick={() => removeItem(item.item_id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={styles.itemTotal}>
+                    ₹{(item.purchase_price * item.qty).toFixed(2)}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+
+          <div style={styles.taxSummaryWrapper}>
+            {/* GST BOX */}
+
+            <div style={styles.taxBox}>
+              <h3>Tax Settings</h3>
+
+              <label style={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={gstEnabled}
+                  onChange={(e) => setGstEnabled(e.target.checked)}
+                />
+                Enable GST
+              </label>
+
+              {gstEnabled && (
+                <>
+                  <label style={styles.gstLabel}>GST Rate (%)</label>
+
+                  <input
+                    style={styles.input}
+                    type="number"
+                    value={gstRate}
+                    onChange={(e) => setGstRate(e.target.value)}
+                  />
+                </>
+              )}
+            </div>
+
+            {/* TOTAL BOX */}
+
+            <div style={styles.totalBox}>
+              <div style={styles.totalRow}>
+                <span>Subtotal :</span>
+                <span>₹{subTotal.toFixed(2)}</span>
+              </div>
+
+              <div style={styles.totalRow}>
+                <span>GST :</span>
+                <span>₹{gstAmount.toFixed(2)}</span>
+              </div>
+
+              <hr />
+
+              <div style={styles.grandRow}>
+                <span>Grand Total :</span>
+                <span>₹{grandTotal.toFixed(2)}</span>
+              </div>
+
+              <button style={styles.purchaseBtn} onClick={createPurchase}>
+                Save Purchase
               </button>
             </div>
-          ))}
-
-          {/* DISCOUNT */}
-          <input
-            style={input}
-            placeholder="Discount"
-            value={discount}
-            onChange={(e) => setDiscount(e.target.value)}
-          />
-
-          {/* GST */}
-          <div
-            style={{
-              marginTop: 10,
-            }}
-          >
-            <label>
-              <input
-                type="checkbox"
-                checked={gstEnabled}
-                onChange={(e) => setGstEnabled(e.target.checked)}
-              />
-              Enable GST
-            </label>
-
-            {gstEnabled && (
-              <input
-                style={input}
-                type="number"
-                value={gstRate}
-                onChange={(e) => setGstRate(e.target.value)}
-                placeholder="GST %"
-              />
-            )}
           </div>
-
-          <hr />
-
-          <h3>Subtotal: ₹ {subTotal}</h3>
-
-          <h3>GST: ₹ {gstAmount.toFixed(2)}</h3>
-
-          <h2>Grand Total: ₹ {grandTotal.toFixed(2)}</h2>
-
-          <button style={purchaseBtn} onClick={createPurchase}>
-            Save Purchase
-          </button>
         </div>
       </div>
     </div>
   );
 }
+const styles = {
+  page: {
+    padding: 20,
+  },
 
-/* =====================================
-   STYLES
-===================================== */
+  header: {
+    marginBottom: 25,
+  },
 
-const pageStyle = {
-  padding: 20,
-};
+  title: {
+    margin: 0,
+    fontSize: 30,
+    color: "#0f172a",
+  },
 
-const heading = {
-  marginBottom: 20,
-};
+  subtitle: {
+    marginTop: 8,
+    color: "#64748b",
+  },
 
-const topBox = {
-  display: "flex",
-  gap: 10,
-  marginBottom: 20,
-};
+  card: {
+    background: "#fff",
+    padding: 24,
+    borderRadius: 24,
+    border: "1px solid #e2e8f0",
+    boxShadow: "0 10px 30px rgba(15,23,42,.05)",
+    marginBottom: 20,
+  },
 
-const mainBox = {
-  display: "flex",
-  gap: 20,
-};
+  sectionTitle: {
+    marginTop: 0,
+    marginBottom: 20,
+  },
 
-const leftBox = {
-  flex: 1,
-  background: "#fff",
-  padding: 20,
-  borderRadius: 10,
-};
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+    gap: 20,
+  },
 
-const rightBox = {
-  flex: 1,
-  background: "#fff",
-  padding: 20,
-  borderRadius: 10,
-};
+  mainGrid: {
+    display: "grid",
+    gridTemplateColumns: "30% 70%",
+    gap: 20,
+  },
+  input: {
+    width: "100%",
+    padding: 12,
+    borderRadius: 12,
+    border: "1px solid #cbd5e1",
+    marginTop: 8,
+    outline: "none",
+    boxSizing: "border-box",
+  },
 
-const itemCard = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  borderBottom: "1px solid #eee",
-  padding: 10,
-};
+  search: {
+    width: 250,
+    padding: 10,
+    borderRadius: 12,
+    border: "1px solid #cbd5e1",
+    outline: "none",
+  },
 
-const cartCard = {
-  display: "flex",
-  justifyContent: "space-between",
-  borderBottom: "1px solid #eee",
-  padding: 10,
-};
+  itemHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
 
-const input = {
-  width: "100%",
-  padding: 10,
-  marginTop: 10,
-};
+  itemCard: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 14,
+    borderBottom: "1px solid #f1f5f9",
+  },
 
-const smallInput = {
-  width: 100,
-  padding: 5,
-  marginBottom: 10,
-};
+  stockText: {
+    marginTop: 5,
+    color: "#64748b",
+    fontSize: 14,
+  },
 
-const addBtn = {
-  background: "#2563eb",
-  color: "#fff",
-  border: "none",
-  padding: "8px 15px",
-  borderRadius: 5,
-  cursor: "pointer",
-};
+  addBtn: {
+    background: "#2563eb",
+    color: "#fff",
+    border: "none",
+    padding: "10px 18px",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: 600,
+  },
 
-const deleteBtn = {
-  background: "red",
-  color: "#fff",
-  border: "none",
-  padding: "8px 12px",
-  borderRadius: 5,
-  cursor: "pointer",
-};
+  removeBtn: {
+    background: "#ef4444",
+    color: "#fff",
+    border: "none",
+    width: 110,
+    height: 44,
+    borderRadius: 12,
+    cursor: "pointer",
+    fontWeight: 700,
+  },
 
-const purchaseBtn = {
-  width: "100%",
-  padding: 12,
-  background: "#16a34a",
-  color: "#fff",
-  border: "none",
-  borderRadius: 5,
-  marginTop: 20,
-  cursor: "pointer",
-  fontSize: 16,
+  checkbox: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 15,
+    marginBottom: 15,
+  },
+
+  purchaseBtn: {
+    width: "100%",
+    marginTop: 20,
+    padding: 14,
+    border: "none",
+    borderRadius: 12,
+    background: "#16a34a",
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: 600,
+    cursor: "pointer",
+  },
+
+  empty: {
+    padding: 30,
+    textAlign: "center",
+    color: "#94a3b8",
+  },
+
+  cartTitle: {
+    marginBottom: 25,
+    fontSize: 22,
+    fontWeight: 700,
+  },
+
+  cartHeader: {
+    display: "grid",
+    gridTemplateColumns: "2.2fr 90px 160px 2.5fr 120px",
+    gap: 15,
+    paddingBottom: 15,
+    marginBottom: 15,
+    borderBottom: "1px solid #e5e7eb",
+    fontWeight: 700,
+    color: "#64748b",
+  },
+
+  cartRow: {
+    display: "grid",
+    gridTemplateColumns: "2.2fr 90px 160px 2.5fr 120px",
+    gap: 15,
+    alignItems: "center",
+    padding: "15px 0",
+  },
+
+  itemName: {
+    fontWeight: 700,
+    color: "#0f172a",
+    fontSize: 18,
+    lineHeight: 1.3,
+  },
+
+  qtyInput: {
+    width: "100%",
+    padding: 12,
+    borderRadius: 10,
+    border: "1px solid #cbd5e1",
+  },
+
+  priceInput: {
+    width: "100%",
+    padding: 12,
+    borderRadius: 10,
+    border: "1px solid #cbd5e1",
+  },
+
+  serialInput: {
+    width: "100%",
+    minWidth: 250,
+    padding: 12,
+    borderRadius: 10,
+    border: "1px solid #cbd5e1",
+  },
+
+  itemTotal: {
+    fontSize: 18,
+    fontWeight: 600,
+    marginBottom: 20,
+    paddingBottom: 20,
+    borderBottom: "1px solid #e5e7eb",
+  },
+
+  taxSummaryWrapper: {
+    display: "grid",
+    gridTemplateColumns: "1.2fr 1fr",
+    gap: 20,
+    marginTop: 25,
+  },
+
+  taxBox: {
+    border: "1px solid #e2e8f0",
+    borderRadius: 12,
+    padding: 20,
+  },
+
+  totalBox: {
+    border: "1px solid #e2e8f0",
+    borderRadius: 12,
+    padding: 20,
+  },
+
+  gstLabel: {
+    display: "block",
+    marginBottom: 8,
+    color: "#64748b",
+    fontWeight: 600,
+  },
+
+  totalRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 18,
+    fontSize: 18,
+  },
+
+  grandRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontSize: 20,
+    fontWeight: 700,
+    color: "#16a34a",
+    marginTop: 20,
+    whiteSpace: "nowrap",
+  },
 };

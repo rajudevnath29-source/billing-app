@@ -9,6 +9,10 @@ const invoiceItemSchema = new mongoose.Schema({
   qty: Number,
   price: Number,
   total: Number,
+  serial_number: {
+    type: String,
+    default: "",
+  },
 });
 
 const invoiceSchema = new mongoose.Schema(

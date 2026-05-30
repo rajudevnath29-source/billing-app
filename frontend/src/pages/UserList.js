@@ -558,7 +558,8 @@ const styles = {
 
   permissionBadge: {
     // background: "#eff6ff",
-    background: "#dceaf0",
+    // background: "#dceaf0",
+    background: "#e3ecef",
     color: "#2563eb",
     padding: "6px 10px",
     borderRadius: 999,

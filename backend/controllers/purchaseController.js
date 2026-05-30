@@ -11,16 +11,13 @@ const createPurchase = async (req, res) => {
       supplier_name,
       supplier_mobile,
       items,
-      discount = 0,
       gst_enabled = false,
       gst_rate = 0,
     } = req.body;
 
     // VALIDATION
     if (!items || items.length === 0) {
-      return res.status(400).json({
-        message: "Items required",
-      });
+      return res.status(400).json({ message: "Items required" });
     }
 
     let sub_total = 0;
@@ -39,9 +36,7 @@ const createPurchase = async (req, res) => {
       const itemData = await Item.findById(i.item_id);
 
       if (!itemData) {
-        return res.status(404).json({
-          message: "Item not found",
-        });
+        return res.status(404).json({ message: "Item not found" });
       }
 
       const qty = Number(i.qty);
@@ -56,6 +51,7 @@ const createPurchase = async (req, res) => {
         qty,
         purchase_price: purchasePrice,
         total,
+        serial_numbers: i.serial_numbers || [],
       });
 
       // ==================================
@@ -90,15 +86,13 @@ const createPurchase = async (req, res) => {
     // ==================================
     // 💰 CALCULATIONS
     // ==================================
-    const afterDiscount = sub_total - Number(discount);
-
     let gst_amount = 0;
 
     if (gst_enabled) {
-      gst_amount = (afterDiscount * gst_rate) / 100;
+      gst_amount = (sub_total * gst_rate) / 100;
     }
 
-    const grand_total = afterDiscount + gst_amount;
+    const grand_total = sub_total + gst_amount;
 
     // ==================================
     // 💾 SAVE PURCHASE
@@ -109,7 +103,6 @@ const createPurchase = async (req, res) => {
       supplier_mobile,
       items: formattedItems,
       sub_total,
-      discount,
       gst_enabled,
       gst_rate,
       gst_amount,

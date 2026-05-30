@@ -1,19 +1,28 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 export default function Items() {
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
-  const token = localStorage.getItem("token");
-  const navigate = useNavigate();
+  // DELETE MODAL
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  // FETCH ITEMS
+  // =========================
+  // GET ITEMS
+  // =========================
   const fetchItems = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/items", {
@@ -22,9 +31,11 @@ export default function Items() {
         },
       });
 
-      setItems(res.data.items);
-    } catch (err) {
-      console.log(err);
+      setItems(res.data.items || []);
+      setLoading(false);
+    } catch (error) {
+      toast.error("Failed to load items");
+      setLoading(false);
     }
   };
 
@@ -32,59 +43,81 @@ export default function Items() {
     fetchItems();
   }, []);
 
+  // =========================
   // DELETE ITEM
-  const deleteItem = async (id) => {
+  // =========================
+  const deleteItem = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/items/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      await axios.delete(
+        `http://localhost:5000/api/items/${selectedItem._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
+
+      toast.success("Item deleted successfully");
+
+      setDeleteModal(false);
+      setSelectedItem(null);
 
       fetchItems();
-    } catch (err) {
-      alert("Delete failed");
+    } catch (error) {
+      toast.error("Delete failed");
     }
   };
 
+  // =========================
   // SEARCH FILTER
+  // =========================
   const filteredItems = items.filter((item) =>
-    item.item_name.toLowerCase().includes(search.toLowerCase()),
+    item.item_name?.toLowerCase().includes(search.toLowerCase()),
   );
 
+  // =========================
   // SORTING
+  // =========================
   const sortedItems = [...filteredItems].sort((a, b) => {
     if (sortOrder === "asc") {
       return a.item_name.localeCompare(b.item_name);
-    } else {
-      return b.item_name.localeCompare(a.item_name);
     }
+
+    return b.item_name.localeCompare(a.item_name);
   });
 
+  // =========================
   // PAGINATION
+  // =========================
   const indexOfLast = currentPage * itemsPerPage;
+
   const indexOfFirst = indexOfLast - itemsPerPage;
 
   const currentItems = sortedItems.slice(indexOfFirst, indexOfLast);
 
   const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
 
+  if (loading) {
+    return <div style={styles.loading}>Loading Items...</div>;
+  }
+
   return (
-    <>
+    <div style={styles.page}>
       {/* HEADER */}
       <div style={styles.topBar}>
-        <h2>📦 Items</h2>
+        <div>
+          <h1 style={styles.title}>📦 Inventory Management</h1>
 
-        <button
-          style={styles.primaryBtn}
-          onClick={() => navigate("/items/add")}
-        >
+          <p style={styles.subtitle}>Manage products, stock and pricing</p>
+        </div>
+
+        <button style={styles.addBtn} onClick={() => navigate("/items/add")}>
           ➕ Add Item
         </button>
       </div>
 
-      {/* SEARCH + SORT */}
-      <div style={styles.toolbar}>
+      {/* SEARCH */}
+      <div style={styles.filterCard}>
         <input
           type="text"
           placeholder="Search item..."
@@ -99,166 +132,375 @@ export default function Items() {
           style={styles.select}
         >
           <option value="asc">Sort A-Z</option>
+
           <option value="desc">Sort Z-A</option>
         </select>
       </div>
 
-      {/* TABLE */}
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.th}>Name</th>
-            <th style={styles.th}>Unit</th>
-            <th style={styles.th}>Sales</th>
-            <th style={styles.th}>Purchase</th>
-            <th style={styles.th}>Stock</th>
-            <th style={styles.th}>Alert</th>
-            <th style={styles.th}>Action</th>
-          </tr>
-        </thead>
+      {/* TABLE CARD */}
+      <div style={styles.card}>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Item Name</th>
 
-        <tbody>
-          {currentItems.map((item) => (
-            <tr
-              key={item._id}
-              style={{
-                background:
-                  item.opening_stock <= item.low_stock_alert
-                    ? "#fff5f5"
-                    : "#fff",
-              }}
-              className="table-row"
-            >
-              <td style={styles.td}>{item.item_name}</td>
-              <td style={styles.td}>{item.unit}</td>
-              <td style={styles.td}>₹ {item.sales_price}</td>
-              <td style={styles.td}>₹ {item.purchase_price}</td>
-              <td style={styles.td}>{item.opening_stock}</td>
-              <td style={styles.td}>{item.low_stock_alert}</td>
+              <th style={styles.th}>Unit</th>
 
-              <td style={styles.td}>
-                <button
-                  style={styles.editBtn}
-                  onClick={() => navigate(`/items/edit/${item._id}`)}
-                >
-                  ✏️
-                </button>
+              <th style={styles.th}>Sales Price</th>
 
-                <button
-                  style={styles.deleteBtn}
-                  onClick={() => deleteItem(item._id)}
-                >
-                  ❌
-                </button>
-              </td>
+              <th style={styles.th}>Purchase Price</th>
+
+              <th style={styles.th}>Stock</th>
+
+              <th style={styles.th}>Status</th>
+
+              <th style={styles.th}>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {currentItems.map((item) => {
+              const lowStock = item.opening_stock <= item.low_stock_alert;
+
+              return (
+                <tr key={item._id}>
+                  <td style={styles.td}>{item.item_name}</td>
+
+                  <td style={styles.td}>{item.unit}</td>
+
+                  <td style={styles.td}>₹ {item.sales_price}</td>
+
+                  <td style={styles.td}>₹ {item.purchase_price}</td>
+
+                  <td style={styles.td}>{item.opening_stock}</td>
+
+                  <td style={styles.td}>
+                    {lowStock ? (
+                      <span style={styles.lowStockBadge}>Low Stock</span>
+                    ) : (
+                      <span style={styles.inStockBadge}>In Stock</span>
+                    )}
+                  </td>
+
+                  <td style={styles.td}>
+                    <div style={styles.actionWrap}>
+                      <button
+                        style={styles.editBtn}
+                        onClick={() => navigate(`/items/edit/${item._id}`)}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        style={styles.deleteBtn}
+                        onClick={() => {
+                          setSelectedItem(item);
+
+                          setDeleteModal(true);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {/* EMPTY STATE */}
+        {currentItems.length === 0 && (
+          <div style={styles.empty}>
+            <div style={styles.emptyIcon}>📦</div>
+
+            <h3>No Items Found</h3>
+
+            <p>No inventory items match your search criteria.</p>
+          </div>
+        )}
+      </div>
 
       {/* PAGINATION */}
-      <div style={styles.pagination}>
-        {Array.from({ length: totalPages }, (_, i) => (
+      {totalPages > 1 && (
+        <div style={styles.pagination}>
           <button
-            key={i}
-            style={{
-              ...styles.pageBtn,
-              background: currentPage === i + 1 ? "#2563eb" : "#e5e7eb",
-              color: currentPage === i + 1 ? "#fff" : "#000",
-            }}
-            onClick={() => setCurrentPage(i + 1)}
+            style={styles.pageBtn}
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
           >
-            {i + 1}
+            ← Prev
           </button>
-        ))}
-      </div>
-    </>
+
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              style={{
+                ...styles.pageBtn,
+                ...(currentPage === i + 1 ? styles.activePage : {}),
+              }}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            style={styles.pageBtn}
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            Next →
+          </button>
+        </div>
+      )}
+
+      {/* DELETE MODAL */}
+      {deleteModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <div style={styles.modalIcon}>🗑️</div>
+
+            <h2>Delete Item?</h2>
+
+            <p style={styles.modalText}>
+              Are you sure you want to delete
+              <strong> {selectedItem?.item_name}</strong>?
+            </p>
+
+            <div style={styles.modalActions}>
+              <button
+                style={styles.cancelBtn}
+                onClick={() => {
+                  setDeleteModal(false);
+
+                  setSelectedItem(null);
+                }}
+              >
+                Cancel
+              </button>
+
+              <button style={styles.confirmDeleteBtn} onClick={deleteItem}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
-/* ================= STYLES ================= */
-
 const styles = {
+  page: {
+    padding: 10,
+  },
+
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
+  },
+
   topBar: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 25,
   },
 
-  toolbar: {
+  title: {
+    margin: 0,
+    fontSize: 30,
+    color: "#0f172a",
+  },
+
+  subtitle: {
+    marginTop: 6,
+    color: "#64748b",
+  },
+
+  addBtn: {
+    background: "#2563eb",
+    color: "#fff",
+    border: "none",
+    padding: "12px 20px",
+    borderRadius: 12,
+    cursor: "pointer",
+    fontWeight: 600,
+  },
+
+  filterCard: {
     display: "flex",
-    gap: 10,
+    gap: 15,
     marginBottom: 20,
   },
 
   search: {
-    padding: 10,
-    width: 250,
-    borderRadius: 6,
-    border: "1px solid #ccc",
+    flex: 1,
+    padding: 12,
+    borderRadius: 12,
+    border: "1px solid #cbd5e1",
+    outline: "none",
   },
 
   select: {
-    padding: 10,
-    borderRadius: 6,
+    padding: 12,
+    borderRadius: 12,
+    border: "1px solid #cbd5e1",
+    outline: "none",
+  },
+
+  card: {
+    background: "#fff",
+    borderRadius: 20,
+    overflow: "hidden",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
   },
 
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    background: "#fff",
-    borderRadius: 10,
-    overflow: "hidden",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
 
   th: {
-    background: "#0f172a",
-    color: "#fff",
-    padding: 14,
+    background: "#f8fafc",
+    padding: 18,
     textAlign: "left",
+    color: "#334155",
+    fontWeight: 600,
+    fontSize: 14,
   },
 
   td: {
-    padding: 14,
-    borderBottom: "1px solid #eee",
+    padding: 18,
+    borderTop: "1px solid #f1f5f9",
   },
 
-  primaryBtn: {
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-    padding: "10px 14px",
-    borderRadius: 6,
-    cursor: "pointer",
+  actionWrap: {
+    display: "flex",
+    gap: 10,
   },
 
   editBtn: {
-    marginRight: 8,
     border: "none",
-    padding: 8,
-    borderRadius: 5,
+    background: "#2563eb",
+    color: "#fff",
+    padding: "8px 14px",
+    borderRadius: 10,
     cursor: "pointer",
   },
 
   deleteBtn: {
     border: "none",
-    padding: 8,
-    borderRadius: 5,
+    background: "#ef4444",
+    color: "#fff",
+    padding: "8px 14px",
+    borderRadius: 10,
     cursor: "pointer",
+  },
+
+  inStockBadge: {
+    background: "#dcfce7",
+    color: "#15803d",
+    padding: "6px 10px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 600,
+  },
+
+  lowStockBadge: {
+    background: "#fee2e2",
+    color: "#dc2626",
+    padding: "6px 10px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 600,
+  },
+
+  empty: {
+    padding: 50,
+    textAlign: "center",
+    color: "#64748b",
+  },
+
+  emptyIcon: {
+    fontSize: 50,
+    marginBottom: 10,
   },
 
   pagination: {
-    marginTop: 20,
     display: "flex",
+    justifyContent: "center",
     gap: 10,
+    marginTop: 25,
   },
 
   pageBtn: {
-    padding: "8px 12px",
     border: "none",
-    borderRadius: 5,
+    background: "#e2e8f0",
+    padding: "10px 14px",
+    borderRadius: 10,
     cursor: "pointer",
+  },
+
+  activePage: {
+    background: "#2563eb",
+    color: "#fff",
+  },
+
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.45)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 9999,
+  },
+
+  modal: {
+    background: "#fff",
+    width: 420,
+    padding: 30,
+    borderRadius: 24,
+    textAlign: "center",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+  },
+
+  modalIcon: {
+    fontSize: 55,
+    marginBottom: 10,
+  },
+
+  modalText: {
+    color: "#64748b",
+    marginTop: 10,
+    lineHeight: 1.7,
+  },
+
+  modalActions: {
+    display: "flex",
+    gap: 15,
+    marginTop: 25,
+  },
+
+  cancelBtn: {
+    flex: 1,
+    border: "none",
+    padding: 12,
+    borderRadius: 12,
+    background: "#e2e8f0",
+    cursor: "pointer",
+  },
+
+  confirmDeleteBtn: {
+    flex: 1,
+    border: "none",
+    padding: 12,
+    borderRadius: 12,
+    background: "#ef4444",
+    color: "#fff",
+    cursor: "pointer",
+    fontWeight: 600,
   },
 };

@@ -1,7 +1,7 @@
 const Invoice = require("../models/Invoice");
 const Item = require("../models/Item");
 const Customer = require("../models/Customer");
-const createStockHistory = require("../models/StockHistory");
+const createStockHistory = require("../utils/createStockHistory");
 
 const createInvoice = async (req, res) => {
   try {
@@ -44,6 +44,29 @@ const createInvoice = async (req, res) => {
     }
 
     // 📦 ITEM PROCESSING
+    const stockReference = `INV-${String((await Invoice.countDocuments()) + 1).padStart(4, "0")}`;
+    const requestedQtyByItem = items.reduce((acc, item) => {
+      const key = String(item.item_id);
+      acc[key] = (acc[key] || 0) + Number(item.qty || 0);
+      return acc;
+    }, {});
+
+    for (let itemId of Object.keys(requestedQtyByItem)) {
+      const itemData = await Item.findById(itemId);
+
+      if (!itemData) {
+        return res.status(404).json({
+          message: "Item not found",
+        });
+      }
+
+      if (itemData.opening_stock < requestedQtyByItem[itemId]) {
+        return res.status(400).json({
+          message: `${itemData.item_name} only ${itemData.opening_stock} in stock`,
+        });
+      }
+    }
+
     let sub_total = 0;
     let formattedItems = [];
     for (let i of items) {
@@ -56,23 +79,18 @@ const createInvoice = async (req, res) => {
         });
       }
 
-      // STOCK CHECK
-      if (itemData.opening_stock < i.qty) {
-        return res.status(400).json({
-          message: `${itemData.item_name} out of stock`,
-        });
-      }
-
       // ITEM TOTAL
-      const total = itemData.sales_price * i.qty;
+      const invoicePrice = Number(i.price ?? itemData.sales_price);
+      const total = invoicePrice * i.qty;
       sub_total += total;
 
       formattedItems.push({
         item_id: itemData._id,
-        item_name: itemData.item_name,
+        item_name: i.item_name || itemData.item_name,
         qty: i.qty,
-        price: itemData.sales_price,
+        price: invoicePrice,
         total,
+        serial_number: i.serial_number || "",
       });
 
       // 🔥 AUTO STOCK REDUCE
@@ -88,7 +106,7 @@ const createInvoice = async (req, res) => {
         previous_stock: previousStock,
         new_stock: itemData.opening_stock,
         note: "Invoice Sale",
-        reference_id: invoice_number,
+        reference_id: stockReference,
         created_by: req.user.id,
       });
     }
@@ -229,6 +247,27 @@ const updateInvoice = async (req, res) => {
     let sub_total = 0;
 
     let formattedItems = [];
+    const requestedQtyByItem = items.reduce((acc, item) => {
+      const key = String(item.item_id);
+      acc[key] = (acc[key] || 0) + Number(item.qty || 0);
+      return acc;
+    }, {});
+
+    for (let itemId of Object.keys(requestedQtyByItem)) {
+      const itemData = await Item.findById(itemId);
+
+      if (!itemData) {
+        return res.status(404).json({
+          message: "Item not found",
+        });
+      }
+
+      if (itemData.opening_stock < requestedQtyByItem[itemId]) {
+        return res.status(400).json({
+          message: `${itemData.item_name} only ${itemData.opening_stock} in stock`,
+        });
+      }
+    }
 
     // APPLY NEW STOCK
     for (let i of items) {
@@ -240,21 +279,17 @@ const updateInvoice = async (req, res) => {
         });
       }
 
-      if (itemData.opening_stock < i.qty) {
-        return res.status(400).json({
-          message: `${itemData.item_name} stock low`,
-        });
-      }
-
-      const total = itemData.sales_price * i.qty;
+      const invoicePrice = Number(i.price ?? itemData.sales_price);
+      const total = invoicePrice * i.qty;
 
       sub_total += total;
       formattedItems.push({
         item_id: itemData._id,
-        item_name: itemData.item_name,
+        item_name: i.item_name || itemData.item_name,
         qty: i.qty,
-        price: itemData.sales_price,
+        price: invoicePrice,
         total,
+        serial_number: i.serial_number || "",
       });
 
       // REDUCE STOCK
@@ -270,7 +305,7 @@ const updateInvoice = async (req, res) => {
         previous_stock: previousStock,
         new_stock: itemData.opening_stock,
         note: "Invoice Sale",
-        reference_id: invoice_number,
+        reference_id: invoice.invoice_number,
         created_by: req.user.id,
       });
     }
