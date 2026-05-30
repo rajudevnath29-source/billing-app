@@ -91,7 +91,7 @@ export default function Dashboard() {
   const today = new Date();
 
   const filteredInvoices = invoices.filter((inv) => {
-    const invoiceDate = new Date(inv.createdAt);
+    const invoiceDate = new Date(inv.invoiceDate || inv.createdAt);
 
     if (filter === "today") {
       return invoiceDate.toDateString() === today.toDateString();
@@ -131,6 +131,12 @@ export default function Dashboard() {
 
     return true;
   });
+
+  const recentInvoices = [...filteredInvoices].sort(
+    (a, b) =>
+      new Date(b.invoiceDate || b.createdAt) -
+      new Date(a.invoiceDate || a.createdAt),
+  );
 
   // =========================
   //
@@ -389,9 +395,8 @@ export default function Dashboard() {
           {filteredInvoices.length === 0 ? (
             <p>No invoices found</p>
           ) : (
-            filteredInvoices
-              .slice(-5)
-              .reverse()
+            recentInvoices
+              .slice(0, 5)
               .map((inv) => (
                 <div
                   key={inv._id}
@@ -425,9 +430,8 @@ export default function Dashboard() {
           {filteredInvoices.length === 0 ? (
             <p>No payments found</p>
           ) : (
-            filteredInvoices
-              .slice(-5)
-              .reverse()
+            recentInvoices
+              .slice(0, 5)
               .map((inv) => (
                 <div key={inv._id} style={styles.invoiceRow}>
                   <div>

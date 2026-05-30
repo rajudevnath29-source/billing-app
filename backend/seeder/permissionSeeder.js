@@ -122,6 +122,12 @@ const permissions = [
   },
 
   {
+    name: "CHNAGE_INVOICE_DATE",
+    label: "Change Invoice Date",
+    module: "INVOICE",
+  },
+
+  {
     name: "DELETE_INVOICE",
     label: "Delete Invoice",
     module: "INVOICE",

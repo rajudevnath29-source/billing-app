@@ -2,13 +2,24 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { hasPermission } from "../utils/permissions";
 
 const API_URL = "http://localhost:5000/api";
+
+const toDateInputValue = (date = new Date()) => {
+  const parsedDate = new Date(date);
+  const year = parsedDate.getFullYear();
+  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const day = String(parsedDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
 
 export default function EditInvoice() {
   const { id } = useParams();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const canChangeInvoiceDate = hasPermission("CHNAGE_INVOICE_DATE");
 
   const [items, setItems] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -21,6 +32,7 @@ export default function EditInvoice() {
   const [gstEnabled, setGstEnabled] = useState(false);
   const [gstRate, setGstRate] = useState(18);
   const [paidAmount, setPaidAmount] = useState(0);
+  const [invoiceDate, setInvoiceDate] = useState(toDateInputValue());
   const [itemSearch, setItemSearch] = useState("");
   const [itemPickerOpen, setItemPickerOpen] = useState(false);
   const [draftItem, setDraftItem] = useState(null);
@@ -69,6 +81,9 @@ export default function EditInvoice() {
       setGstEnabled(Boolean(loadedInvoice.gst_enabled));
       setGstRate(loadedInvoice.gst_rate || 18);
       setPaidAmount(loadedInvoice.paid_amount || 0);
+      setInvoiceDate(
+        toDateInputValue(loadedInvoice.invoiceDate || loadedInvoice.createdAt),
+      );
     } catch (error) {
       toast.error("Failed to load invoice");
     } finally {
@@ -261,6 +276,7 @@ export default function EditInvoice() {
           gst_enabled: gstEnabled,
           gst_rate: Number(gstRate || 0),
           paid_amount: Number(paidAmount || 0),
+          ...(canChangeInvoiceDate ? { invoiceDate } : {}),
         },
         authHeader,
       );
@@ -297,7 +313,14 @@ export default function EditInvoice() {
         </button>
       </div>
 
-      <div style={styles.customerCard}>
+      <div
+        style={{
+          ...styles.customerCard,
+          gridTemplateColumns: canChangeInvoiceDate
+            ? "repeat(4, minmax(0, 1fr))"
+            : styles.customerCard.gridTemplateColumns,
+        }}
+      >
         <select
           value={selectedCustomer}
           onChange={(event) => handleCustomerSelect(event.target.value)}
@@ -324,6 +347,15 @@ export default function EditInvoice() {
           onChange={(event) => setCustomerMobile(event.target.value)}
           style={styles.input}
         />
+
+        {canChangeInvoiceDate && (
+          <input
+            type="date"
+            value={invoiceDate}
+            onChange={(event) => setInvoiceDate(event.target.value)}
+            style={styles.input}
+          />
+        )}
       </div>
 
       <div style={styles.invoiceGrid}>

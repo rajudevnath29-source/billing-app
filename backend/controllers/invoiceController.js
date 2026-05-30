@@ -14,6 +14,7 @@ const createInvoice = async (req, res) => {
       gst_enabled = false,
       gst_rate = 0,
       paid_amount = 0,
+      invoiceDate = new Date(),
     } = req.body;
 
     // VALIDATION
@@ -132,6 +133,7 @@ const createInvoice = async (req, res) => {
     // 💾 SAVE INVOICE
     const invoice = await Invoice.create({
       invoice_number,
+      invoiceDate,
       customer: customerId,
       customer_name,
       customer_mobile,
@@ -242,6 +244,7 @@ const updateInvoice = async (req, res) => {
       gst_enabled = false,
       gst_rate = 0,
       paid_amount = 0,
+      invoiceDate,
     } = req.body;
 
     let sub_total = 0;
@@ -326,6 +329,7 @@ const updateInvoice = async (req, res) => {
 
     // UPDATE
     invoice.items = formattedItems;
+    invoice.invoiceDate = invoiceDate || invoice.invoiceDate || new Date();
     invoice.sub_total = sub_total;
     invoice.discount = discount;
     invoice.gst_enabled = gst_enabled;

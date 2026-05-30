@@ -21,6 +21,11 @@ export default function Header({ collapsed, setCollapsed }) {
         ☰
       </button>
 
+      {/* <img
+        src="/Logo-Light.png"
+        alt="Raaj Computer Service"
+        style={styles.logo}
+      /> */}
       <h3>ERP Dashboard</h3>
 
       {/* RIGHT SIDE ACTIONS */}
@@ -73,6 +78,13 @@ const styles = {
     border: "none",
     background: "transparent",
     cursor: "pointer",
+  },
+
+  logo: {
+    height: 42,
+    width: 170,
+    objectFit: "contain",
+    objectPosition: "left center",
   },
 
   right: {

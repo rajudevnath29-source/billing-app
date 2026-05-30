@@ -239,7 +239,7 @@ export default function CustomerLedger() {
 
                           {
                             new Date(
-                              invoice.createdAt
+                              invoice.invoiceDate || invoice.createdAt
                             ).toLocaleDateString()
                           }
 

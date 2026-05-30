@@ -18,7 +18,13 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       }}
     >
       {/* LOGO */}
-      <h2 style={styles.logo}>{expanded ? "🧾 ERP" : "🧾"}</h2>
+
+      {/* <img
+        src="/Logo-dark.png"
+        alt="Raaj Computer Services"
+        style={expanded ? styles.collapsedlogo : styles.logo}
+      /> */}
+      <h2 style={styles.logo}>{expanded ? "ERP" : "🧾"}</h2>
 
       {/* USER */}
       <div style={styles.userBox}>
@@ -192,10 +198,6 @@ const styles = {
     transition: "0.3s",
   },
 
-  logo: {
-    marginBottom: 20,
-  },
-
   userBox: {
     background: "#334155",
     padding: 15,
@@ -225,5 +227,15 @@ const styles = {
     padding: "10px 0",
     color: "#fff",
     textDecoration: "none",
+  },
+  logo: {
+    height: 20,
+    width: 80,
+    objectFit: "contain",
+    objectPosition: "left center",
+  },
+  collapsedlogo: {
+    height: 50,
+    marginLeft: 50,
   },
 };

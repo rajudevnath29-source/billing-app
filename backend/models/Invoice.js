@@ -25,6 +25,8 @@ const invoiceSchema = new mongoose.Schema(
     customer_name: String,
     customer_mobile: String,
 
+    invoiceDate: Date,
+
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",

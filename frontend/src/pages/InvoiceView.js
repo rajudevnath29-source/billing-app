@@ -5,6 +5,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useNavigate } from "react-router-dom";
 import { hasPermission } from "../utils/permissions";
+import { toWords } from "number-to-words";
 
 const API_URL = "http://localhost:5000/api";
 const PAGE_SIZE = 10;
@@ -64,7 +65,10 @@ export default function InvoiceView() {
     setCurrentPage(1);
   }, [search, statusFilter]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / PAGE_SIZE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredInvoices.length / PAGE_SIZE),
+  );
   const pageInvoices = filteredInvoices.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
@@ -79,20 +83,66 @@ export default function InvoiceView() {
   };
 
   const printInvoice = () => {
-    window.print();
-  };
+    const printContents = printRef.current.innerHTML;
 
+    const win = window.open("", "", "width=900,height=650");
+
+    win.document.write(`
+    <html>
+      <head>
+        <title>Invoice</title>
+        <style>
+          @page {
+            size: A4;
+            margin: 0;
+          }
+          html, body {
+            width: 210mm;
+            min-height: 0;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+          }
+          body{
+            margin:0;
+            padding:0;
+            font-family:Arial;
+          }
+          * {
+            box-sizing: border-box;
+          }
+        </style>
+      </head>
+      <body>
+        ${printContents}
+      </body>
+    </html>
+  `);
+
+    win.document.close();
+    win.focus();
+
+    setTimeout(() => {
+      win.print();
+      win.close();
+    }, 500);
+  };
   const downloadPDF = async () => {
     if (!printRef.current || !selectedInvoice) return;
 
     try {
-      const canvas = await html2canvas(printRef.current, { scale: 2 });
+      const canvas = await html2canvas(printRef.current, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
       const width = 210;
+      const pageHeight = 297;
       const height = (canvas.height * width) / canvas.width;
 
-      pdf.addImage(imgData, "PNG", 0, 0, width, height);
+      pdf.addImage(imgData, "PNG", 0, 0, width, Math.min(height, pageHeight));
       pdf.save(`${selectedInvoice.invoice_number}.pdf`);
     } catch (error) {
       toast.error("PDF download failed");
@@ -107,6 +157,40 @@ export default function InvoiceView() {
       year: "numeric",
     });
   };
+
+  const getInvoiceDate = (invoice) => invoice?.invoiceDate || invoice?.createdAt;
+
+  const formatInvoiceDate = (date) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const formatMoney = (value) =>
+    Number(value || 0).toLocaleString("en-IN", {
+      maximumFractionDigits: 0,
+    });
+
+  const billTotalQty = (selectedInvoice?.items || []).reduce(
+    (sum, item) => sum + Number(item.qty || 0),
+    0,
+  );
+
+  const invoiceDueDate = selectedInvoice
+    ? new Date(getInvoiceDate(selectedInvoice))
+    : null;
+  if (invoiceDueDate) {
+    invoiceDueDate.setDate(invoiceDueDate.getDate() + 7);
+  }
+
+  const amountInWords = selectedInvoice
+    ? `${toWords(Math.round(Number(selectedInvoice.grand_total || 0)))
+        .replace(/\b\w/g, (letter) => letter.toUpperCase())
+        .replace(/,/g, "")} Rupees`
+    : "";
 
   const statusStyle = (status) => {
     if (status === "PAID") return styles.paidBadge;
@@ -127,7 +211,10 @@ export default function InvoiceView() {
         </div>
 
         {hasPermission("CREATE_INVOICE") && (
-          <button style={styles.primaryBtn} onClick={() => navigate("/invoice")}>
+          <button
+            style={styles.primaryBtn}
+            onClick={() => navigate("/invoice")}
+          >
             Create Invoice
           </button>
         )}
@@ -183,7 +270,7 @@ export default function InvoiceView() {
                     {invoice.customer_name}
                     <p style={styles.muted}>{invoice.customer_mobile || "-"}</p>
                   </td>
-                  <td style={styles.td}>{formatDate(invoice.createdAt)}</td>
+                  <td style={styles.td}>{formatDate(getInvoiceDate(invoice))}</td>
                   <td style={styles.td}>{totalQty}</td>
                   <td style={styles.td}>Rs {invoice.grand_total}</td>
                   <td style={styles.td}>
@@ -208,7 +295,9 @@ export default function InvoiceView() {
                       {hasPermission("EDIT_INVOICE") && (
                         <button
                           style={styles.editBtn}
-                          onClick={() => navigate(`/invoice-edit/${invoice._id}`)}
+                          onClick={() =>
+                            navigate(`/invoice-edit/${invoice._id}`)
+                          }
                         >
                           Edit
                         </button>
@@ -228,27 +317,41 @@ export default function InvoiceView() {
 
       {filteredInvoices.length > 0 && (
         <div style={styles.pagination}>
-          <button
-            style={styles.pageBtn}
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-          >
-            Prev
-          </button>
+          {currentPage > 1 && (
+            <button
+              style={styles.pageBtn}
+              onClick={() => setCurrentPage((page) => page - 1)}
+            >
+              Prev
+            </button>
+          )}
 
-          <span style={styles.pageInfo}>
-            Page {currentPage} of {totalPages}
-          </span>
+          {[...Array(totalPages)].map((_, index) => {
+            const page = index + 1;
 
-          <button
-            style={styles.pageBtn}
-            disabled={currentPage === totalPages}
-            onClick={() =>
-              setCurrentPage((page) => Math.min(totalPages, page + 1))
-            }
-          >
-            Next
-          </button>
+            return (
+              <button
+                key={page}
+                disabled={currentPage === page}
+                onClick={() => setCurrentPage(page)}
+                style={{
+                  ...styles.pageBtn,
+                  ...(currentPage === page ? styles.activePageBtn : {}),
+                }}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          {currentPage < totalPages && (
+            <button
+              style={styles.pageBtn}
+              onClick={() => setCurrentPage((page) => page + 1)}
+            >
+              Next
+            </button>
+          )}
         </div>
       )}
 
@@ -257,9 +360,12 @@ export default function InvoiceView() {
           <div style={styles.invoiceModal}>
             <div style={styles.modalHeader}>
               <div>
-                <h3 style={styles.detailTitle}>{selectedInvoice.invoice_number}</h3>
+                <h3 style={styles.detailTitle}>
+                  {selectedInvoice.invoice_number}
+                </h3>
                 <p style={styles.muted}>
-                  {selectedInvoice.customer_name} | {formatDate(selectedInvoice.createdAt)}
+                  {selectedInvoice.customer_name} |{" "}
+                  {formatDate(getInvoiceDate(selectedInvoice))}
                 </p>
               </div>
 
@@ -279,108 +385,182 @@ export default function InvoiceView() {
                 {hasPermission("EDIT_INVOICE") && (
                   <button
                     style={styles.editBtn}
-                    onClick={() => navigate(`/invoice-edit/${selectedInvoice._id}`)}
+                    onClick={() =>
+                      navigate(`/invoice-edit/${selectedInvoice._id}`)
+                    }
                   >
                     Edit
                   </button>
                 )}
-
                 <button style={styles.closeBtn} onClick={closeInvoice}>
-                  Close
+                  X
                 </button>
               </div>
             </div>
 
-            <div ref={printRef} style={styles.invoiceBox}>
-              <div style={styles.invoiceHeader}>
-                <div>
-                  <h2 style={styles.printTitle}>INVOICE</h2>
-                  <p style={styles.muted}>Invoice No: {selectedInvoice.invoice_number}</p>
-                </div>
-
-                <span
-                  style={{
-                    ...styles.statusBadge,
-                    ...statusStyle(selectedInvoice.payment_status),
-                  }}
-                >
-                  {selectedInvoice.payment_status}
-                </span>
-              </div>
-
-              <div style={styles.infoGrid}>
-                <div>
-                  <span style={styles.label}>Customer</span>
-                  <b>{selectedInvoice.customer_name}</b>
-                </div>
-                <div>
-                  <span style={styles.label}>Mobile</span>
-                  <b>{selectedInvoice.customer_mobile || "-"}</b>
-                </div>
-                <div>
-                  <span style={styles.label}>Date</span>
-                  <b>{formatDate(selectedInvoice.createdAt)}</b>
-                </div>
-              </div>
-
-              <table style={styles.invoiceTable}>
-                <thead>
-                  <tr>
-                    <th style={styles.invoiceTh}>Item</th>
-                    <th style={styles.invoiceTh}>Qty</th>
-                    <th style={styles.invoiceTh}>Price</th>
-                    <th style={styles.invoiceTh}>Total</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {(selectedInvoice.items || []).map((item, index) => (
-                    <tr key={`${item.item_id}-${index}`}>
-                      <td style={styles.invoiceTd}>
-                        {item.item_name}
-                        {item.serial_number && (
-                          <p style={styles.itemNote}>{item.serial_number}</p>
-                        )}
-                      </td>
-                      <td style={styles.invoiceTd}>{item.qty}</td>
-                      <td style={styles.invoiceTd}>Rs {item.price}</td>
-                      <td style={styles.invoiceTd}>Rs {item.total}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              <div style={styles.summaryBox}>
-                <SummaryLine label="Subtotal" value={selectedInvoice.sub_total} />
-                <SummaryLine label="Discount" value={selectedInvoice.discount} />
-                {selectedInvoice.gst_enabled && (
-                  <SummaryLine
-                    label={`GST (${selectedInvoice.gst_rate}%)`}
-                    value={selectedInvoice.gst_amount}
+            <div
+              ref={printRef}
+              className="print-area"
+              style={styles.invoiceBox}
+            >
+              <div style={styles.invoicePaper}>
+                <div style={styles.companyHeader}>
+                  <img
+                    src="/Logo-Light.png"
+                    alt="Raaj Computer Service"
+                    style={styles.companyLogo}
                   />
-                )}
-                <div style={styles.grandLine}>
-                  <span>Grand Total</span>
-                  <b>Rs {selectedInvoice.grand_total}</b>
-                </div>
-                <SummaryLine label="Paid" value={selectedInvoice.paid_amount} />
-                <SummaryLine label="Due" value={selectedInvoice.due_amount} />
-              </div>
 
-              <p style={styles.thanks}>Thank you. Visit again.</p>
+                  <div style={styles.companySection}>
+                    <h1 style={styles.companyName}>Raaj Computer Service</h1>
+
+                    <p style={styles.companyText}>
+                      Vigyan Nagar Kota 8824824473, Rajasthan,
+                    </p>
+                  </div>
+                </div>
+
+                <div style={styles.invoiceInfoBar}>
+                  <div style={styles.invoiceInfoLeft}>
+                    <b>Invoice No.:</b> {selectedInvoice.invoice_number}
+                  </div>
+
+                  <div style={styles.invoiceInfoCenter}>
+                    <b>Invoice Date:</b>{" "}
+                    {formatInvoiceDate(getInvoiceDate(selectedInvoice))}
+                  </div>
+
+                  <div style={styles.invoiceInfoRight}>
+                    <b>Due Date:</b> {formatInvoiceDate(invoiceDueDate)}
+                  </div>
+                </div>
+
+                <div style={styles.billSection}>
+                  <h3 style={styles.billTitle}>BILL TO</h3>
+
+                  <div style={styles.customerName}>
+                    {selectedInvoice.customer_name}
+                  </div>
+
+                  <div>Mobile : {selectedInvoice.customer_mobile || "-"}</div>
+                </div>
+
+                <table style={styles.billTable}>
+                  <thead>
+                    <tr>
+                      <th style={{ ...styles.billTableHead, ...styles.itemCol }}>
+                        ITEMS
+                      </th>
+                      <th style={{ ...styles.billTableHead, ...styles.qtyCol }}>
+                        QTY.
+                      </th>
+                      <th style={{ ...styles.billTableHead, ...styles.moneyCol }}>
+                        RATE
+                      </th>
+                      <th style={{ ...styles.billTableHead, ...styles.moneyCol }}>
+                        AMOUNT
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {(selectedInvoice.items || []).map((item, index) => (
+                      <tr key={index}>
+                        <td style={{ ...styles.billTableCell, ...styles.itemCol }}>
+                          <div style={styles.itemName}>{item.item_name}</div>
+
+                          {item.serial_number && (
+                            <div style={styles.serialNumber}>
+                              {item.serial_number}
+                            </div>
+                          )}
+                        </td>
+
+                        <td style={{ ...styles.billTableCell, ...styles.qtyCol }}>
+                          {item.qty} PCS
+                        </td>
+
+                        <td style={{ ...styles.billTableCell, ...styles.moneyCol }}>
+                          {formatMoney(item.price)}
+                        </td>
+
+                        <td style={{ ...styles.billTableCell, ...styles.moneyCol }}>
+                          {formatMoney(item.total)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <div style={styles.invoiceSpacer} />
+
+                <div style={styles.subtotalBlock}>
+                  <div style={styles.subtotalLine}>
+                    <b>SUBTOTAL</b>
+                    <b style={styles.subtotalQty}>{billTotalQty}</b>
+                    <span />
+                    <b style={styles.subtotalAmount}>
+                      Rs {formatMoney(selectedInvoice.sub_total)}
+                    </b>
+                  </div>
+                </div>
+
+                <div style={styles.totalsWrap}>
+                  <div style={styles.totalsTable}>
+                    {Number(selectedInvoice.discount || 0) > 0 && (
+                      <div style={styles.totalDetailRow}>
+                        <span>Discount</span>
+                        <span style={styles.amountValue}>
+                          - Rs {formatMoney(selectedInvoice.discount)}
+                        </span>
+                      </div>
+                    )}
+
+                    {selectedInvoice.gst_enabled && (
+                      <div style={styles.totalDetailRow}>
+                        <span>GST ({selectedInvoice.gst_rate}%)</span>
+                        <span style={styles.amountValue}>
+                          Rs {formatMoney(selectedInvoice.gst_amount)}
+                        </span>
+                      </div>
+                    )}
+
+                    <div style={styles.totalDetailRowStrong}>
+                      <span>Total Amount</span>
+                      <span style={styles.amountValue}>
+                        Rs {formatMoney(selectedInvoice.grand_total)}
+                      </span>
+                    </div>
+
+                    <div style={styles.totalDetailRow}>
+                      <span>Received Amount</span>
+                      <span style={styles.amountValue}>
+                        Rs {formatMoney(selectedInvoice.paid_amount)}
+                      </span>
+                    </div>
+
+                    {Number(selectedInvoice.due_amount || 0) > 0 && (
+                      <div style={styles.totalDetailRow}>
+                        <span>Due Amount</span>
+                        <span style={styles.amountValue}>
+                          Rs {formatMoney(selectedInvoice.due_amount)}
+                        </span>
+                      </div>
+                    )}
+
+                    <div style={styles.wordsSection}>
+                      <strong>Total Amount (in words)</strong>
+                      <p>{amountInWords}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={styles.footerNote}>Thank you. Visit again.</div>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function SummaryLine({ label, value }) {
-  return (
-    <div style={styles.summaryLine}>
-      <span>{label}</span>
-      <b>Rs {Number(value || 0).toFixed(2)}</b>
     </div>
   );
 }
@@ -522,7 +702,7 @@ const styles = {
   pagination: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-end",
     gap: 12,
     marginTop: 20,
   },
@@ -542,20 +722,12 @@ const styles = {
   modalOverlay: {
     position: "fixed",
     inset: 0,
-    background: "rgba(15,23,42,0.45)",
+    background: "rgba(0,0,0,0.55)",
     display: "flex",
-    alignItems: "center",
     justifyContent: "center",
-    zIndex: 999,
-    padding: 20,
-  },
-  invoiceModal: {
-    width: "min(980px, 100%)",
-    maxHeight: "90vh",
-    overflowY: "auto",
-    background: "#fff",
-    borderRadius: 14,
-    boxShadow: "0 24px 70px rgba(15,23,42,0.25)",
+    alignItems: "center",
+    zIndex: 9999,
+    padding: "20px",
   },
   modalHeader: {
     display: "flex",
@@ -569,10 +741,6 @@ const styles = {
   detailTitle: {
     margin: 0,
     color: "#0f172a",
-  },
-  invoiceBox: {
-    padding: 22,
-    background: "#fff",
   },
   invoiceHeader: {
     display: "flex",
@@ -652,5 +820,236 @@ const styles = {
     padding: 45,
     textAlign: "center",
     color: "#64748b",
+  },
+  activePageBtn: {
+    background: "#2563eb",
+    color: "#fff",
+    cursor: "not-allowed",
+    opacity: 0.8,
+  },
+
+  invoiceModal: {
+    width: "910px",
+    maxWidth: "96vw",
+    maxHeight: "94vh",
+    background: "#fff",
+    borderRadius: 8,
+    overflow: "auto",
+  },
+
+  invoiceBox: {
+    padding: "0",
+    background: "#e6e6e6",
+  },
+
+  invoicePaper: {
+    width: "794px",
+    minHeight: "auto",
+    background: "#fff",
+    padding: "30px 40px 28px",
+    boxSizing: "border-box",
+    margin: "0 auto",
+    color: "#000",
+    fontFamily: "Arial, Helvetica, sans-serif",
+    fontSize: "13px",
+    lineHeight: 1.28,
+  },
+
+  companyHeader: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "28px",
+    marginBottom: "46px",
+  },
+
+  companyLogo: {
+    width: "120px",
+    height: "56px",
+    objectFit: "contain",
+    objectPosition: "left center",
+  },
+
+  companySection: {
+    flex: 1,
+  },
+
+  companyName: {
+    margin: 0,
+    fontSize: "28px",
+    fontWeight: 800,
+    color: "#000",
+    letterSpacing: 0,
+  },
+
+  companyText: {
+    margin: "6px 0 0",
+    fontSize: "13px",
+    fontWeight: 600,
+  },
+
+  invoiceInfoBar: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    alignItems: "center",
+    background: "#e8e8e8",
+    borderTop: "8px solid #000",
+    boxSizing: "border-box",
+    padding: "14px 17px 17px",
+    marginBottom: "7px",
+    fontSize: "13px",
+  },
+
+  invoiceInfoLeft: {
+    textAlign: "left",
+  },
+
+  invoiceInfoCenter: {
+    textAlign: "center",
+  },
+
+  invoiceInfoRight: {
+    textAlign: "right",
+  },
+
+  billSection: {
+    marginBottom: "15px",
+    fontSize: "13px",
+  },
+
+  billTitle: {
+    margin: "0 0 7px",
+    fontSize: "13px",
+    fontWeight: 800,
+    letterSpacing: "0.2px",
+  },
+
+  customerName: {
+    fontWeight: 800,
+    fontSize: "14px",
+    marginBottom: "5px",
+  },
+
+  billTable: {
+    width: "100%",
+    borderCollapse: "collapse",
+    tableLayout: "fixed",
+  },
+
+  billTableHead: {
+    textAlign: "left",
+    padding: "11px 10px 12px",
+    borderTop: "2px solid #000",
+    borderBottom: "3px solid #000",
+    fontWeight: 800,
+    fontSize: "14px",
+  },
+
+  billTableCell: {
+    padding: "8px 10px 9px",
+    borderBottom: "1px solid #d6d6d6",
+    verticalAlign: "top",
+    fontSize: "13px",
+  },
+
+  itemCol: {
+    width: "64%",
+  },
+
+  qtyCol: {
+    width: "12%",
+    textAlign: "center",
+  },
+
+  moneyCol: {
+    width: "12%",
+    textAlign: "right",
+  },
+
+  itemName: {
+    fontWeight: 700,
+    textTransform: "uppercase",
+  },
+
+  serialNumber: {
+    marginTop: "2px",
+    fontSize: "10px",
+    color: "#000",
+  },
+
+  invoiceSpacer: {
+    height: "110px",
+  },
+
+  subtotalBlock: {
+    borderTop: "3px solid #000",
+    borderBottom: "3px solid #000",
+    padding: "0 8px",
+    fontSize: "13px",
+  },
+
+  subtotalLine: {
+    display: "grid",
+    gridTemplateColumns: "64% 12% 12% 12%",
+    alignItems: "center",
+    padding: "8px 0 9px",
+  },
+
+  subtotalQty: {
+    textAlign: "center",
+  },
+
+  subtotalAmount: {
+    textAlign: "right",
+    fontFamily: "Arial, Helvetica, sans-serif",
+    fontWeight: 700,
+  },
+
+  totalsWrap: {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginTop: "12px",
+  },
+
+  totalsTable: {
+    width: "252px",
+    fontSize: "13px",
+  },
+
+  totalDetailRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "18px",
+    padding: "7px 0",
+    borderTop: "1px solid #8a8a8a",
+  },
+
+  totalDetailRowStrong: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "18px",
+    padding: "7px 0",
+    borderTop: "1px solid #8a8a8a",
+    fontWeight: 800,
+  },
+
+  amountValue: {
+    fontFamily: "Arial, Helvetica, sans-serif",
+    fontWeight: 700,
+    color: "#000",
+    whiteSpace: "nowrap",
+  },
+
+  wordsSection: {
+    marginTop: "20px",
+    textAlign: "right",
+    fontSize: "13px",
+  },
+
+  footerNote: {
+    textAlign: "center",
+    marginTop: "28px",
+    color: "#000",
+    fontSize: "13px",
+    fontWeight: 600,
   },
 };
