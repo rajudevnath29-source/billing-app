@@ -7,7 +7,7 @@ const permissionMiddleware = require("../middleware/permissionMiddleware");
 
 
 const {
-  createInvoice, getInvoices, getInvoiceById, getInvoicesByCustomer, updateInvoice} = require("../controllers/invoiceController");
+  createInvoice, getInvoices, getInvoiceById, getInvoicesByCustomer, updateInvoice, deleteInvoice} = require("../controllers/invoiceController");
 
 // CREATE INVOICE
 router.post( "/", authMiddleware, permissionMiddleware("CREATE_INVOICE"), createInvoice);
@@ -15,16 +15,15 @@ router.post( "/", authMiddleware, permissionMiddleware("CREATE_INVOICE"), create
 // GET ALL INVOICES
 router.get("/", authMiddleware, permissionMiddleware("VIEW_INVOICE"),  getInvoices);
 
+router.get("/customer/:customerId", authMiddleware, permissionMiddleware("VIEW_INVOICE"), getInvoicesByCustomer);
+
 // GET SINGLE INVOICE
 router.get("/:id", authMiddleware, permissionMiddleware("VIEW_INVOICE"), getInvoiceById);
-
-
-router.get("/customer/:customerId", authMiddleware, permissionMiddleware("VIEW_INVOICE"), getInvoicesByCustomer);
 
 //Edit INVOICE
 router.put("/:id", authMiddleware, permissionMiddleware("EDIT_INVOICE"), updateInvoice);
 
 //Delete INVOICE
-// router.delete("/:id", authMiddleware, permissionMiddleware("DELETE_INVOICE"), deleteInvoice);
+router.delete("/:id", authMiddleware, permissionMiddleware("DELETE_INVOICE"), deleteInvoice);
 
 module.exports = router;

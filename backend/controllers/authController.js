@@ -150,7 +150,7 @@ exports.getProfile = async (req, res) => {
 // ==========================
 exports.updateProfileImage = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).populate("permissions");
 
     user.profile_image = req.file.filename;
 

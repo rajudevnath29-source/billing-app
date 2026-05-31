@@ -154,7 +154,7 @@ export default function Expenses() {
 
       {/* TABLE */}
 
-      <table style={table}>
+      <table style={table} className="app-table">
         <thead>
           <tr>
             <th>Title</th>
@@ -171,7 +171,7 @@ export default function Expenses() {
 
         <tbody>
           {expenses.map((exp) => (
-            <tr key={exp._id}>
+            <tr key={exp._id} className="table-row">
               <td>{exp.title}</td>
 
               <td>{exp.category}</td>
@@ -181,7 +181,14 @@ export default function Expenses() {
               <td>{exp.note}</td>
 
               <td>
-                <button onClick={() => deleteExpense(exp._id)}>❌</button>
+                <button
+                  className="app-action-btn app-action-delete"
+                  title="Delete expense"
+                  aria-label="Delete expense"
+                  onClick={() => deleteExpense(exp._id)}
+                >
+                  🗑
+                </button>
               </td>
             </tr>
           ))}

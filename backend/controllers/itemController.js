@@ -9,7 +9,6 @@ exports.createItem = async (req, res) => {
       sales_price,
       purchase_price,
       opening_stock,
-      as_of_date,
       low_stock_alert,
       image
     } = req.body;
@@ -20,7 +19,6 @@ exports.createItem = async (req, res) => {
       sales_price,
       purchase_price,
       opening_stock,
-      as_of_date,
       low_stock_alert,
       image
     });

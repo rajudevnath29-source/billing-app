@@ -36,7 +36,7 @@ export default function Header({ collapsed, setCollapsed }) {
             src={
               user?.profile_image
                 ? `http://localhost:5000/uploads/${user.profile_image}`
-                : "https://i.pravatar.cc/40"
+                : "https://i.pravatar.cc/80"
             }
             alt="User Profile"
             style={styles.avatar}

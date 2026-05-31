@@ -5,49 +5,39 @@ const itemSchema = new mongoose.Schema(
     item_name: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
 
     unit: {
       type: String,
-      required: true
+      required: true,
     },
 
     sales_price: {
       type: Number,
-      required: true
+      required: true,
     },
 
     purchase_price: {
       type: Number,
-      required: true
+      required: true,
     },
 
     opening_stock: {
       type: Number,
-      default: 0
-    },
-
-    as_of_date: {
-      type: Date,
-      default: Date.now
+      default: 0,
     },
 
     low_stock_alert: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     image: {
-      type: String // (URL or file path later)
+      type: String, // (URL or file path later)
     },
-
-    created_at: {
-      type: Date,
-      default: Date.now
-    }
   },
-  { timestamps: false }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Item", itemSchema);

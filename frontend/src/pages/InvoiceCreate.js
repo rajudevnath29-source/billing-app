@@ -106,6 +106,22 @@ export default function InvoiceCreate() {
     setCustomerName(customer.customer_name || "");
     setCustomerMobile(customer.phone || "");
   };
+  const handleCustomerNameChange = (value) => {
+    setCustomerName(value);
+
+    const matchedCustomer = customers.find(
+      (customer) =>
+        customer.customer_name?.trim().toLowerCase() ===
+        value.trim().toLowerCase(),
+    );
+
+    if (matchedCustomer) {
+      setSelectedCustomer(matchedCustomer._id);
+      setCustomerMobile(matchedCustomer.phone || "");
+    } else {
+      setSelectedCustomer("");
+    }
+  };
 
   const openItemPicker = () => {
     setItemPickerOpen(true);
@@ -221,13 +237,12 @@ export default function InvoiceCreate() {
     (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0),
     0,
   );
-  const totalItems = cart.reduce(
-    (sum, item) => sum + Number(item.qty || 0),
-    0,
-  );
+  const totalItems = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
   const safeDiscount = Math.min(Number(discount || 0), subTotal);
   const afterDiscount = subTotal - safeDiscount;
-  const gstAmount = gstEnabled ? (afterDiscount * Number(gstRate || 0)) / 100 : 0;
+  const gstAmount = gstEnabled
+    ? (afterDiscount * Number(gstRate || 0)) / 100
+    : 0;
   const grandTotal = afterDiscount + gstAmount;
   const dueAmount = grandTotal - Number(paidAmount || 0);
 
@@ -299,7 +314,9 @@ export default function InvoiceCreate() {
       <div style={styles.topBar}>
         <div>
           <h1 style={styles.title}>Create Invoice</h1>
-          <p style={styles.subtitle}>Select customer, add items and generate bill</p>
+          <p style={styles.subtitle}>
+            Select customer, add items and generate bill
+          </p>
         </div>
 
         <button style={styles.secondaryBtn} onClick={resetForm}>
@@ -331,10 +348,9 @@ export default function InvoiceCreate() {
         <input
           placeholder="Customer name"
           value={customerName}
-          onChange={(event) => setCustomerName(event.target.value)}
+          onChange={(event) => handleCustomerNameChange(event.target.value)}
           style={styles.input}
         />
-
         <input
           placeholder="Mobile"
           value={customerMobile}
@@ -367,7 +383,9 @@ export default function InvoiceCreate() {
                 <div style={styles.modalHeader}>
                   <div>
                     <h3 style={styles.modalTitle}>Add Invoice Item</h3>
-                    <p style={styles.muted}>Edit details here only for this invoice</p>
+                    <p style={styles.muted}>
+                      Edit details here only for this invoice
+                    </p>
                   </div>
 
                   <button style={styles.closeBtn} onClick={closeItemPicker}>
@@ -401,7 +419,8 @@ export default function InvoiceCreate() {
                             <span>
                               <b>{item.item_name}</b>
                               <small style={styles.itemMeta}>
-                                Rs {item.sales_price} | Stock {item.opening_stock}
+                                Rs {item.sales_price} | Stock{" "}
+                                {item.opening_stock}
                               </small>
                             </span>
                           </button>
@@ -417,7 +436,9 @@ export default function InvoiceCreate() {
                   <div style={styles.editorPane}>
                     {draftItem ? (
                       <>
-                        <label style={styles.fieldLabel}>Invoice item name</label>
+                        <label style={styles.fieldLabel}>
+                          Invoice item name
+                        </label>
                         <input
                           value={draftItem.item_name}
                           onChange={(event) =>
@@ -463,7 +484,9 @@ export default function InvoiceCreate() {
                           </div>
                         </div>
 
-                        <label style={styles.fieldLabel}>Serial / other note</label>
+                        <label style={styles.fieldLabel}>
+                          Serial / other note
+                        </label>
                         <textarea
                           value={draftItem.serial_number}
                           onChange={(event) =>
@@ -477,17 +500,25 @@ export default function InvoiceCreate() {
                         />
 
                         <div style={styles.modalActions}>
-                          <button style={styles.secondaryBtn} onClick={closeItemPicker}>
+                          <button
+                            style={styles.secondaryBtn}
+                            onClick={closeItemPicker}
+                          >
                             Cancel
                           </button>
 
-                          <button style={styles.confirmBtn} onClick={addDraftToCart}>
+                          <button
+                            style={styles.confirmBtn}
+                            onClick={addDraftToCart}
+                          >
                             Add to Invoice
                           </button>
                         </div>
                       </>
                     ) : (
-                      <div style={styles.editorEmpty}>Select an item to edit invoice details</div>
+                      <div style={styles.editorEmpty}>
+                        Select an item to edit invoice details
+                      </div>
                     )}
                   </div>
                 </div>
@@ -510,17 +541,22 @@ export default function InvoiceCreate() {
                   type="number"
                   min="1"
                   value={entry.qty}
-                  onChange={(event) => changeQty(entry.line_id, event.target.value)}
+                  onChange={(event) =>
+                    changeQty(entry.line_id, event.target.value)
+                  }
                   style={styles.qty}
                 />
 
                 <b>Rs {(entry.price * entry.qty).toFixed(2)}</b>
 
                 <button
+                  className="app-action-btn app-action-delete"
                   style={styles.removeBtn}
+                  title="Remove item"
+                  aria-label="Remove item"
                   onClick={() => removeItem(entry.line_id)}
                 >
-                  Remove
+                  🗑
                 </button>
               </div>
             ))}
@@ -528,10 +564,7 @@ export default function InvoiceCreate() {
             {cart.length === 0 && (
               <div style={styles.emptyCart}>
                 <p style={styles.emptyText}>Cart is empty</p>
-                <button
-                  style={styles.secondaryBtn}
-                  onClick={openItemPicker}
-                >
+                <button style={styles.secondaryBtn} onClick={openItemPicker}>
                   Add Item
                 </button>
               </div>
@@ -540,10 +573,7 @@ export default function InvoiceCreate() {
 
           {cart.length > 0 && (
             <div style={styles.addMoreWrap}>
-              <button
-                style={styles.secondaryBtn}
-                onClick={openItemPicker}
-              >
+              <button style={styles.secondaryBtn} onClick={openItemPicker}>
                 Add Item
               </button>
             </div>
@@ -871,11 +901,8 @@ const styles = {
     fontSize: 12,
   },
   removeBtn: {
-    background: "#fee2e2",
-    color: "#dc2626",
     border: "none",
-    padding: "9px 12px",
-    borderRadius: 10,
+    padding: 0,
     cursor: "pointer",
     fontWeight: 600,
   },

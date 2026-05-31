@@ -13,7 +13,7 @@ export default function AddItem() {
     unit: "Pcs",
     sales_price: "",
     purchase_price: "",
-    opening_stock: 1,
+    opening_stock: 0,
     low_stock_alert: 0,
   });
 
@@ -26,6 +26,34 @@ export default function AddItem() {
 
   const submit = async (e) => {
     e.preventDefault();
+
+    if (!form.item_name.trim()) {
+      toast.error("Item Name is required");
+      return;
+    }
+
+    if (
+      form.sales_price === "" ||
+      form.sales_price === null ||
+      Number(form.sales_price) < 0
+    ) {
+      toast.error("Valid Sales Price is required");
+      return;
+    }
+
+    if (
+      form.purchase_price === "" ||
+      form.purchase_price === null ||
+      Number(form.purchase_price) < 0
+    ) {
+      toast.error("Valid Purchase Price is required");
+      return;
+    }
+
+    if (!form.unit.trim()) {
+      toast.error("Unit is required");
+      return;
+    }
 
     try {
       await axios.post("http://localhost:5000/api/items", form, {
@@ -106,7 +134,9 @@ export default function AddItem() {
             </div>
 
             <div style={styles.inputGroup}>
-              <label>Opening Stock</label>
+              <label>
+                Opening Stock <small> (Keep 0 if handle purchase)</small>
+              </label>
 
               <input
                 type="number"

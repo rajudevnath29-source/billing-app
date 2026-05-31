@@ -158,8 +158,8 @@ export default function EditItem() {
             </div>
 
             <div style={styles.inputGroup}>
-              <label>Opening Stock</label>
-
+              <label>Opening Stock <small> (Keep 0 if handle purchase)</small></label>
+            
               <input
                 type="number"
                 name="opening_stock"

@@ -1,338 +1,399 @@
-import {
-  useEffect,
-  useState
-} from "react";
-
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 export default function CustomerLedger() {
+  const [customers, setCustomers] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerInvoices, setCustomerInvoices] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loadingLedger, setLoadingLedger] = useState(false);
 
-  const [customers, setCustomers] =
-    useState([]);
+  const token = localStorage.getItem("token");
 
-  const [selectedCustomer,
-    setSelectedCustomer] =
-    useState(null);
+  const authHeader = useMemo(
+    () => ({
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }),
+    [token],
+  );
 
-  const [customerInvoices,
-    setCustomerInvoices] =
-    useState([]);
-
-  const token =
-    localStorage.getItem("token");
-
-  // ====================================
-  // LOAD CUSTOMERS
-  // ====================================
-
-  const fetchCustomers =
-    async () => {
-
-      try {
-
-        const res =
-          await axios.get(
-
-            "http://localhost:5000/api/customers",
-
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`
-              }
-            }
-
-          );
-
-        setCustomers(
-          res.data.customers
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-
-    };
+  const fetchCustomers = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/customers", authHeader);
+      setCustomers(res.data.customers || []);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
-
     fetchCustomers();
-
   }, []);
 
-  // ====================================
-  // OPEN CUSTOMER LEDGER
-  // ====================================
+  const openLedger = async (customer) => {
+    try {
+      setSelectedCustomer(customer);
+      setLoadingLedger(true);
 
-  const openLedger =
-    async (customer) => {
+      const res = await axios.get(
+        `http://localhost:5000/api/invoices/customer/${customer._id}`,
+        authHeader,
+      );
 
-      try {
+      setCustomerInvoices(res.data.invoices || []);
+    } catch (error) {
+      console.log(error);
+      setCustomerInvoices([]);
+    } finally {
+      setLoadingLedger(false);
+    }
+  };
 
-        setSelectedCustomer(
-          customer
-        );
+  const filteredCustomers = customers.filter((customer) => {
+    const keyword = search.toLowerCase();
 
-        const res =
-          await axios.get(
-
-            `http://localhost:5000/api/invoices/customer/${customer._id}`,
-
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`
-              }
-            }
-
-          );
-
-        setCustomerInvoices(
-          res.data.invoices
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-
-    };
-
-  // ====================================
-  // TOTAL
-  // ====================================
-
-  const totalSales =
-    customerInvoices.reduce(
-
-      (sum, inv) =>
-        sum + inv.grand_total,
-
-      0
-
+    return (
+      customer.customer_name?.toLowerCase().includes(keyword) ||
+      customer.phone?.toLowerCase().includes(keyword) ||
+      customer.city?.toLowerCase().includes(keyword)
     );
+  });
+
+  const totalSales = customerInvoices.reduce(
+    (sum, inv) => sum + Number(inv.grand_total || 0),
+    0,
+  );
+
+  const totalPaid = customerInvoices.reduce(
+    (sum, inv) => sum + Number(inv.paid_amount || 0),
+    0,
+  );
+
+  const totalDue = customerInvoices.reduce(
+    (sum, inv) => sum + Number(inv.due_amount || 0),
+    0,
+  );
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+
+    return new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const formatMoney = (value) =>
+    Number(value || 0).toLocaleString("en-IN", {
+      maximumFractionDigits: 0,
+    });
 
   return (
-      <div style={page}>
+    <div style={styles.page}>
+      <div style={styles.header}>
+        <div>
+          <h1 style={styles.title}>Customer Ledger</h1>
+          <p style={styles.subtitle}>Customer-wise sales, paid amount and balance</p>
+        </div>
+      </div>
 
-        <h1>
-          📒 Customer Ledger
-        </h1>
+      <div style={styles.mainBox}>
+        <aside style={styles.leftBox}>
+          <input
+            placeholder="Search customer..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            style={styles.search}
+          />
 
-        <div style={mainBox}>
+          <div style={styles.customerList}>
+            {filteredCustomers.map((customer) => {
+              const isActive = selectedCustomer?._id === customer._id;
 
-          {/* LEFT */}
-
-          <div style={leftBox}>
-
-            {customers.map((customer) => (
-
-              <div
-                key={customer._id}
-                style={customerCard}
-                onClick={() =>
-                  openLedger(customer)
-                }
-              >
-
-                <h3>
-                  {
-                    customer.customer_name
-                  }
-                </h3>
-
-                <p>
-                  {
-                    customer.mobile
-                  }
-                </p>
-
-              </div>
-
-            ))}
-
+              return (
+                <button
+                  key={customer._id}
+                  type="button"
+                  style={{
+                    ...styles.customerCard,
+                    ...(isActive ? styles.activeCustomerCard : {}),
+                  }}
+                  onClick={() => openLedger(customer)}
+                >
+                  <span style={styles.customerName}>{customer.customer_name}</span>
+                  <span style={styles.customerMeta}>
+                    {customer.phone || "-"} {customer.city ? `• ${customer.city}` : ""}
+                  </span>
+                  <span className="money-text" style={styles.customerMoney}>
+                    ₹ {formatMoney(customer.opening_balance)}
+                  </span>
+                </button>
+              );
+            })}
           </div>
+        </aside>
 
-          {/* RIGHT */}
-
-          <div style={rightBox}>
-
-            {selectedCustomer ? (
-
-              <>
-
-                <div style={topCard}>
-
-                  <h2>
-                    {
-                      selectedCustomer.customer_name
-                    }
-                  </h2>
-
-                  <p>
-                    📱
-                    {" "}
-                    {
-                      selectedCustomer.mobile
-                    }
-                  </p>
-
-                  <h3>
-
-                    Total Sales:
-                    {" "}
-
-                    ₹
-                    {" "}
-
-                    {
-                      totalSales.toFixed(2)
-                    }
-
-                  </h3>
-
+        <section style={styles.rightBox}>
+          {selectedCustomer ? (
+            <>
+              <div style={styles.summaryGrid}>
+                <div style={styles.summaryCard}>
+                  <span style={styles.summaryLabel}>Customer</span>
+                  <strong style={styles.summaryValue}>
+                    {selectedCustomer.customer_name}
+                  </strong>
+                  <span style={styles.summaryNote}>
+                    {selectedCustomer.phone || "-"}
+                  </span>
                 </div>
 
-                {/* TABLE */}
+                <div style={styles.summaryCard}>
+                  <span style={styles.summaryLabel}>Total Sales</span>
+                  <strong style={styles.summaryValue}>₹ {formatMoney(totalSales)}</strong>
+                </div>
 
-                <table style={table}>
+                <div style={styles.summaryCard}>
+                  <span style={styles.summaryLabel}>Paid</span>
+                  <strong style={styles.summaryValue}>₹ {formatMoney(totalPaid)}</strong>
+                </div>
 
+                <div style={styles.summaryCard}>
+                  <span style={styles.summaryLabel}>Balance</span>
+                  <strong style={styles.summaryValue}>₹ {formatMoney(totalDue)}</strong>
+                </div>
+              </div>
+
+              <div className="app-table-card" style={styles.tableCard}>
+                <table className="app-table" style={styles.table}>
                   <thead>
-
                     <tr>
-
-                      <th>
-                        Invoice No
-                      </th>
-
-                      <th>
-                        Date
-                      </th>
-
-                      <th>
-                        Amount
-                      </th>
-
+                      <th>Invoice No</th>
+                      <th>Date</th>
+                      <th>Total</th>
+                      <th>Paid</th>
+                      <th>Due</th>
+                      <th>Status</th>
                     </tr>
-
                   </thead>
 
                   <tbody>
-
-                    {customerInvoices.map(
-                      (invoice) => (
-
-                      <tr
-                        key={invoice._id}
-                      >
-
+                    {customerInvoices.map((invoice) => (
+                      <tr key={invoice._id} className="table-row">
                         <td>
-                          {
-                            invoice.invoice_number
-                          }
+                          <strong>{invoice.invoice_number}</strong>
                         </td>
-
+                        <td>{formatDate(invoice.invoiceDate || invoice.createdAt)}</td>
                         <td>
-
-                          {
-                            new Date(
-                              invoice.invoiceDate || invoice.createdAt
-                            ).toLocaleDateString()
-                          }
-
+                          <span className="money-text">
+                            ₹ {formatMoney(invoice.grand_total)}
+                          </span>
                         </td>
-
                         <td>
-                          ₹
-                          {" "}
-                          {
-                            invoice.grand_total
-                          }
+                          <span className="money-text">
+                            ₹ {formatMoney(invoice.paid_amount)}
+                          </span>
                         </td>
-
+                        <td>
+                          <span className="money-text">
+                            ₹ {formatMoney(invoice.due_amount)}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              ...styles.statusBadge,
+                              ...(invoice.payment_status === "PAID"
+                                ? styles.paidBadge
+                                : invoice.payment_status === "PARTIAL"
+                                  ? styles.partialBadge
+                                  : styles.dueBadge),
+                            }}
+                          >
+                            {invoice.payment_status || "DUE"}
+                          </span>
+                        </td>
                       </tr>
-
                     ))}
-
                   </tbody>
-
                 </table>
 
-              </>
+                {loadingLedger && <div style={styles.emptyBox}>Loading ledger...</div>}
 
-            ) : (
-
-              <div style={emptyBox}>
-
-                <h2>
-                  Select Customer
-                </h2>
-
+                {!loadingLedger && customerInvoices.length === 0 && (
+                  <div style={styles.emptyBox}>No invoice found for this customer</div>
+                )}
               </div>
-
-            )}
-
-          </div>
-
-        </div>
-
+            </>
+          ) : (
+            <div style={styles.emptyState}>
+              <h2 style={styles.emptyTitle}>Select Customer</h2>
+              <p style={styles.subtitle}>
+                Left side se customer choose karte hi uska ledger yahan dikh jayega.
+              </p>
+            </div>
+          )}
+        </section>
       </div>
+    </div>
   );
-
 }
 
-/* ====================================
-   STYLES
-==================================== */
-
-const page = {
-  padding: 20
-};
-
-const mainBox = {
-  display: "flex",
-  gap: 20,
-  marginTop: 20
-};
-
-const leftBox = {
-  width: "30%",
-  background: "#fff",
-  borderRadius: 10,
-  padding: 15,
-  height: "80vh",
-  overflowY: "auto"
-};
-
-const rightBox = {
-  width: "70%"
-};
-
-const customerCard = {
-  padding: 15,
-  borderBottom: "1px solid #eee",
-  cursor: "pointer"
-};
-
-const topCard = {
-  background: "#fff",
-  padding: 20,
-  borderRadius: 10,
-  marginBottom: 20
-};
-
-const table = {
-  width: "100%",
-  borderCollapse: "collapse",
-  background: "#fff"
-};
-
-const emptyBox = {
-  background: "#fff",
-  padding: 50,
-  borderRadius: 10,
-  textAlign: "center"
+const styles = {
+  page: {
+    padding: 10,
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  title: {
+    margin: 0,
+    fontSize: 30,
+    color: "#0f172a",
+  },
+  subtitle: {
+    margin: "6px 0 0",
+    color: "#64748b",
+  },
+  mainBox: {
+    display: "grid",
+    gridTemplateColumns: "260px 1fr",
+    gap: 14,
+    alignItems: "start",
+  },
+  leftBox: {
+    background: "#fff",
+    borderRadius: 10,
+    padding: 8,
+    height: "calc(100vh - 160px)",
+    overflow: "hidden",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+  },
+  search: {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: 8,
+    marginBottom: 6,
+    borderRadius: 6,
+    border: "1px solid #ccc",
+    outline: "none",
+  },
+  customerList: {
+    height: "calc(100% - 40px)",
+    overflowY: "auto",
+  },
+  customerCard: {
+    width: "100%",
+    display: "grid",
+    gap: 0,
+    textAlign: "left",
+    background: "#fff",
+    border: "none",
+    borderBottom: "1px solid #eee",
+    gridTemplateColumns: "1fr auto",
+    columnGap: 8,
+    rowGap: 1,
+    padding: "5px 7px",
+    cursor: "pointer",
+  },
+  activeCustomerCard: {
+    background: "#f1f5f9",
+    borderLeft: "3px solid #2563eb",
+  },
+  customerName: {
+    color: "#0f172a",
+    fontWeight: 800,
+    fontSize: 12,
+    lineHeight: 1.2,
+  },
+  customerMeta: {
+    color: "#64748b",
+    fontSize: 11,
+    lineHeight: 1.2,
+  },
+  customerMoney: {
+    gridRow: "1 / span 2",
+    gridColumn: 2,
+    alignSelf: "center",
+    fontSize: 12,
+  },
+  rightBox: {
+    minWidth: 0,
+  },
+  summaryGrid: {
+    display: "grid",
+    gridTemplateColumns: "1.4fr repeat(3, 1fr)",
+    gap: 10,
+    marginBottom: 12,
+  },
+  summaryCard: {
+    background: "#fff",
+    borderRadius: 10,
+    padding: 10,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+  },
+  summaryLabel: {
+    display: "block",
+    color: "#64748b",
+    fontSize: 12,
+    fontWeight: 700,
+    marginBottom: 6,
+  },
+  summaryValue: {
+    display: "block",
+    color: "#0f172a",
+    fontSize: 17,
+  },
+  summaryNote: {
+    display: "block",
+    color: "#64748b",
+    fontSize: 13,
+    marginTop: 5,
+  },
+  tableCard: {
+    borderRadius: 10,
+  },
+  table: {
+    width: "100%",
+  },
+  statusBadge: {
+    display: "inline-block",
+    padding: "4px 8px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 700,
+  },
+  paidBadge: {
+    background: "#dcfce7",
+    color: "#15803d",
+  },
+  partialBadge: {
+    background: "#fef3c7",
+    color: "#b45309",
+  },
+  dueBadge: {
+    background: "#fee2e2",
+    color: "#dc2626",
+  },
+  emptyBox: {
+    padding: 40,
+    textAlign: "center",
+    color: "#64748b",
+  },
+  emptyState: {
+    background: "#fff",
+    padding: 50,
+    borderRadius: 10,
+    textAlign: "center",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+  },
+  emptyTitle: {
+    margin: 0,
+    color: "#0f172a",
+  },
 };

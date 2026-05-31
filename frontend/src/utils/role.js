@@ -7,7 +7,6 @@ export const getRole = () => {
 };
 
 export const getPermissions = () => {
-  console.log(getUser());
   return (getUser()?.permissions || []).map(
     (permission) => permission.name,
   );

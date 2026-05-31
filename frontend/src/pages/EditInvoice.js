@@ -74,7 +74,9 @@ export default function EditInvoice() {
       setInvoice(loadedInvoice);
       setCart(invoiceItems);
       setOriginalQtyByItem(originalQty);
-      setSelectedCustomer(loadedInvoice.customer?._id || loadedInvoice.customer || "");
+      setSelectedCustomer(
+        loadedInvoice.customer?._id || loadedInvoice.customer || "",
+      );
       setCustomerName(loadedInvoice.customer_name || "Cash");
       setCustomerMobile(loadedInvoice.customer_mobile || "");
       setDiscount(loadedInvoice.discount || 0);
@@ -114,13 +116,30 @@ export default function EditInvoice() {
 
     const customer = customers.find((entry) => entry._id === customerId);
     if (!customer) {
-      setCustomerName("Cash");
+      setCustomerName("");
       setCustomerMobile("");
       return;
     }
-
     setCustomerName(customer.customer_name || "");
     setCustomerMobile(customer.phone || "");
+  };
+
+  const handleCustomerNameChange = (value) => {
+    setCustomerName(value);
+
+    const matchedCustomer = customers.find(
+      (customer) =>
+        customer.customer_name?.trim().toLowerCase() ===
+        value.trim().toLowerCase(),
+    );
+
+    if (matchedCustomer) {
+      setSelectedCustomer(matchedCustomer._id);
+      setCustomerMobile(matchedCustomer.phone || "");
+    } else {
+      setSelectedCustomer("");
+      setCustomerMobile("");
+    }
   };
 
   const openItemPicker = () => {
@@ -241,13 +260,12 @@ export default function EditInvoice() {
     (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0),
     0,
   );
-  const totalItems = cart.reduce(
-    (sum, item) => sum + Number(item.qty || 0),
-    0,
-  );
+  const totalItems = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
   const safeDiscount = Math.min(Number(discount || 0), subTotal);
   const afterDiscount = subTotal - safeDiscount;
-  const gstAmount = gstEnabled ? (afterDiscount * Number(gstRate || 0)) / 100 : 0;
+  const gstAmount = gstEnabled
+    ? (afterDiscount * Number(gstRate || 0)) / 100
+    : 0;
   const grandTotal = afterDiscount + gstAmount;
   const dueAmount = grandTotal - Number(paidAmount || 0);
 
@@ -308,7 +326,10 @@ export default function EditInvoice() {
           </p>
         </div>
 
-        <button style={styles.secondaryBtn} onClick={() => navigate("/invoice-view")}>
+        <button
+          style={styles.secondaryBtn}
+          onClick={() => navigate("/invoice-view")}
+        >
           Back to List
         </button>
       </div>
@@ -337,7 +358,7 @@ export default function EditInvoice() {
         <input
           placeholder="Customer name"
           value={customerName}
-          onChange={(event) => setCustomerName(event.target.value)}
+          onChange={(event) => handleCustomerNameChange(event.target.value)}
           style={styles.input}
         />
 
@@ -373,7 +394,9 @@ export default function EditInvoice() {
                 <div style={styles.modalHeader}>
                   <div>
                     <h3 style={styles.modalTitle}>Add Invoice Item</h3>
-                    <p style={styles.muted}>Edit details here only for this invoice</p>
+                    <p style={styles.muted}>
+                      Edit details here only for this invoice
+                    </p>
                   </div>
 
                   <button style={styles.closeBtn} onClick={closeItemPicker}>
@@ -407,7 +430,8 @@ export default function EditInvoice() {
                             <span>
                               <b>{item.item_name}</b>
                               <small style={styles.itemMeta}>
-                                Rs {item.sales_price} | Available {availableStock(item._id)}
+                                Rs {item.sales_price} | Available{" "}
+                                {availableStock(item._id)}
                               </small>
                             </span>
                           </button>
@@ -423,7 +447,9 @@ export default function EditInvoice() {
                   <div style={styles.editorPane}>
                     {draftItem ? (
                       <>
-                        <label style={styles.fieldLabel}>Invoice item name</label>
+                        <label style={styles.fieldLabel}>
+                          Invoice item name
+                        </label>
                         <input
                           value={draftItem.item_name}
                           onChange={(event) =>
@@ -469,7 +495,9 @@ export default function EditInvoice() {
                           </div>
                         </div>
 
-                        <label style={styles.fieldLabel}>Serial / other note</label>
+                        <label style={styles.fieldLabel}>
+                          Serial / other note
+                        </label>
                         <textarea
                           value={draftItem.serial_number}
                           onChange={(event) =>
@@ -483,17 +511,25 @@ export default function EditInvoice() {
                         />
 
                         <div style={styles.modalActions}>
-                          <button style={styles.secondaryBtn} onClick={closeItemPicker}>
+                          <button
+                            style={styles.secondaryBtn}
+                            onClick={closeItemPicker}
+                          >
                             Cancel
                           </button>
 
-                          <button style={styles.confirmBtn} onClick={addDraftToCart}>
+                          <button
+                            style={styles.confirmBtn}
+                            onClick={addDraftToCart}
+                          >
                             Add to Invoice
                           </button>
                         </div>
                       </>
                     ) : (
-                      <div style={styles.editorEmpty}>Select an item to edit invoice details</div>
+                      <div style={styles.editorEmpty}>
+                        Select an item to edit invoice details
+                      </div>
                     )}
                   </div>
                 </div>
@@ -516,17 +552,27 @@ export default function EditInvoice() {
                   type="number"
                   min="1"
                   value={entry.qty}
-                  onChange={(event) => changeQty(entry.line_id, event.target.value)}
+                  onChange={(event) =>
+                    changeQty(entry.line_id, event.target.value)
+                  }
                   style={styles.qty}
                 />
 
-                <b>Rs {(Number(entry.price || 0) * Number(entry.qty || 0)).toFixed(2)}</b>
+                <b>
+                  Rs{" "}
+                  {(Number(entry.price || 0) * Number(entry.qty || 0)).toFixed(
+                    2,
+                  )}
+                </b>
 
                 <button
+                  className="app-action-btn app-action-delete"
                   style={styles.removeBtn}
+                  title="Remove item"
+                  aria-label="Remove item"
                   onClick={() => removeItem(entry.line_id)}
                 >
-                  Remove
+                  🗑
                 </button>
               </div>
             ))}
@@ -863,11 +909,8 @@ const styles = {
     fontSize: 12,
   },
   removeBtn: {
-    background: "#fee2e2",
-    color: "#dc2626",
     border: "none",
-    padding: "9px 12px",
-    borderRadius: 10,
+    padding: 0,
     cursor: "pointer",
     fontWeight: 600,
   },

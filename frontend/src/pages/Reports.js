@@ -164,7 +164,7 @@ export default function Reports() {
   ];
 
   return (
-    <div style={pageStyle}>
+    <div style={pageStyle} className="compact-screen">
       <h1 style={heading}>📊 ERP Reports</h1>
 
       {/* TOP CARDS */}
@@ -206,9 +206,9 @@ export default function Reports() {
       <div style={reportBox}>
         <h2>🧾 GST Report</h2>
 
-        <table style={table}>
+        <table style={table} className="app-table">
           <thead>
-            <tr>
+            <tr className="table-row">
               <th>Type</th>
 
               <th>GST Amount</th>
@@ -216,7 +216,7 @@ export default function Reports() {
           </thead>
 
           <tbody>
-            <tr>
+            <tr className="table-row">
               <td>GST Collected</td>
 
               <td>₹ {totalGSTSales.toFixed(2)}</td>
@@ -235,7 +235,7 @@ export default function Reports() {
       <div style={reportBox}>
         <h2>⚠️ Low Stock Report</h2>
 
-        <table style={table}>
+        <table style={table} className="app-table">
           <thead>
             <tr>
               <th>Item</th>
@@ -248,7 +248,7 @@ export default function Reports() {
 
           <tbody>
             {lowStockItems.map((item) => (
-              <tr key={item._id}>
+              <tr key={item._id} className="table-row">
                 <td>{item.item_name}</td>
 
                 <td>{item.opening_stock}</td>
@@ -314,37 +314,39 @@ export default function Reports() {
 ==================================== */
 
 const pageStyle = {
-  padding: 20,
+  padding: 10,
 };
 
 const heading = {
-  marginBottom: 20,
+  margin: "0 0 14px",
+  fontSize: 26,
+  color: "#0f172a",
 };
 
 const cardGrid = {
   display: "grid",
-  gridTemplateColumns: "repeat(4, 1fr)",
-  gap: 20,
-  marginBottom: 30,
+  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+  gap: 12,
+  marginBottom: 16,
 };
 
 const card = {
   background: "#fff",
-  padding: 20,
+  padding: 12,
   borderRadius: 10,
-  boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
 };
 
 const reportBox = {
   background: "#fff",
-  padding: 20,
+  padding: 12,
   borderRadius: 10,
-  marginBottom: 30,
-  boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+  marginBottom: 16,
+  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
 };
 
 const table = {
   width: "100%",
   borderCollapse: "collapse",
-  marginTop: 20,
+  marginTop: 10,
 };

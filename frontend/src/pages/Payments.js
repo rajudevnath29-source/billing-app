@@ -147,7 +147,7 @@ export default function Payments() {
 
       {/* PAYMENT HISTORY */}
 
-      <table style={table}>
+      <table style={table} className="app-table">
         <thead>
           <tr>
             <th>Invoice</th>
@@ -162,7 +162,7 @@ export default function Payments() {
 
         <tbody>
           {payments.map((pay) => (
-            <tr key={pay._id}>
+            <tr key={pay._id} className="table-row">
               <td>{pay.invoice?.invoice_number}</td>
 
               <td>₹ {pay.amount}</td>

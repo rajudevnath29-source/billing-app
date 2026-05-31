@@ -165,7 +165,7 @@ export default function Vouchers() {
 
       {/* TABLE */}
 
-      <table style={table}>
+      <table style={table} className="app-table">
         <thead>
           <tr>
             <th>Type</th>
@@ -182,7 +182,7 @@ export default function Vouchers() {
 
         <tbody>
           {vouchers.map((vou) => (
-            <tr key={vou._id}>
+            <tr key={vou._id} className="table-row">
               <td>{vou.voucher_type}</td>
 
               <td>{vou.account?.account_name}</td>

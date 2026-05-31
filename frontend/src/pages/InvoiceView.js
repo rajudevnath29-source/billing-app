@@ -21,6 +21,8 @@ export default function InvoiceView() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState(null);
 
   const authHeader = useMemo(
     () => ({
@@ -80,6 +82,27 @@ export default function InvoiceView() {
 
   const closeInvoice = () => {
     setSelectedInvoice(null);
+  };
+
+  const deleteInvoice = async () => {
+    if (!invoiceToDelete) return;
+
+    try {
+      await axios.delete(
+        `${API_URL}/invoices/${invoiceToDelete._id}`,
+        authHeader,
+      );
+
+      toast.success("Invoice deleted successfully");
+
+      setDeleteModal(false);
+      setInvoiceToDelete(null);
+      setSelectedInvoice(null);
+
+      fetchInvoices();
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Invoice delete failed");
+    }
   };
 
   const printInvoice = () => {
@@ -158,7 +181,8 @@ export default function InvoiceView() {
     });
   };
 
-  const getInvoiceDate = (invoice) => invoice?.invoiceDate || invoice?.createdAt;
+  const getInvoiceDate = (invoice) =>
+    invoice?.invoiceDate || invoice?.createdAt;
 
   const formatInvoiceDate = (date) => {
     if (!date) return "-";
@@ -240,8 +264,8 @@ export default function InvoiceView() {
         </select>
       </div>
 
-      <div style={styles.listCard}>
-        <table style={styles.table}>
+      <div style={styles.listCard} className="app-table-card">
+        <table style={styles.table} className="app-table">
           <thead>
             <tr>
               <th style={styles.th}>Invoice</th>
@@ -262,7 +286,11 @@ export default function InvoiceView() {
               );
 
               return (
-                <tr key={invoice._id} style={styles.tableRow}>
+                <tr
+                  key={invoice._id}
+                  style={styles.tableRow}
+                  className="table-row"
+                >
                   <td style={styles.td}>
                     <b>{invoice.invoice_number}</b>
                   </td>
@@ -270,9 +298,15 @@ export default function InvoiceView() {
                     {invoice.customer_name}
                     <p style={styles.muted}>{invoice.customer_mobile || "-"}</p>
                   </td>
-                  <td style={styles.td}>{formatDate(getInvoiceDate(invoice))}</td>
+                  <td style={styles.td}>
+                    {formatDate(getInvoiceDate(invoice))}
+                  </td>
                   <td style={styles.td}>{totalQty}</td>
-                  <td style={styles.td}>Rs {invoice.grand_total}</td>
+                  <td style={styles.td}>
+                    <span className="money-text">
+                      ₹ {formatMoney(invoice.grand_total)}
+                    </span>
+                  </td>
                   <td style={styles.td}>
                     <span
                       style={{
@@ -285,21 +319,44 @@ export default function InvoiceView() {
                   </td>
                   <td style={styles.td}>
                     <div style={styles.actionWrap}>
-                      <button
-                        style={styles.secondaryBtn}
-                        onClick={() => openInvoice(invoice)}
-                      >
-                        View
-                      </button>
+                      {hasPermission("VIEW_INVOICE") && (
+                        <button
+                          className="app-action-btn app-action-view"
+                          style={styles.iconBtn}
+                          title="View invoice"
+                          aria-label="View invoice"
+                          onClick={() => openInvoice(invoice)}
+                        >
+                          👁
+                        </button>
+                      )}
 
                       {hasPermission("EDIT_INVOICE") && (
                         <button
-                          style={styles.editBtn}
+                          className="app-action-btn app-action-edit"
+                          style={styles.iconBtn}
+                          title="Edit invoice"
+                          aria-label="Edit invoice"
                           onClick={() =>
                             navigate(`/invoice-edit/${invoice._id}`)
                           }
                         >
-                          Edit
+                          ✎
+                        </button>
+                      )}
+
+                      {hasPermission("DELETE_INVOICE") && (
+                        <button
+                          className="app-action-btn app-action-delete"
+                          style={styles.iconBtn}
+                          title="Delete invoice"
+                          aria-label="Delete invoice"
+                          onClick={() => {
+                            setInvoiceToDelete(invoice);
+                            setDeleteModal(true);
+                          }}
+                        >
+                          🗑
                         </button>
                       )}
                     </div>
@@ -392,6 +449,20 @@ export default function InvoiceView() {
                     Edit
                   </button>
                 )}
+                {hasPermission("DELETE_INVOICE") && (
+                  <button
+                    className="app-action-btn app-action-delete"
+                    style={styles.iconBtn}
+                    title="Delete invoice"
+                    aria-label="Delete invoice"
+                    onClick={() => {
+                      setInvoiceToDelete(selectedInvoice);
+                      setDeleteModal(true);
+                    }}
+                  >
+                    🗑
+                  </button>
+                )}
                 <button style={styles.closeBtn} onClick={closeInvoice}>
                   X
                 </button>
@@ -448,16 +519,22 @@ export default function InvoiceView() {
                 <table style={styles.billTable}>
                   <thead>
                     <tr>
-                      <th style={{ ...styles.billTableHead, ...styles.itemCol }}>
+                      <th
+                        style={{ ...styles.billTableHead, ...styles.itemCol }}
+                      >
                         ITEMS
                       </th>
                       <th style={{ ...styles.billTableHead, ...styles.qtyCol }}>
                         QTY.
                       </th>
-                      <th style={{ ...styles.billTableHead, ...styles.moneyCol }}>
+                      <th
+                        style={{ ...styles.billTableHead, ...styles.moneyCol }}
+                      >
                         RATE
                       </th>
-                      <th style={{ ...styles.billTableHead, ...styles.moneyCol }}>
+                      <th
+                        style={{ ...styles.billTableHead, ...styles.moneyCol }}
+                      >
                         AMOUNT
                       </th>
                     </tr>
@@ -466,7 +543,9 @@ export default function InvoiceView() {
                   <tbody>
                     {(selectedInvoice.items || []).map((item, index) => (
                       <tr key={index}>
-                        <td style={{ ...styles.billTableCell, ...styles.itemCol }}>
+                        <td
+                          style={{ ...styles.billTableCell, ...styles.itemCol }}
+                        >
                           <div style={styles.itemName}>{item.item_name}</div>
 
                           {item.serial_number && (
@@ -476,15 +555,27 @@ export default function InvoiceView() {
                           )}
                         </td>
 
-                        <td style={{ ...styles.billTableCell, ...styles.qtyCol }}>
+                        <td
+                          style={{ ...styles.billTableCell, ...styles.qtyCol }}
+                        >
                           {item.qty} PCS
                         </td>
 
-                        <td style={{ ...styles.billTableCell, ...styles.moneyCol }}>
+                        <td
+                          style={{
+                            ...styles.billTableCell,
+                            ...styles.moneyCol,
+                          }}
+                        >
                           {formatMoney(item.price)}
                         </td>
 
-                        <td style={{ ...styles.billTableCell, ...styles.moneyCol }}>
+                        <td
+                          style={{
+                            ...styles.billTableCell,
+                            ...styles.moneyCol,
+                          }}
+                        >
                           {formatMoney(item.total)}
                         </td>
                       </tr>
@@ -561,6 +652,36 @@ export default function InvoiceView() {
           </div>
         </div>
       )}
+      {deleteModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.deleteModal}>
+            <div style={styles.deleteModalIcon}>🗑️</div>
+
+            <h2>Delete Invoice?</h2>
+
+            <p style={styles.deleteModalText}>
+              Are you sure you want to delete invoice
+              <strong> {invoiceToDelete?.invoice_number}</strong>?
+            </p>
+
+            <div style={styles.deleteModalActions}>
+              <button
+                style={styles.cancelDeleteBtn}
+                onClick={() => {
+                  setDeleteModal(false);
+                  setInvoiceToDelete(null);
+                }}
+              >
+                Cancel
+              </button>
+
+              <button style={styles.confirmDeleteBtn} onClick={deleteInvoice}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -609,9 +730,9 @@ const styles = {
   },
   listCard: {
     background: "#fff",
-    borderRadius: 12,
+    borderRadius: 10,
     overflow: "hidden",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
   table: {
     width: "100%",
@@ -622,25 +743,25 @@ const styles = {
   },
   th: {
     textAlign: "left",
-    padding: 16,
-    background: "#f8fafc",
-    color: "#334155",
+    padding: "10px 12px",
+    background: "#0f172a",
+    color: "#fff",
     fontWeight: 700,
     fontSize: 13,
   },
   td: {
-    padding: 16,
-    borderTop: "1px solid #f1f5f9",
-    verticalAlign: "top",
+    padding: "8px 12px",
+    borderTop: "1px solid #eee",
+    verticalAlign: "middle",
   },
   muted: {
-    margin: "5px 0 0",
+    margin: "2px 0 0",
     color: "#64748b",
-    fontSize: 13,
+    fontSize: 12,
   },
   statusBadge: {
     display: "inline-block",
-    padding: "6px 10px",
+    padding: "4px 8px",
     borderRadius: 999,
     fontSize: 12,
     fontWeight: 700,
@@ -659,9 +780,14 @@ const styles = {
   },
   actionWrap: {
     display: "flex",
-    gap: 10,
+    gap: 8,
     flexWrap: "wrap",
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
+  },
+  iconBtn: {
+    padding: 0,
+    fontWeight: 700,
+    fontSize: 14,
   },
   primaryBtn: {
     background: "#2563eb",
@@ -676,8 +802,9 @@ const styles = {
     background: "#e2e8f0",
     color: "#0f172a",
     border: "none",
-    padding: "9px 13px",
-    borderRadius: 10,
+    height: 32,
+    padding: "0 12px",
+    borderRadius: 6,
     cursor: "pointer",
     fontWeight: 700,
   },
@@ -694,8 +821,10 @@ const styles = {
     background: "#fee2e2",
     color: "#dc2626",
     border: "none",
-    padding: "9px 13px",
-    borderRadius: 10,
+    height: 32,
+    minWidth: 32,
+    padding: "0 10px",
+    borderRadius: 6,
     cursor: "pointer",
     fontWeight: 700,
   },
@@ -1050,6 +1179,52 @@ const styles = {
     marginTop: "28px",
     color: "#000",
     fontSize: "13px",
+    fontWeight: 600,
+  },
+  deleteModal: {
+    background: "#fff",
+    width: 420,
+    padding: 30,
+    borderRadius: 24,
+    textAlign: "center",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+  },
+
+  deleteModalIcon: {
+    fontSize: 55,
+    marginBottom: 10,
+  },
+
+  deleteModalText: {
+    color: "#64748b",
+    marginTop: 10,
+    lineHeight: 1.7,
+  },
+
+  deleteModalActions: {
+    display: "flex",
+    gap: 15,
+    marginTop: 25,
+  },
+
+  cancelDeleteBtn: {
+    flex: 1,
+    border: "none",
+    padding: 12,
+    borderRadius: 12,
+    background: "#e2e8f0",
+    cursor: "pointer",
+    fontWeight: 600,
+  },
+
+  confirmDeleteBtn: {
+    flex: 1,
+    border: "none",
+    padding: 12,
+    borderRadius: 12,
+    background: "#ef4444",
+    color: "#fff",
+    cursor: "pointer",
     fontWeight: 600,
   },
 };

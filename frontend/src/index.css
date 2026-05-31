@@ -16,3 +16,85 @@ code {
   background: #f1f5f9 !important;
   transition: 0.2s;
 }
+
+.app-table-card {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.app-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.app-table th {
+  background: #0f172a;
+  color: #fff;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.app-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.app-action-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.app-action-view {
+  background: #0ea5e9;
+  color: #fff;
+}
+
+.app-action-edit {
+  background: #2563eb;
+  color: #fff;
+}
+
+.app-action-delete {
+  background: #ef4444;
+  color: #fff;
+}
+
+.money-text {
+  white-space: nowrap;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.compact-screen h1 {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.compact-screen h2 {
+  font-size: 18px;
+  line-height: 1.25;
+  margin: 0 0 10px;
+}
+
+.compact-screen h3 {
+  font-size: 13px;
+  line-height: 1.25;
+  margin: 0 0 6px;
+  color: #475569;
+}

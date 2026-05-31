@@ -233,7 +233,7 @@ export default function PurchaseCreate() {
       <div style={styles.mainGrid}>
         {/* LEFT */}
 
-        <div style={styles.card}>
+        <div style={{ ...styles.card, ...styles.itemsPanel }}>
           <div style={styles.itemHeader}>
             <h3>Available Items</h3>
 
@@ -248,7 +248,7 @@ export default function PurchaseCreate() {
           {filteredItems.map((item) => (
             <div key={item._id} style={styles.itemCard}>
               <div>
-                <h4 style={{ margin: 0 }}>{item.item_name}</h4>
+                <h4 style={styles.availableItemName}>{item.item_name}</h4>
 
                 <p style={styles.stockText}>
                   Stock:
@@ -257,7 +257,7 @@ export default function PurchaseCreate() {
               </div>
 
               <button style={styles.addBtn} onClick={() => addToCart(item)}>
-                Add
+                +
               </button>
             </div>
           ))}
@@ -332,8 +332,10 @@ export default function PurchaseCreate() {
                       <button
                         style={styles.removeBtn}
                         onClick={() => removeItem(item.item_id)}
+                        title="Remove item"
+                        aria-label="Remove item"
                       >
-                        Remove
+                        🗑
                       </button>
                     </div>
                   </div>
@@ -407,7 +409,7 @@ export default function PurchaseCreate() {
 }
 const styles = {
   page: {
-    padding: 20,
+    padding: 10,
   },
 
   header: {
@@ -427,11 +429,11 @@ const styles = {
 
   card: {
     background: "#fff",
-    padding: 24,
-    borderRadius: 24,
+    padding: 14,
+    borderRadius: 10,
     border: "1px solid #e2e8f0",
-    boxShadow: "0 10px 30px rgba(15,23,42,.05)",
-    marginBottom: 20,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+    marginBottom: 16,
   },
 
   sectionTitle: {
@@ -447,13 +449,13 @@ const styles = {
 
   mainGrid: {
     display: "grid",
-    gridTemplateColumns: "30% 70%",
-    gap: 20,
+    gridTemplateColumns: "300px 1fr",
+    gap: 16,
   },
   input: {
     width: "100%",
-    padding: 12,
-    borderRadius: 12,
+    padding: 10,
+    borderRadius: 6,
     border: "1px solid #cbd5e1",
     marginTop: 8,
     outline: "none",
@@ -461,40 +463,52 @@ const styles = {
   },
 
   search: {
-    width: 250,
-    padding: 10,
-    borderRadius: 12,
+    width: "100%",
+    padding: 9,
+    borderRadius: 6,
     border: "1px solid #cbd5e1",
     outline: "none",
   },
 
   itemHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
+    display: "grid",
+    gap: 10,
+    marginBottom: 10,
+  },
+
+  itemsPanel: {
+    maxHeight: "calc(100vh - 210px)",
+    overflowY: "auto",
   },
 
   itemCard: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 14,
-    borderBottom: "1px solid #f1f5f9",
+    padding: "8px 4px",
+    borderBottom: "1px solid #eee",
+  },
+
+  availableItemName: {
+    margin: 0,
+    color: "#0f172a",
+    fontSize: 14,
+    lineHeight: 1.25,
   },
 
   stockText: {
-    marginTop: 5,
+    margin: "2px 0 0",
     color: "#64748b",
-    fontSize: 14,
+    fontSize: 12,
   },
 
   addBtn: {
     background: "#2563eb",
     color: "#fff",
     border: "none",
-    padding: "10px 18px",
-    borderRadius: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 6,
     cursor: "pointer",
     fontWeight: 600,
   },
@@ -503,9 +517,9 @@ const styles = {
     background: "#ef4444",
     color: "#fff",
     border: "none",
-    width: 110,
-    height: 44,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 6,
     cursor: "pointer",
     fontWeight: 700,
   },
@@ -538,17 +552,17 @@ const styles = {
   },
 
   cartTitle: {
-    marginBottom: 25,
-    fontSize: 22,
+    margin: "0 0 14px",
+    fontSize: 20,
     fontWeight: 700,
   },
 
   cartHeader: {
     display: "grid",
     gridTemplateColumns: "2.2fr 90px 160px 2.5fr 120px",
-    gap: 15,
-    paddingBottom: 15,
-    marginBottom: 15,
+    gap: 10,
+    paddingBottom: 10,
+    marginBottom: 8,
     borderBottom: "1px solid #e5e7eb",
     fontWeight: 700,
     color: "#64748b",
@@ -557,65 +571,65 @@ const styles = {
   cartRow: {
     display: "grid",
     gridTemplateColumns: "2.2fr 90px 160px 2.5fr 120px",
-    gap: 15,
+    gap: 10,
     alignItems: "center",
-    padding: "15px 0",
+    padding: "8px 0",
   },
 
   itemName: {
     fontWeight: 700,
     color: "#0f172a",
-    fontSize: 18,
+    fontSize: 14,
     lineHeight: 1.3,
   },
 
   qtyInput: {
     width: "100%",
-    padding: 12,
-    borderRadius: 10,
+    padding: 8,
+    borderRadius: 6,
     border: "1px solid #cbd5e1",
   },
 
   priceInput: {
     width: "100%",
-    padding: 12,
-    borderRadius: 10,
+    padding: 8,
+    borderRadius: 6,
     border: "1px solid #cbd5e1",
   },
 
   serialInput: {
     width: "100%",
     minWidth: 250,
-    padding: 12,
-    borderRadius: 10,
+    padding: 8,
+    borderRadius: 6,
     border: "1px solid #cbd5e1",
   },
 
   itemTotal: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 600,
-    marginBottom: 20,
-    paddingBottom: 20,
+    marginBottom: 8,
+    paddingBottom: 8,
     borderBottom: "1px solid #e5e7eb",
   },
 
   taxSummaryWrapper: {
     display: "grid",
     gridTemplateColumns: "1.2fr 1fr",
-    gap: 20,
-    marginTop: 25,
+    gap: 14,
+    marginTop: 16,
   },
 
   taxBox: {
     border: "1px solid #e2e8f0",
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 8,
+    padding: 14,
   },
 
   totalBox: {
     border: "1px solid #e2e8f0",
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 8,
+    padding: 14,
   },
 
   gstLabel: {

@@ -5,7 +5,7 @@ const roleMiddleware = (roles) => {
 
       if (!roles.includes(userRole)) {
         return res.status(403).json({
-          message: "Access denied: insufficient permissions",
+          message: "Access denied: insufficient user_role",
         });
       }
 

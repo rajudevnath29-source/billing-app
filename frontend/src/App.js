@@ -24,9 +24,11 @@ import EditInvoice from "./pages/EditInvoice";
 
 import Customers from "./pages/Customers";
 import AddCustomer from "./pages/AddCustomer";
+import EditCustomer from "./pages/EditCustomer";
 
 import PurchaseCreate from "./pages/PurchaseCreate";
 import PurchaseView from "./pages/PurchaseView";
+import EditPurchase from "./pages/EditPurchase";
 
 import Reports from "./pages/Reports";
 import Expenses from "./pages/Expenses";
@@ -105,7 +107,7 @@ function App() {
           <Route
             path="/purchase"
             element={
-              <PermissionGuard permission="PURCHASE_MODULE">
+              <PermissionGuard permission="CREATE_PURCHASE">
                 <PurchaseCreate />
               </PermissionGuard>
             }
@@ -116,6 +118,15 @@ function App() {
             element={
               <PermissionGuard permission="VIEW_PURCHASE">
                 <PurchaseView />
+              </PermissionGuard>
+            }
+          />
+
+          <Route
+            path="/purchase-edit/:id"
+            element={
+              <PermissionGuard permission="EDIT_PURCHASE">
+                <EditPurchase />
               </PermissionGuard>
             }
           />
@@ -163,6 +174,15 @@ function App() {
             element={
               <PermissionGuard permission="ADD_CUSTOMER">
                 <AddCustomer />
+              </PermissionGuard>
+            }
+          />
+
+          <Route
+            path="/customers/edit/:id"
+            element={
+              <PermissionGuard permission="EDIT_CUSTOMER">
+                <EditCustomer />
               </PermissionGuard>
             }
           />

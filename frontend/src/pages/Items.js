@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { hasPermission } from "../utils/permissions";
 
 export default function Items() {
   const navigate = useNavigate();
@@ -42,6 +43,10 @@ export default function Items() {
   useEffect(() => {
     fetchItems();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, sortOrder]);
 
   // =========================
   // DELETE ITEM
@@ -95,7 +100,7 @@ export default function Items() {
 
   const currentItems = sortedItems.slice(indexOfFirst, indexOfLast);
 
-  const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(sortedItems.length / itemsPerPage));
 
   if (loading) {
     return <div style={styles.loading}>Loading Items...</div>;
@@ -106,13 +111,13 @@ export default function Items() {
       {/* HEADER */}
       <div style={styles.topBar}>
         <div>
-          <h1 style={styles.title}>📦 Inventory Management</h1>
+          <h1 style={styles.title}>Inventory Management</h1>
 
           <p style={styles.subtitle}>Manage products, stock and pricing</p>
         </div>
 
         <button style={styles.addBtn} onClick={() => navigate("/items/add")}>
-          ➕ Add Item
+          + Add Item
         </button>
       </div>
 
@@ -138,8 +143,8 @@ export default function Items() {
       </div>
 
       {/* TABLE CARD */}
-      <div style={styles.card}>
-        <table style={styles.table}>
+      <div style={styles.card} className="app-table-card">
+        <table style={styles.table} className="app-table">
           <thead>
             <tr>
               <th style={styles.th}>Item Name</th>
@@ -163,14 +168,18 @@ export default function Items() {
               const lowStock = item.opening_stock <= item.low_stock_alert;
 
               return (
-                <tr key={item._id}>
+                <tr key={item._id} className="table-row">
                   <td style={styles.td}>{item.item_name}</td>
 
                   <td style={styles.td}>{item.unit}</td>
 
-                  <td style={styles.td}>₹ {item.sales_price}</td>
+                  <td style={styles.td}>
+                    <span className="money-text">₹ {item.sales_price}</span>
+                  </td>
 
-                  <td style={styles.td}>₹ {item.purchase_price}</td>
+                  <td style={styles.td}>
+                    <span className="money-text">₹ {item.purchase_price}</span>
+                  </td>
 
                   <td style={styles.td}>{item.opening_stock}</td>
 
@@ -184,23 +193,32 @@ export default function Items() {
 
                   <td style={styles.td}>
                     <div style={styles.actionWrap}>
-                      <button
-                        style={styles.editBtn}
-                        onClick={() => navigate(`/items/edit/${item._id}`)}
-                      >
-                        Edit
-                      </button>
+                      {hasPermission("EDIT_ITEM") && (
+                        <button
+                          className="app-action-btn app-action-edit"
+                          style={styles.iconBtn}
+                          title="Edit item"
+                          aria-label="Edit item"
+                          onClick={() => navigate(`/items/edit/${item._id}`)}
+                        >
+                          ✎
+                        </button>
+                      )}
+                      {hasPermission("DELETE_ITEM") && (
+                        <button
+                          className="app-action-btn app-action-delete"
+                          style={styles.iconBtn}
+                          title="Delete item"
+                          aria-label="Delete item"
+                          onClick={() => {
+                            setSelectedItem(item);
 
-                      <button
-                        style={styles.deleteBtn}
-                        onClick={() => {
-                          setSelectedItem(item);
-
-                          setDeleteModal(true);
-                        }}
-                      >
-                        Delete
-                      </button>
+                            setDeleteModal(true);
+                          }}
+                        >
+                          🗑
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -221,19 +239,21 @@ export default function Items() {
       </div>
 
       {/* PAGINATION */}
-      {totalPages > 1 && (
+      {sortedItems.length > 0 && (
         <div style={styles.pagination}>
-          <button
-            style={styles.pageBtn}
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(currentPage - 1)}
-          >
-            ← Prev
-          </button>
+          {currentPage > 1 && (
+            <button
+              style={styles.pageBtn}
+              onClick={() => setCurrentPage((page) => page - 1)}
+            >
+              Prev
+            </button>
+          )}
 
           {Array.from({ length: totalPages }, (_, i) => (
             <button
               key={i}
+              disabled={currentPage === i + 1}
               onClick={() => setCurrentPage(i + 1)}
               style={{
                 ...styles.pageBtn,
@@ -244,13 +264,14 @@ export default function Items() {
             </button>
           ))}
 
-          <button
-            style={styles.pageBtn}
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(currentPage + 1)}
-          >
-            Next →
-          </button>
+          {currentPage < totalPages && (
+            <button
+              style={styles.pageBtn}
+              onClick={() => setCurrentPage((page) => page + 1)}
+            >
+              Next
+            </button>
+          )}
         </div>
       )}
 
@@ -352,9 +373,9 @@ const styles = {
 
   card: {
     background: "#fff",
-    borderRadius: 20,
+    borderRadius: 10,
     overflow: "hidden",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
 
   table: {
@@ -363,22 +384,28 @@ const styles = {
   },
 
   th: {
-    background: "#f8fafc",
-    padding: 18,
+    background: "#0f172a",
+    padding: "10px 12px",
     textAlign: "left",
-    color: "#334155",
-    fontWeight: 600,
-    fontSize: 14,
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: 13,
   },
 
   td: {
-    padding: 18,
-    borderTop: "1px solid #f1f5f9",
+    padding: "8px 12px",
+    borderTop: "1px solid #eee",
   },
 
   actionWrap: {
     display: "flex",
-    gap: 10,
+    gap: 8,
+  },
+
+  iconBtn: {
+    padding: 0,
+    fontWeight: 700,
+    fontSize: 14,
   },
 
   editBtn: {
@@ -430,17 +457,19 @@ const styles = {
 
   pagination: {
     display: "flex",
-    justifyContent: "center",
+    alignItems: "center",
+    justifyContent: "flex-end",
     gap: 10,
-    marginTop: 25,
+    marginTop: 16,
   },
 
   pageBtn: {
     border: "none",
     background: "#e2e8f0",
-    padding: "10px 14px",
-    borderRadius: 10,
+    padding: "8px 12px",
+    borderRadius: 8,
     cursor: "pointer",
+    fontWeight: 700,
   },
 
   activePage: {

@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-
 import { getUser } from "../utils/role";
 import { hasPermission } from "../utils/permissions";
 
@@ -72,7 +71,7 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
             </Link>
           )}
 
-          {hasPermission("PURCHASE_MODULE") && (
+          {hasPermission("CREATE_PURCHASE") && (
             <Link style={styles.link} to="/purchase">
               🛒 {expanded && "Purchase"}
             </Link>
@@ -80,7 +79,7 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
 
           {hasPermission("VIEW_PURCHASE") && (
             <Link style={styles.link} to="/purchase-view">
-              📄 {expanded && "Purchase History"}
+              📄 {expanded && "Purchase View"}
             </Link>
           )}
         </>

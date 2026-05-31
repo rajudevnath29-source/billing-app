@@ -126,7 +126,7 @@ export default function Accounts() {
 
       {/* TABLE */}
 
-      <table style={table}>
+      <table style={table} className="app-table">
         <thead>
           <tr>
             <th>Account</th>
@@ -139,7 +139,7 @@ export default function Accounts() {
 
         <tbody>
           {accounts.map((acc) => (
-            <tr key={acc._id}>
+            <tr key={acc._id} className="table-row">
               <td>{acc.account_name}</td>
 
               <td>{acc.account_type}</td>

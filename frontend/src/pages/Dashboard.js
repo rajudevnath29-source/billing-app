@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [purchases, setPurchases] = useState([]);
   const [items, setItems] = useState([]);
   const [invoices, setInvoices] = useState([]);
+  const [expence, setExpence] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -66,6 +67,12 @@ export default function Dashboard() {
         },
       });
 
+      const expenceRes = await axios.get("http://localhost:5000/api/expenses", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       const purchaseRes = await axios.get(
         "http://localhost:5000/api/purchases",
         {
@@ -74,10 +81,10 @@ export default function Dashboard() {
           },
         },
       );
-
       setPurchases(purchaseRes.data.purchases || []);
       setItems(itemRes.data.items || []);
       setInvoices(invoiceRes.data.invoices || []);
+      setExpence(expenceRes.data.expenses || []);
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -106,6 +113,27 @@ export default function Dashboard() {
 
     if (filter === "year") {
       return invoiceDate.getFullYear() === today.getFullYear();
+    }
+
+    return true;
+  });
+
+  const filteredExpences = expence.filter((inv) => {
+    const expenceDate = new Date(inv.createdAt);
+
+    if (filter === "today") {
+      return expenceDate.toDateString() === today.toDateString();
+    }
+
+    if (filter === "month") {
+      return (
+        expenceDate.getMonth() === today.getMonth() &&
+        expenceDate.getFullYear() === today.getFullYear()
+      );
+    }
+
+    if (filter === "year") {
+      return expenceDate.getFullYear() === today.getFullYear();
     }
 
     return true;
@@ -146,6 +174,11 @@ export default function Dashboard() {
     0,
   );
 
+  const totalExpences = filteredExpences.reduce(
+    (sum, inv) => sum + (inv.amount || 0),
+    0,
+  );
+
   const totalInvoices = filteredInvoices.length;
   const totalItems = items.length;
   const totalPurchase = filteredPurchases.reduce(
@@ -153,15 +186,17 @@ export default function Dashboard() {
     0,
   );
 
-  const profit = totalSales - totalPurchase;
   const pendingPayments = filteredInvoices.reduce(
-    (sum, inv) => sum + (inv.pending_amount || 0),
+    (sum, inv) => sum + (inv.due_amount || 0),
     0,
   );
 
   const lowStockItems = items.filter(
     (item) => item.opening_stock <= item.low_stock_alert,
   );
+  const profit = totalSales - totalPurchase;
+  const actualProfit =
+    totalSales - totalPurchase - pendingPayments - totalExpences;
 
   // =========================
   // CHART DATA
@@ -176,14 +211,29 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
+    <div style={styles.page} className="compact-screen">
       {/* ================= HEADER ================= */}
       <div style={styles.topSection}>
         <div>
           <h1 style={styles.heading}>Welcome Back, {user?.name} 👋</h1>
 
-          <p style={styles.subText}>
+          {/* <p style={styles.subText}>
             {time.toLocaleDateString()} | {time.toLocaleTimeString()}
+          </p> */}
+
+          <p style={styles.subText}>
+            {time.toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}{" "}
+            |{" "}
+            {time.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: true,
+            })}
           </p>
         </div>
 
@@ -242,14 +292,28 @@ export default function Dashboard() {
             </div>
 
             <div style={styles.card}>
-              <h3>💸 Pending</h3>
+              <h3>⏳ Pending</h3>
               <h1>₹ {pendingPayments}</h1>
+            </div>
+
+            <div style={styles.card}>
+              <h3>💸 Expence</h3>
+              <h1>₹ {totalExpences}</h1>
             </div>
 
             <div style={profit >= 0 ? styles.profitCard : styles.lossCard}>
               <h3>{profit >= 0 ? "📈 Profit" : "📉 Loss"}</h3>
 
               <h1>₹ {profit}</h1>
+            </div>
+
+            <div
+              style={actualProfit >= 0 ? styles.profitCard : styles.lossCard}
+            >
+              <h3>
+                {actualProfit >= 0 ? "💎 Actual Profit" : "🔻 Actual Loss"}
+              </h3>
+              <h1>₹ {actualProfit}</h1>
             </div>
 
             <div style={styles.card}>
@@ -260,6 +324,11 @@ export default function Dashboard() {
             <div style={styles.card}>
               <h3>📦 Items</h3>
               <h1>{totalItems}</h1>
+            </div>
+            
+            <div style={styles.dangerCard}>
+              <h3>⚠️ Low Stock</h3>
+              <h1>{lowStockItems.length}</h1>
             </div>
           </>
         )}
@@ -313,7 +382,7 @@ export default function Dashboard() {
           <div style={styles.chartCard}>
             <h2>📈 Sales Analytics</h2>
 
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={230}>
               <BarChart data={salesChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
 
@@ -332,7 +401,7 @@ export default function Dashboard() {
           <div style={styles.chartCard}>
             <h2>📊 Revenue Trend</h2>
 
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={230}>
               <LineChart data={salesChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
 
@@ -395,25 +464,23 @@ export default function Dashboard() {
           {filteredInvoices.length === 0 ? (
             <p>No invoices found</p>
           ) : (
-            recentInvoices
-              .slice(0, 5)
-              .map((inv) => (
-                <div
-                  key={inv._id}
-                  style={styles.invoiceRowHover}
-                  onClick={() => navigate(`/invoice-edit/${inv._id}`)}
-                >
-                  <div>
-                    <strong>{inv.customer_name || "Walk-in Customer"}</strong>
+            recentInvoices.slice(0, 5).map((inv) => (
+              <div
+                key={inv._id}
+                style={styles.invoiceRowHover}
+                onClick={() => navigate(`/invoice-edit/${inv._id}`)}
+              >
+                <div>
+                  <strong>{inv.customer_name || "Walk-in Customer"}</strong>
 
-                    <p style={styles.smallText}>
-                      Invoice #{inv.invoice_number || inv._id.slice(-5)}
-                    </p>
-                  </div>
-
-                  <div style={styles.amount}>₹ {inv.grand_total}</div>
+                  <p style={styles.smallText}>
+                    Invoice #{inv.invoice_number || inv._id.slice(-5)}
+                  </p>
                 </div>
-              ))
+
+                <div style={styles.amount}>₹ {inv.grand_total}</div>
+              </div>
+            ))
           )}
         </div>
 
@@ -430,19 +497,17 @@ export default function Dashboard() {
           {filteredInvoices.length === 0 ? (
             <p>No payments found</p>
           ) : (
-            recentInvoices
-              .slice(0, 5)
-              .map((inv) => (
-                <div key={inv._id} style={styles.invoiceRow}>
-                  <div>
-                    <strong>{inv.customer_name || "Customer"}</strong>
+            recentInvoices.slice(0, 5).map((inv) => (
+              <div key={inv._id} style={styles.invoiceRow}>
+                <div>
+                  <strong>{inv.customer_name || "Customer"}</strong>
 
-                    <p style={styles.smallText}>Payment Received</p>
-                  </div>
-
-                  <div style={styles.greenAmount}>₹ {inv.grand_total}</div>
+                  <p style={styles.smallText}>Payment Received</p>
                 </div>
-              ))
+
+                <div style={styles.greenAmount}>₹ {inv.grand_total}</div>
+              </div>
+            ))
           )}
         </div>
       </div>
@@ -471,43 +536,48 @@ export default function Dashboard() {
 /* ================= STYLES ================= */
 
 const styles = {
+  page: {
+    padding: 10,
+  },
   topSection: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 16,
     flexWrap: "wrap",
-    gap: 20,
+    gap: 12,
   },
 
   heading: {
     color: "#1e293b",
-    marginBottom: 8,
+    margin: "0 0 4px",
+    fontSize: 26,
   },
 
   subText: {
     color: "#64748b",
+    margin: 0,
   },
 
   filterBox: {
     display: "flex",
-    gap: 10,
+    gap: 8,
     flexWrap: "wrap",
   },
 
   filterBtn: {
-    padding: "10px 18px",
+    padding: "8px 12px",
     border: "none",
-    borderRadius: 10,
+    borderRadius: 8,
     background: "#dbe4ff",
     cursor: "pointer",
     fontWeight: 600,
   },
 
   activeFilterBtn: {
-    padding: "10px 18px",
+    padding: "8px 12px",
     border: "none",
-    borderRadius: 10,
+    borderRadius: 8,
     background: "#7c93e6",
     color: "#fff",
     cursor: "pointer",
@@ -516,55 +586,55 @@ const styles = {
 
   statsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 20,
+    gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+    gap: 12,
   },
 
   card: {
     background: "#fff",
-    padding: 25,
-    borderRadius: 20,
-    boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+    padding: 12,
+    borderRadius: 10,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
 
   dangerCard: {
     background: "#fff5f5",
-    padding: 25,
-    borderRadius: 20,
+    padding: 12,
+    borderRadius: 10,
     border: "1px solid #ffd6d6",
   },
 
   chartGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: 20,
-    marginTop: 30,
+    gap: 12,
+    marginTop: 16,
   },
 
   chartCard: {
     background: "#fff",
-    padding: 20,
-    borderRadius: 20,
-    boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+    padding: 12,
+    borderRadius: 10,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
 
   quickSection: {
-    marginTop: 30,
+    marginTop: 16,
   },
 
   quickGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
-    gap: 20,
-    marginTop: 20,
+    gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))",
+    gap: 12,
+    marginTop: 10,
   },
 
   quickBtn: {
     background: "#7c93e6",
     color: "#fff",
     textDecoration: "none",
-    padding: 20,
-    borderRadius: 16,
+    padding: 12,
+    borderRadius: 10,
     textAlign: "center",
     fontWeight: "bold",
     boxShadow: "0 4px 20px rgba(124,147,230,0.3)",
@@ -572,14 +642,14 @@ const styles = {
 
   lowStockSection: {
     background: "#fff",
-    marginTop: 30,
-    padding: 20,
-    borderRadius: 20,
-    boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+    marginTop: 16,
+    padding: 12,
+    borderRadius: 10,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
 
   stockItem: {
-    padding: 15,
+    padding: 8,
     borderBottom: "1px solid #eee",
     display: "flex",
     justifyContent: "space-between",
@@ -587,22 +657,22 @@ const styles = {
   bottomGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: 20,
-    marginTop: 30,
+    gap: 12,
+    marginTop: 16,
   },
 
   recentCard: {
     background: "#fff",
-    padding: 20,
-    borderRadius: 20,
-    boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+    padding: 12,
+    borderRadius: 10,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
 
   cardHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 10,
   },
 
   viewAll: {
@@ -615,14 +685,14 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "14px 0",
+    padding: "8px 0",
     borderBottom: "1px solid #eee",
   },
 
   smallText: {
     fontSize: 13,
     color: "#64748b",
-    marginTop: 5,
+    margin: "2px 0 0",
   },
 
   amount: {
@@ -638,22 +708,22 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "14px 0",
+    padding: "8px 0",
     borderBottom: "1px solid #eee",
     cursor: "pointer",
     transition: "0.2s",
   },
   profitCard: {
     background: "#ecfdf5",
-    padding: 25,
-    borderRadius: 20,
+    padding: 12,
+    borderRadius: 10,
     border: "1px solid #bbf7d0",
   },
 
   lossCard: {
     background: "#fef2f2",
-    padding: 25,
-    borderRadius: 20,
+    padding: 12,
+    borderRadius: 10,
     border: "1px solid #fecaca",
   },
 };

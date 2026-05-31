@@ -14,6 +14,8 @@ export default function UserList() {
   const [search, setSearch] = useState("");
 
   const [roleFilter, setRoleFilter] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   const [selectedPermissions, setSelectedPermissions] = useState([]);
 
@@ -102,6 +104,16 @@ export default function UserList() {
     return matchSearch && matchRole;
   });
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, roleFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const pageUsers = filteredUsers.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
   if (loading) {
     return <h2>Loading...</h2>;
   }
@@ -157,8 +169,8 @@ export default function UserList() {
       </div>
 
       {/* TABLE */}
-      <div style={styles.tableWrapper}>
-        <table style={styles.table}>
+      <div style={styles.tableWrapper} className="app-table-card">
+        <table style={styles.table} className="app-table">
           <thead>
             <tr>
               <th style={styles.th}>User</th>
@@ -174,8 +186,8 @@ export default function UserList() {
           </thead>
 
           <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user._id}>
+            {pageUsers.map((user) => (
+              <tr key={user._id} className="table-row">
                 {/* USER */}
                 <td style={styles.td}>
                   <div style={styles.userInfo}>
@@ -300,20 +312,24 @@ export default function UserList() {
                   >
                     <Link
                       to={`/users/edit/${user._id}`}
-                      style={styles.editBtn}
+                      className="app-action-btn app-action-edit"
+                      style={styles.iconBtn}
+                      title="Edit user"
+                      aria-label="Edit user"
                     >
-                      Edit
+                      ✎
                     </Link>
 
                     <button
                       onClick={() =>
                         openDeleteModal(user)
                       }
-                      style={
-                        styles.deleteBtn
-                      }
+                      className="app-action-btn app-action-delete"
+                      style={styles.iconBtn}
+                      title="Delete user"
+                      aria-label="Delete user"
                     >
-                      Delete
+                      🗑
                     </button>
                   </div>
                 </td>
@@ -328,6 +344,46 @@ export default function UserList() {
           </div>
         )}
       </div>
+
+      {filteredUsers.length > 0 && (
+        <div style={styles.pagination}>
+          {currentPage > 1 && (
+            <button
+              style={styles.pageBtn}
+              onClick={() => setCurrentPage((page) => page - 1)}
+            >
+              Prev
+            </button>
+          )}
+
+          {[...Array(totalPages)].map((_, index) => {
+            const page = index + 1;
+
+            return (
+              <button
+                key={page}
+                disabled={currentPage === page}
+                onClick={() => setCurrentPage(page)}
+                style={{
+                  ...styles.pageBtn,
+                  ...(currentPage === page ? styles.activePageBtn : {}),
+                }}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          {currentPage < totalPages && (
+            <button
+              style={styles.pageBtn}
+              onClick={() => setCurrentPage((page) => page + 1)}
+            >
+              Next
+            </button>
+          )}
+        </div>
+      )}
 
       {/* PERMISSIONS MODAL */}
       <AnimatePresence>
@@ -462,47 +518,47 @@ const styles = {
   },
 
   topBar: {
-    marginBottom: 25,
+    marginBottom: 16,
   },
 
   title: {
     margin: 0,
-    fontSize: 30,
+    fontSize: 26,
     color: "#0f172a",
   },
 
   subtitle: {
     color: "#64748b",
-    marginTop: 8,
+    marginTop: 4,
   },
 
   filters: {
     display: "flex",
-    gap: 15,
-    marginBottom: 20,
+    gap: 10,
+    marginBottom: 14,
   },
 
   search: {
     flex: 1,
-    padding: 12,
-    borderRadius: 12,
+    padding: 10,
+    borderRadius: 6,
     border: "1px solid #cbd5e1",
     outline: "none",
   },
 
   select: {
-    padding: 12,
-    borderRadius: 12,
+    padding: 10,
+    borderRadius: 6,
     border: "1px solid #cbd5e1",
     outline: "none",
   },
 
   tableWrapper: {
     background: "#fff",
-    borderRadius: 20,
+    borderRadius: 10,
     overflow: "hidden",
     boxShadow:
-      "0 10px 30px rgba(0,0,0,0.06)",
+      "0 2px 8px rgba(0,0,0,0.08)",
   },
 
   table: {
@@ -512,39 +568,39 @@ const styles = {
 
   th: {
     textAlign: "left",
-    padding: 18,
-    background: "#f8fafc",
-    color: "#334155",
-    fontWeight: 600,
-    fontSize: 14,
+    padding: "10px 12px",
+    background: "#0f172a",
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: 13,
   },
 
   td: {
-    padding: 18,
-    borderTop: "1px solid #f1f5f9",
+    padding: "8px 12px",
+    borderTop: "1px solid #eee",
   },
 
   userInfo: {
     display: "flex",
     alignItems: "center",
-    gap: 15,
+    gap: 10,
   },
 
   avatar: {
-    width: 50,
-    height: 50,
+    width: 34,
+    height: 34,
     borderRadius: "50%",
     objectFit: "cover",
   },
 
   email: {
-    margin: "4px 0 0",
+    margin: "2px 0 0",
     color: "#64748b",
-    fontSize: 14,
+    fontSize: 12,
   },
 
   roleBadge: {
-    padding: "8px 14px",
+    padding: "4px 8px",
     borderRadius: 999,
     fontWeight: 600,
     fontSize: 12,
@@ -553,7 +609,7 @@ const styles = {
   permissionWrap: {
     display: "flex",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 5,
   },
 
   permissionBadge: {
@@ -561,7 +617,7 @@ const styles = {
     // background: "#dceaf0",
     background: "#e3ecef",
     color: "#2563eb",
-    padding: "6px 10px",
+    padding: "4px 8px",
     borderRadius: 999,
     fontSize: 12,
   },
@@ -583,31 +639,45 @@ const styles = {
 
   actionWrap: {
     display: "flex",
-    gap: 10,
+    gap: 8,
   },
 
-  editBtn: {
-    padding: "8px 14px",
-    borderRadius: 10,
-    background: "#2563eb",
-    color: "#fff",
+  iconBtn: {
+    padding: 0,
     textDecoration: "none",
+    fontWeight: 700,
     fontSize: 14,
-  },
-
-  deleteBtn: {
-    padding: "8px 14px",
-    borderRadius: 10,
-    border: "none",
-    background: "#ef4444",
-    color: "#fff",
-    cursor: "pointer",
   },
 
   empty: {
     padding: 40,
     textAlign: "center",
     color: "#64748b",
+  },
+
+  pagination: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 10,
+    marginTop: 16,
+  },
+
+  pageBtn: {
+    border: "none",
+    padding: "8px 12px",
+    borderRadius: 8,
+    background: "#e2e8f0",
+    color: "#0f172a",
+    cursor: "pointer",
+    fontWeight: 700,
+  },
+
+  activePageBtn: {
+    background: "#2563eb",
+    color: "#fff",
+    cursor: "not-allowed",
+    opacity: 0.85,
   },
 
   modalOverlay: {
