@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { hasPermission } from "../utils/permissions";
+import Select from "react-select";
 
 const API_URL = "http://localhost:5000/api";
 
@@ -72,7 +73,19 @@ export default function InvoiceCreate() {
     }
 
     if (customerResult.status === "fulfilled") {
-      setCustomers(customerResult.value.data.customers || []);
+      const customerList = customerResult.value.data.customers || [];
+      setCustomers(customerList);
+
+      // 👉 CASH AUTO SELECT HERE
+      const cashCustomer = customerList.find(
+        (c) => c.customer_name?.toLowerCase() === "cash",
+      );
+
+      if (cashCustomer) {
+        setSelectedCustomer(cashCustomer._id);
+        setCustomerName(cashCustomer.customer_name);
+        setCustomerMobile(cashCustomer.phone || "");
+      }
     } else if (!handleAuthError(customerResult.reason)) {
       toast.error(
         customerResult.reason?.response?.data?.message ||
@@ -96,12 +109,15 @@ export default function InvoiceCreate() {
   const handleCustomerSelect = (id) => {
     setSelectedCustomer(id);
 
-    const customer = customers.find((entry) => entry._id === id);
-    if (!customer) {
+    if (!id) {
       setCustomerName("Cash");
       setCustomerMobile("");
       return;
     }
+
+    const customer = customers.find((c) => c._id === id);
+
+    if (!customer) return;
 
     setCustomerName(customer.customer_name || "");
     setCustomerMobile(customer.phone || "");
@@ -119,7 +135,9 @@ export default function InvoiceCreate() {
       setSelectedCustomer(matchedCustomer._id);
       setCustomerMobile(matchedCustomer.phone || "");
     } else {
+      // ✅ fallback = walk-in (NO fake id)
       setSelectedCustomer("");
+      setCustomerMobile("");
     }
   };
 
@@ -308,6 +326,15 @@ export default function InvoiceCreate() {
   if (loading) {
     return <div style={styles.loading}>Loading invoice module...</div>;
   }
+  const customerOptions = customers.map((c) => ({
+    value: c._id,
+    label: c.customer_name,
+    phone: c.phone,
+  }));
+  const allCustomerOptions = [
+    { value: "", label: "Walk-in / New Customer" },
+    ...customerOptions,
+  ];
 
   return (
     <div style={styles.page}>
@@ -332,18 +359,65 @@ export default function InvoiceCreate() {
             : styles.customerCard.gridTemplateColumns,
         }}
       >
-        <select
-          value={selectedCustomer}
-          onChange={(event) => handleCustomerSelect(event.target.value)}
-          style={styles.input}
-        >
-          <option value="">Walk-in / New Customer</option>
-          {customers.map((customer) => (
-            <option key={customer._id} value={customer._id}>
-              {customer.customer_name}
-            </option>
-          ))}
-        </select>
+        <Select
+          options={allCustomerOptions}
+          value={
+            allCustomerOptions.find((o) => o.value === selectedCustomer) || null
+          }
+          onChange={(option) => handleCustomerSelect(option.value)}
+          placeholder="Search customer..."
+          isSearchable
+          styles={{
+            control: (base, state) => ({
+              ...base,
+              padding: "2px",
+              borderRadius: "12px",
+              border: "1px solid #cbd5e1",
+              boxShadow: "none",
+              minHeight: "46px",
+              fontSize: "14px",
+              backgroundColor: "#fff",
+              outline: "none",
+              borderColor: state.isFocused ? "#94a3b8" : "#cbd5e1",
+            }),
+
+            valueContainer: (base) => ({
+              ...base,
+              padding: "0 10px",
+            }),
+
+            input: (base) => ({
+              ...base,
+              margin: 0,
+              padding: 0,
+            }),
+
+            placeholder: (base) => ({
+              ...base,
+              color: "#94a3b8",
+            }),
+
+            singleValue: (base) => ({
+              ...base,
+              color: "#0f172a",
+            }),
+
+            menu: (base) => ({
+              ...base,
+              borderRadius: "12px",
+              overflow: "hidden",
+              marginTop: 4,
+              border: "1px solid #e2e8f0",
+            }),
+
+            option: (base, state) => ({
+              ...base,
+              backgroundColor: state.isFocused ? "#f1f5f9" : "#fff",
+              color: "#0f172a",
+              cursor: "pointer",
+            }),
+          }}
+        />
 
         <input
           placeholder="Customer name"

@@ -477,7 +477,7 @@ export default function InvoiceView() {
               <div style={styles.invoicePaper}>
                 <div style={styles.companyHeader}>
                   <img
-                    src="/Logo-Light.png"
+                    src="/L.png"
                     alt="Raaj Computer Service"
                     style={styles.companyLogo}
                   />
@@ -972,16 +972,16 @@ const styles = {
   },
 
   invoicePaper: {
-    width: "794px",
-    minHeight: "auto",
+    // minHeight: "297mm",
     background: "#fff",
     padding: "30px 40px 28px",
     boxSizing: "border-box",
-    margin: "0 auto",
     color: "#000",
     fontFamily: "Arial, Helvetica, sans-serif",
     fontSize: "13px",
     lineHeight: 1.28,
+    WebkitFontSmoothing: "antialiased",
+    MozOsxFontSmoothing: "grayscale",
   },
 
   companyHeader: {
@@ -1026,6 +1026,8 @@ const styles = {
     padding: "14px 17px 17px",
     marginBottom: "7px",
     fontSize: "13px",
+    WebkitPrintColorAdjust: "exact",
+    printColorAdjust: "exact",
   },
 
   invoiceInfoLeft: {

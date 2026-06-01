@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { hasPermission } from "../utils/permissions";
+import Select from "react-select";
 
 const API_URL = "http://localhost:5000/api";
 
@@ -114,12 +115,18 @@ export default function EditInvoice() {
   const handleCustomerSelect = (customerId) => {
     setSelectedCustomer(customerId);
 
-    const customer = customers.find((entry) => entry._id === customerId);
-    if (!customer) {
-      setCustomerName("");
+    if (!customerId) {
       setCustomerMobile("");
       return;
     }
+
+    const customer = customers.find((entry) => entry._id === customerId);
+
+    if (!customer) {
+      setCustomerMobile("");
+      return;
+    }
+
     setCustomerName(customer.customer_name || "");
     setCustomerMobile(customer.phone || "");
   };
@@ -137,8 +144,8 @@ export default function EditInvoice() {
       setSelectedCustomer(matchedCustomer._id);
       setCustomerMobile(matchedCustomer.phone || "");
     } else {
-      setSelectedCustomer("");
-      setCustomerMobile("");
+      setSelectedCustomer(""); // Walk-in select
+      // mobile ko force clear mat karo
     }
   };
 
@@ -311,7 +318,16 @@ export default function EditInvoice() {
   if (loading) {
     return <div style={styles.loading}>Loading invoice...</div>;
   }
+  const customerOptions = customers.map((c) => ({
+    value: c._id,
+    label: c.customer_name,
+    phone: c.phone,
+  }));
 
+  const allCustomerOptions = [
+    { value: "", label: "Walk-in / New Customer" },
+    ...customerOptions,
+  ];
   if (!invoice) {
     return <div style={styles.empty}>Invoice not found</div>;
   }
@@ -342,18 +358,60 @@ export default function EditInvoice() {
             : styles.customerCard.gridTemplateColumns,
         }}
       >
-        <select
-          value={selectedCustomer}
-          onChange={(event) => handleCustomerSelect(event.target.value)}
-          style={styles.input}
-        >
-          <option value="">Walk-in / New Customer</option>
-          {customers.map((customer) => (
-            <option key={customer._id} value={customer._id}>
-              {customer.customer_name}
-            </option>
-          ))}
-        </select>
+        <Select
+          options={allCustomerOptions}
+          value={
+            allCustomerOptions.find(
+              (option) => option.value === selectedCustomer,
+            ) || allCustomerOptions[0]
+          }
+          onChange={(option) => handleCustomerSelect(option?.value || "")}
+          placeholder="Search customer..."
+          isSearchable
+          styles={{
+            control: (base, state) => ({
+              ...base,
+              padding: "2px",
+              borderRadius: "12px",
+              border: "1px solid #cbd5e1",
+              boxShadow: "none",
+              minHeight: "46px",
+              fontSize: "14px",
+              backgroundColor: "#fff",
+              borderColor: state.isFocused ? "#94a3b8" : "#cbd5e1",
+            }),
+            valueContainer: (base) => ({
+              ...base,
+              padding: "0 10px",
+            }),
+            input: (base) => ({
+              ...base,
+              margin: 0,
+              padding: 0,
+            }),
+            placeholder: (base) => ({
+              ...base,
+              color: "#94a3b8",
+            }),
+            singleValue: (base) => ({
+              ...base,
+              color: "#0f172a",
+            }),
+            menu: (base) => ({
+              ...base,
+              borderRadius: "12px",
+              overflow: "hidden",
+              marginTop: 4,
+              border: "1px solid #e2e8f0",
+            }),
+            option: (base, state) => ({
+              ...base,
+              backgroundColor: state.isFocused ? "#f1f5f9" : "#fff",
+              color: "#0f172a",
+              cursor: "pointer",
+            }),
+          }}
+        />
 
         <input
           placeholder="Customer name"

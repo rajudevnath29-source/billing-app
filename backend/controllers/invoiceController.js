@@ -29,7 +29,7 @@ const createInvoice = async (req, res) => {
     let customerId = customer || null;
 
     // IF CUSTOMER NOT SELECTED  // CREATE NEW CUSTOMER
-    if (!customerId && customer_name?.trim().toLowerCase() !== "cash") {
+    if (!customerId) {
       const existingCustomer = await Customer.create({
         customer_name,
         phone: customer_mobile,
@@ -235,6 +235,18 @@ const updateInvoice = async (req, res) => {
       invoiceDate,
     } = req.body;
 
+    // 🔥 AUTO CUSTOMER CREATE
+    let customerId = customer || null;
+
+    // IF CUSTOMER NOT SELECTED  // CREATE NEW CUSTOMER
+    if (!customerId) {
+      const existingCustomer = await Customer.create({
+        customer_name,
+        phone: customer_mobile,
+      });
+      customerId  = existingCustomer._id;
+    }
+
     // =========================
     // 1. RESTORE OLD STOCK FIRST
     // =========================
@@ -344,7 +356,7 @@ const updateInvoice = async (req, res) => {
     // =========================
     invoice.customer_name = customer_name?.trim() || "Cash";
     invoice.customer_mobile = customer_mobile || "";
-    invoice.customer = customer || null;
+    invoice.customer = customerId;
     invoice.items = formattedItems;
 
     invoice.sub_total = sub_total;
@@ -358,8 +370,7 @@ const updateInvoice = async (req, res) => {
     invoice.due_amount = due_amount;
     invoice.payment_status = payment_status;
 
-    invoice.invoiceDate =
-      invoiceDate || invoice.invoiceDate || new Date();
+    invoice.invoiceDate = invoiceDate || invoice.invoiceDate || new Date();
 
     await invoice.save();
 

@@ -622,6 +622,8 @@ const styles = {
     borderRadius: 8,
     padding: 14,
     marginBottom: 16,
+    WebkitPrintColorAdjust: "exact",
+    printColorAdjust: "exact",
   },
   label: {
     display: "block",
@@ -638,6 +640,8 @@ const styles = {
     background: "#f8fafc",
     borderRadius: 8,
     padding: 14,
+    WebkitPrintColorAdjust: "exact",
+    printColorAdjust: "exact",
   },
   totalRow: {
     display: "flex",

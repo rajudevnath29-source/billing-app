@@ -22,7 +22,7 @@ export default function Header({ collapsed, setCollapsed }) {
       </button>
 
       {/* <img
-        src="/Logo-Light.png"
+        src="/L.png"
         alt="Raaj Computer Service"
         style={styles.logo}
       /> */}

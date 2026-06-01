@@ -249,14 +249,14 @@ export default function Reports() {
             </thead>
 
             <tbody>
-              <tr>
-                <td>GST Collected</td>
-                <td>₹ {totalGSTSales.toFixed(2)}</td>
+              <tr style={tr}>
+                <td style={td}>GST Collected</td>
+                <td style={td}>₹ {totalGSTSales.toFixed(2)}</td>
               </tr>
 
-              <tr>
-                <td>GST Paid</td>
-                <td>₹ {totalGSTPurchase.toFixed(2)}</td>
+              <tr style={tr}>
+                <td style={td}>GST Paid</td>
+                <td style={td}>₹ {totalGSTPurchase.toFixed(2)}</td>
               </tr>
             </tbody>
           </table>
@@ -278,10 +278,10 @@ export default function Reports() {
 
             <tbody>
               {lowStockItems.map((item) => (
-                <tr key={item._id}>
-                  <td>{item.item_name}</td>
-                  <td>{item.opening_stock}</td>
-                  <td>{item.low_stock_alert}</td>
+                <tr key={item._id} style={tr}>
+                  <td style={td}>{item.item_name}</td>
+                  <td style={td}>{item.opening_stock}</td>
+                  <td style={td}>{item.low_stock_alert}</td>
                 </tr>
               ))}
             </tbody>
@@ -338,7 +338,10 @@ export default function Reports() {
 // =========================
 const pageStyle = { padding: 10 };
 
-const heading = { fontSize: 26, marginBottom: 10 };
+const heading = {
+  fontSize: 22,
+  margin: 0,
+};
 
 const cardGrid = {
   display: "grid",
@@ -356,32 +359,46 @@ const card = {
 
 const reportBox = {
   background: "#fff",
-  padding: 12,
+  padding: 10,
   borderRadius: 10,
-  marginBottom: 16,
+  marginBottom: 12,
+  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
 };
 
 const tableWrapper = {
   overflow: "hidden",
-  borderRadius: 10,
+  borderRadius: 8,
 };
 
 const table = {
   width: "100%",
   borderCollapse: "collapse",
+  fontSize: 13,
 };
 
 const th = {
   background: "#0f172a",
   color: "#fff",
-  padding: 10,
+  padding: "8px 12px",
   textAlign: "left",
+  fontSize: 13,
+  fontWeight: 600,
+};
+const td = {
+  padding: "8px 12px",
+  borderBottom: "1px solid #e2e8f0",
+  color: "#334155",
+  fontSize: 13,
+};
+
+const tr = {
+  transition: "0.2s ease",
 };
 
 const btnGreen = {
   background: "#16a34a",
   color: "#fff",
-  padding: "6px 10px",
+  padding: "5px 10px",
   border: "none",
   borderRadius: 6,
   cursor: "pointer",
@@ -389,13 +406,13 @@ const btnGreen = {
   fontWeight: 600,
   display: "flex",
   alignItems: "center",
-  gap: 6,
+  gap: 5,
 };
 
 const btnRed = {
   background: "#dc2626",
   color: "#fff",
-  padding: "6px 10px",
+  padding: "5px 10px",
   border: "none",
   borderRadius: 6,
   cursor: "pointer",
@@ -403,13 +420,13 @@ const btnRed = {
   fontWeight: 600,
   display: "flex",
   alignItems: "center",
-  gap: 6,
+  gap: 5,
 };
 const headerRow = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  marginBottom: 12,
+  marginBottom: 10,
 };
 
 const buttonRow = {

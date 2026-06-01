@@ -19,7 +19,7 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       {/* LOGO */}
 
       {/* <img
-        src="/Logo-dark.png"
+        src="/D.png"
         alt="Raaj Computer Services"
         style={expanded ? styles.collapsedlogo : styles.logo}
       /> */}
