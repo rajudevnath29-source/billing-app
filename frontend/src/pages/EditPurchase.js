@@ -102,7 +102,8 @@ export default function EditPurchase() {
   };
 
   const subTotal = cart.reduce(
-    (sum, item) => sum + Number(item.purchase_price || 0) * Number(item.qty || 0),
+    (sum, item) =>
+      sum + Number(item.purchase_price || 0) * Number(item.qty || 0),
     0,
   );
   const gstAmount = gstEnabled ? (subTotal * Number(gstRate || 0)) / 100 : 0;
@@ -135,7 +136,9 @@ export default function EditPurchase() {
       toast.success("Purchase updated");
       navigate("/purchase-view");
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to update purchase");
+      toast.error(
+        error?.response?.data?.message || "Failed to update purchase",
+      );
     }
   };
 
@@ -151,7 +154,10 @@ export default function EditPurchase() {
           <p style={styles.subtitle}>Update supplier purchase and stock</p>
         </div>
 
-        <button style={styles.secondaryBtn} onClick={() => navigate("/purchase-view")}>
+        <button
+          style={styles.secondaryBtn}
+          onClick={() => navigate("/purchase-view")}
+        >
           Back
         </button>
       </div>
@@ -254,6 +260,7 @@ export default function EditPurchase() {
                     />
                     <button
                       className="app-action-btn app-action-delete"
+                      style={styles.removeBtn}
                       title="Remove item"
                       aria-label="Remove item"
                       onClick={() => removeItem(item.item_id)}
@@ -262,7 +269,10 @@ export default function EditPurchase() {
                     </button>
                   </div>
                   <div style={styles.itemTotal}>
-                    ₹ {(Number(item.purchase_price || 0) * Number(item.qty || 0)).toFixed(2)}
+                    ₹{" "}
+                    {(
+                      Number(item.purchase_price || 0) * Number(item.qty || 0)
+                    ).toFixed(2)}
                   </div>
                 </div>
               ))}
@@ -382,6 +392,12 @@ const styles = {
     cursor: "pointer",
     fontWeight: 700,
   },
+  removeBtn: {
+    border: "none",
+    padding: 0,
+    cursor: "pointer",
+    fontWeight: 600,
+  },
   secondaryBtn: {
     background: "#e2e8f0",
     color: "#0f172a",
@@ -410,9 +426,24 @@ const styles = {
     padding: "8px 0",
   },
   itemName: { fontWeight: 700, color: "#0f172a", fontSize: 14 },
-  qtyInput: { width: "100%", padding: 8, borderRadius: 6, border: "1px solid #cbd5e1" },
-  priceInput: { width: "100%", padding: 8, borderRadius: 6, border: "1px solid #cbd5e1" },
-  serialInput: { width: "100%", padding: 8, borderRadius: 6, border: "1px solid #cbd5e1" },
+  qtyInput: {
+    width: "100%",
+    padding: 8,
+    borderRadius: 6,
+    border: "1px solid #cbd5e1",
+  },
+  priceInput: {
+    width: "100%",
+    padding: 8,
+    borderRadius: 6,
+    border: "1px solid #cbd5e1",
+  },
+  serialInput: {
+    width: "100%",
+    padding: 8,
+    borderRadius: 6,
+    border: "1px solid #cbd5e1",
+  },
   itemTotal: {
     fontSize: 14,
     fontWeight: 600,
@@ -428,8 +459,17 @@ const styles = {
   },
   taxBox: { border: "1px solid #e2e8f0", borderRadius: 8, padding: 14 },
   totalBox: { border: "1px solid #e2e8f0", borderRadius: 8, padding: 14 },
-  checkbox: { display: "flex", alignItems: "center", gap: 10, margin: "12px 0" },
-  totalRow: { display: "flex", justifyContent: "space-between", marginBottom: 14 },
+  checkbox: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    margin: "12px 0",
+  },
+  totalRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 14,
+  },
   grandRow: {
     display: "flex",
     justifyContent: "space-between",

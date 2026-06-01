@@ -194,7 +194,7 @@ export default function Dashboard() {
   const lowStockItems = items.filter(
     (item) => item.opening_stock <= item.low_stock_alert,
   );
-  const profit = totalSales - totalPurchase;
+  const profit = totalSales - totalPurchase - totalExpences;
   const actualProfit =
     totalSales - totalPurchase - pendingPayments - totalExpences;
 

@@ -158,8 +158,14 @@ export default function EditItem() {
             </div>
 
             <div style={styles.inputGroup}>
-              <label>Opening Stock <small> (Keep 0 if handle purchase)</small></label>
-            
+              <label>
+                Opening Stock{" "}
+                <small style={{ fontSize: "11px", color: "#e96504" }}>
+                  {" "}
+                  (Keep 0 if handle purchase)
+                </small>
+              </label>
+
               <input
                 type="number"
                 name="opening_stock"

@@ -1,5 +1,5 @@
 const Customer = require("../models/Customer");
-
+const Invoice = require("../models/Invoice");
 const createCustomer = async (req, res) => {
   try {
     const customer = await Customer.create(req.body);
@@ -23,6 +23,39 @@ const getCustomers = async (req, res) => {
     res.json({
       success: true,
       customers,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+const getCustomersWithSales = async (req, res) => {
+  try {
+    const customers = await Customer.find().sort({ createdAt: -1 });
+
+    const customersWithSales = await Promise.all(
+      customers.map(async (customer) => {
+        const invoices = await Invoice.find({
+          customer: customer._id,
+        });
+
+        const totalSales = invoices.reduce(
+          (sum, invoice) => sum + Number(invoice.grand_total || 0),
+          0,
+        );
+
+        return {
+          ...customer.toObject(),
+          totalSales,
+        };
+      }),
+    );
+
+    res.json({
+      success: true,
+      customers: customersWithSales,
     });
   } catch (err) {
     res.status(500).json({
@@ -82,4 +115,11 @@ const deleteCustomer = async (req, res) => {
   }
 };
 
-module.exports = {  createCustomer, getCustomers, getCustomerById, updateCustomer, deleteCustomer};
+module.exports = {
+  createCustomer,
+  getCustomers,
+  getCustomersWithSales,
+  getCustomerById,
+  updateCustomer,
+  deleteCustomer,
+};

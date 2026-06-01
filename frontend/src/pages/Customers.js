@@ -245,15 +245,15 @@ export default function Customers() {
 
       {deleteModal && (
         <div style={styles.modalOverlay}>
-          <div style={styles.deleteConfirm}>
-            <div style={styles.deleteIcon}>🗑</div>
-            <h2 style={styles.deleteTitle}>Delete Customer?</h2>
-            <p style={styles.deleteText}>
+          <div style={styles.deleteModal}>
+            <div style={styles.deleteModalIcon}>🗑️</div>
+            <h2>Delete Customer?</h2>
+            <p style={styles.deleteModalText}>
               Are you sure you want to delete{" "}
               <strong>{customerToDelete?.customer_name}</strong>?
             </p>
-            <div style={styles.confirmActions}>
-              <button style={styles.cancelBtn} onClick={closeDeleteModal}>
+            <div style={styles.deleteModalActions}>
+              <button style={styles.cancelDeleteBtn} onClick={closeDeleteModal}>
                 Cancel
               </button>
               <button style={styles.confirmDeleteBtn} onClick={deleteCustomer}>
@@ -367,17 +367,6 @@ const styles = {
     opacity: 0.85,
   },
 
-  modalOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(15,23,42,0.45)",
-    backdropFilter: "blur(8px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 9999,
-  },
-
   viewModal: {
     width: 620,
     maxWidth: "92vw",
@@ -443,55 +432,60 @@ const styles = {
   detailValue: {
     color: "#0f172a",
   },
-
-  deleteConfirm: {
-    width: 390,
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.55)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+    padding: "20px",
+  },
+  deleteModal: {
     background: "#fff",
-    borderRadius: 18,
-    padding: 24,
+    width: 420,
+    padding: 30,
+    borderRadius: 24,
     textAlign: "center",
     boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
   },
 
-  deleteIcon: {
-    fontSize: 42,
+  deleteModalIcon: {
+    fontSize: 55,
     marginBottom: 10,
   },
 
-  deleteTitle: {
-    margin: 0,
-    color: "#0f172a",
-  },
-
-  deleteText: {
+  deleteModalText: {
     color: "#64748b",
-    lineHeight: 1.6,
+    marginTop: 10,
+    lineHeight: 1.7,
   },
 
-  confirmActions: {
+  deleteModalActions: {
     display: "flex",
-    justifyContent: "center",
-    gap: 12,
-    marginTop: 20,
+    gap: 15,
+    marginTop: 25,
   },
 
-  cancelBtn: {
+  cancelDeleteBtn: {
+    flex: 1,
     border: "none",
-    padding: "10px 16px",
-    borderRadius: 8,
+    padding: 12,
+    borderRadius: 12,
     background: "#e2e8f0",
-    color: "#0f172a",
     cursor: "pointer",
-    fontWeight: 700,
+    fontWeight: 600,
   },
 
   confirmDeleteBtn: {
+    flex: 1,
     border: "none",
-    padding: "10px 16px",
-    borderRadius: 8,
+    padding: 12,
+    borderRadius: 12,
     background: "#ef4444",
     color: "#fff",
     cursor: "pointer",
-    fontWeight: 700,
+    fontWeight: 600,
   },
 };

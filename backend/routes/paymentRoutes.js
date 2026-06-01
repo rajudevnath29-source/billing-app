@@ -1,42 +1,22 @@
-const express =
-  require("express");
+const express = require("express");
 
-const router =
-  express.Router();
+const router = express.Router();
 
-const authMiddleware =
-  require("../middleware/authMiddleware");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const {
-
   createPayment,
-
-  getPayments
-
-} = require(
-  "../controllers/paymentController"
-);
+  getPayments,
+  deletePayment,
+} = require("../controllers/paymentController");
 
 // CREATE
-router.post(
-
-  "/",
-
-  authMiddleware,
-
-  createPayment
-
-);
+router.post("/", authMiddleware, createPayment);
 
 // GET
-router.get(
+router.get("/", authMiddleware, getPayments);
 
-  "/",
-
-  authMiddleware,
-
-  getPayments
-
-);
+//Delete
+router.delete("/:id", authMiddleware, deletePayment);
 
 module.exports = router;

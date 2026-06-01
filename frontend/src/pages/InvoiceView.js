@@ -812,7 +812,7 @@ const styles = {
     background: "#2563eb",
     color: "#fff",
     border: "none",
-    padding: "9px 13px",
+    padding: "0px 12px",
     borderRadius: 10,
     cursor: "pointer",
     fontWeight: 700,

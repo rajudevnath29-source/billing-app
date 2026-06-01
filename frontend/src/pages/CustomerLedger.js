@@ -21,7 +21,8 @@ export default function CustomerLedger() {
 
   const fetchCustomers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/customers", authHeader);
+      const res = await axios.get("http://localhost:5000/api/customers/with-sales", authHeader);
+      console.log(res);
       setCustomers(res.data.customers || []);
     } catch (error) {
       console.log(error);
@@ -128,7 +129,7 @@ export default function CustomerLedger() {
                     {customer.phone || "-"} {customer.city ? `• ${customer.city}` : ""}
                   </span>
                   <span className="money-text" style={styles.customerMoney}>
-                    ₹ {formatMoney(customer.opening_balance)}
+                    ₹ {formatMoney(customer.totalSales)}
                   </span>
                 </button>
               );

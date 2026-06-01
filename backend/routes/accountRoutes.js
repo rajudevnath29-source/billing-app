@@ -6,26 +6,16 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const {
   createAccount,
-
   getAccounts,
+  deleteAccount,
 } = require("../controllers/accountController");
 
 // CREATE
-router.post(
-  "/",
-
-  authMiddleware,
-
-  createAccount,
-);
+router.post("/", authMiddleware, createAccount);
 
 // GET
-router.get(
-  "/",
+router.get("/", authMiddleware, getAccounts);
 
-  authMiddleware,
-
-  getAccounts,
-);
+router.delete("/:id", authMiddleware, deleteAccount);
 
 module.exports = router;

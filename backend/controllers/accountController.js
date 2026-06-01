@@ -1,4 +1,5 @@
 const Account = require("../models/Account");
+const Voucher = require("../models/Voucher");
 
 const createAccount = async (req, res) => {
   try {
@@ -39,5 +40,37 @@ const getAccounts = async (req, res) => {
     });
   }
 };
+const deleteAccount = async (req, res) => {
+  try {
+    const voucherExists = await Voucher.findOne({
+      $or: [{ account: req.params.id }, { to_account: req.params.id }],
+    });
 
-module.exports = { createAccount, getAccounts };
+    if (voucherExists) {
+      return res.status(400).json({
+        message: "Cannot delete account with vouchers",
+      });
+    }
+
+    const account = await Account.findById(req.params.id);
+
+    if (!account) {
+      return res.status(404).json({
+        message: "Account not found",
+      });
+    }
+
+    await Account.findByIdAndDelete(req.params.id);
+
+    res.json({
+      message: "Account deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { createAccount, getAccounts, deleteAccount };

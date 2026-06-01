@@ -1,58 +1,37 @@
-const mongoose =
-  require("mongoose");
+const mongoose = require("mongoose");
 
-const paymentSchema =
-  new mongoose.Schema(
+const paymentSchema = new mongoose.Schema(
+  {
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
 
-    {
-
-      customer: {
-
-        type:
-          mongoose.Schema.Types.ObjectId,
-
-        ref: "Customer"
-
-      },
-
-      invoice: {
-
-        type:
-          mongoose.Schema.Types.ObjectId,
-
-        ref: "Invoice"
-
-      },
-
-      amount: {
-
-        type: Number,
-
-        required: true
-
-      },
-
-      note: String,
-
-      created_by: {
-
-        type:
-          mongoose.Schema.Types.ObjectId,
-
-        ref: "User"
-
-      }
-
+      ref: "Customer",
     },
 
-    {
-      timestamps: true
-    }
+    invoice: {
+      type: mongoose.Schema.Types.ObjectId,
 
-  );
+      ref: "Invoice",
+    },
 
-module.exports =
-  mongoose.model(
-    "Payment",
-    paymentSchema
-  );
+    amount: {
+      type: Number,
+
+      required: true,
+    },
+
+    note: String,
+
+    created_by: {
+      type: mongoose.Schema.Types.ObjectId,
+
+      ref: "User",
+    },
+  },
+
+  {
+    timestamps: true,
+  },
+);
+
+module.exports = mongoose.model("Payment", paymentSchema);

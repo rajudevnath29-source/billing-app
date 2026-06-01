@@ -229,6 +229,7 @@ export default function PurchaseView() {
                     <div style={styles.actionWrap}>
                       <button
                         className="app-action-btn app-action-view"
+                        style={styles.iconBtn}
                         title="View purchase"
                         aria-label="View purchase"
                         onClick={() => setSelectedPurchase(purchase)}
@@ -239,6 +240,7 @@ export default function PurchaseView() {
                       {hasPermission("EDIT_PURCHASE") && (
                         <button
                           className="app-action-btn app-action-edit"
+                          style={styles.iconBtn}
                           title="Edit purchase"
                           aria-label="Edit purchase"
                           onClick={() =>
@@ -252,6 +254,7 @@ export default function PurchaseView() {
                       {hasPermission("DELETE_PURCHASE") && (
                         <button
                           className="app-action-btn app-action-delete"
+                          style={styles.iconBtn}
                           title="Delete purchase"
                           aria-label="Delete purchase"
                           onClick={() => openDeleteModal(purchase)}
@@ -341,6 +344,7 @@ export default function PurchaseView() {
                 {hasPermission("DELETE_PURCHASE") && (
                   <button
                     className="app-action-btn app-action-delete"
+                    style={styles.iconBtn}
                     title="Delete purchase"
                     aria-label="Delete purchase"
                     onClick={() => openDeleteModal(selectedPurchase)}
@@ -427,19 +431,20 @@ export default function PurchaseView() {
       )}
 
       {deleteModal && (
-        <div style={styles.deleteOverlay}>
+        <div style={styles.modalOverlay}>
           <div style={styles.deleteModal}>
-            <div style={styles.deleteIcon}>🗑</div>
-            <h2 style={styles.deleteTitle}>Delete Purchase?</h2>
-            <p style={styles.deleteText}>
+            <div style={styles.deleteModalIcon}>🗑️</div>
+            <h2>Delete Purchase?</h2>
+            <p style={styles.deleteModalText}>
               Are you sure you want to delete{" "}
               <strong>{purchaseToDelete?.purchase_number}</strong>?
             </p>
 
-            <div style={styles.deleteActions}>
-              <button style={styles.cancelBtn} onClick={closeDeleteModal}>
+            <div style={styles.deleteModalActions}>
+              <button style={styles.cancelDeleteBtn} onClick={closeDeleteModal}>
                 Cancel
               </button>
+
               <button style={styles.confirmDeleteBtn} onClick={deletePurchase}>
                 Delete
               </button>
@@ -504,60 +509,12 @@ const styles = {
     alignItems: "center",
     flexWrap: "wrap",
   },
-  deleteOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(15,23,42,0.45)",
-    backdropFilter: "blur(8px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 10000,
-  },
-  deleteModal: {
-    width: 390,
-    background: "#fff",
-    borderRadius: 18,
-    padding: 24,
-    textAlign: "center",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-  },
-  deleteIcon: {
-    fontSize: 42,
-    marginBottom: 10,
-  },
-  deleteTitle: {
-    margin: 0,
-    color: "#0f172a",
-  },
-  deleteText: {
-    color: "#64748b",
-    lineHeight: 1.6,
-  },
-  deleteActions: {
-    display: "flex",
-    justifyContent: "center",
-    gap: 12,
-    marginTop: 20,
-  },
-  cancelBtn: {
-    border: "none",
-    padding: "10px 16px",
-    borderRadius: 8,
-    background: "#e2e8f0",
-    color: "#0f172a",
-    cursor: "pointer",
+  iconBtn: {
+    padding: 0,
     fontWeight: 700,
+    fontSize: 14,
   },
-  confirmDeleteBtn: {
-    border: "none",
-    padding: "10px 16px",
-    borderRadius: 8,
-    background: "#ef4444",
-    color: "#fff",
-    cursor: "pointer",
-    fontWeight: 700,
-  },
+
   empty: {
     padding: 35,
     textAlign: "center",
@@ -696,5 +653,61 @@ const styles = {
     paddingTop: 10,
     color: "#0f172a",
     fontSize: 17,
+  },
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.55)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+    padding: "20px",
+  },
+  deleteModal: {
+    background: "#fff",
+    width: 420,
+    padding: 30,
+    borderRadius: 24,
+    textAlign: "center",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+  },
+
+  deleteModalIcon: {
+    fontSize: 55,
+    marginBottom: 10,
+  },
+
+  deleteModalText: {
+    color: "#64748b",
+    marginTop: 10,
+    lineHeight: 1.7,
+  },
+
+  deleteModalActions: {
+    display: "flex",
+    gap: 15,
+    marginTop: 25,
+  },
+
+  cancelDeleteBtn: {
+    flex: 1,
+    border: "none",
+    padding: 12,
+    borderRadius: 12,
+    background: "#e2e8f0",
+    cursor: "pointer",
+    fontWeight: 600,
+  },
+
+  confirmDeleteBtn: {
+    flex: 1,
+    border: "none",
+    padding: 12,
+    borderRadius: 12,
+    background: "#ef4444",
+    color: "#fff",
+    cursor: "pointer",
+    fontWeight: 600,
   },
 };

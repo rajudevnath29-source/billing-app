@@ -135,7 +135,10 @@ export default function AddItem() {
 
             <div style={styles.inputGroup}>
               <label>
-                Opening Stock <small> (Keep 0 if handle purchase)</small>
+                Opening Stock{" "}
+                <small style={{ fontSize: "11px", color: "#e96504" }}>
+                  (Keep 0 if handle purchase)
+                </small>
               </label>
 
               <input

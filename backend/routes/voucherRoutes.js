@@ -1,42 +1,22 @@
-const express =
-  require("express");
+const express = require("express");
 
-const router =
-  express.Router();
+const router = express.Router();
 
-const authMiddleware =
-  require("../middleware/authMiddleware");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const {
-
   createVoucher,
-
-  getVouchers
-
-} = require(
-  "../controllers/voucherController"
-);
+  getVouchers,
+  deleteVoucher,
+} = require("../controllers/voucherController");
 
 // CREATE
-router.post(
-
-  "/",
-
-  authMiddleware,
-
-  createVoucher
-
-);
+router.post("/", authMiddleware, createVoucher);
 
 // GET
-router.get(
+router.get("/", authMiddleware, getVouchers);
 
-  "/",
-
-  authMiddleware,
-
-  getVouchers
-
-);
+// DELETE
+router.delete("/:id", authMiddleware, deleteVoucher);
 
 module.exports = router;
