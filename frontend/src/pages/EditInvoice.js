@@ -339,6 +339,21 @@ export default function EditInvoice() {
           <h1 style={styles.title}>Edit Invoice</h1>
           <p style={styles.subtitle}>
             {invoice.invoice_number} | Update invoice details
+            <span
+              style={{
+                padding: "4px 10px",
+                marginLeft: 10,
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 700,
+                background: invoice.isBulk ? "#dbeafe" : "#dcfce7",
+                color: invoice.isBulk ? "#1d4ed8" : "#15803d",
+              }}
+            >
+              {invoice.isBulk
+                ? "Created via Bulk Upload"
+                : "Created Manually"}
+            </span>
           </p>
         </div>
 

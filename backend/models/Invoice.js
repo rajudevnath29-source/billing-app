@@ -78,6 +78,11 @@ const invoiceSchema = new mongoose.Schema(
 
       default: "PAID",
     },
+    
+    isBulk: {
+      type: Boolean,
+      default: false,
+    },
 
     created_by: {
       type: mongoose.Schema.Types.ObjectId,

@@ -274,6 +274,7 @@ export default function InvoiceView() {
               <th style={styles.th}>Items</th>
               <th style={styles.th}>Total</th>
               <th style={styles.th}>Status</th>
+              <th style={styles.th}>Source</th>
               <th style={styles.th}>Action</th>
             </tr>
           </thead>
@@ -317,6 +318,22 @@ export default function InvoiceView() {
                       {invoice.payment_status}
                     </span>
                   </td>
+
+                  <td style={styles.td}>
+                    <span
+                      style={{
+                        padding: "4px 10px",
+                        borderRadius: 999,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        background: invoice.isBulk ? "#dbeafe" : "#dcfce7",
+                        color: invoice.isBulk ? "#1d4ed8" : "#15803d",
+                      }}
+                    >
+                      {invoice.isBulk ? "CSV Bulk" : "Manual"}
+                    </span>
+                  </td>
+
                   <td style={styles.td}>
                     <div style={styles.actionWrap}>
                       {hasPermission("VIEW_INVOICE") && (

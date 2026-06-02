@@ -13,9 +13,10 @@ const createInvoice = async (req, res) => {
       items,
       discount = 0,
       gst_enabled = false,
-      gst_rate = 0,
+      gst_rate = 18,
       paid_amount = 0,
       invoiceDate = new Date(),
+      isBulk = false,
     } = req.body;
 
     // VALIDATION
@@ -54,19 +55,21 @@ const createInvoice = async (req, res) => {
       return acc;
     }, {});
 
-    for (let itemId of Object.keys(requestedQtyByItem)) {
-      const itemData = await Item.findById(itemId);
+    if (!isBulk) {
+      for (let itemId of Object.keys(requestedQtyByItem)) {
+        const itemData = await Item.findById(itemId);
 
-      if (!itemData) {
-        return res.status(404).json({
-          message: "Item not found",
-        });
-      }
+        if (!itemData) {
+          return res.status(404).json({
+            message: "Item not found",
+          });
+        }
 
-      if (itemData.opening_stock < requestedQtyByItem[itemId]) {
-        return res.status(400).json({
-          message: `${itemData.item_name} only ${itemData.opening_stock} in stock`,
-        });
+        if (itemData.opening_stock < requestedQtyByItem[itemId]) {
+          return res.status(400).json({
+            message: `${itemData.item_name} only ${itemData.opening_stock} in stock`,
+          });
+        }
       }
     }
 
@@ -96,22 +99,25 @@ const createInvoice = async (req, res) => {
         serial_number: i.serial_number || "",
       });
 
-      // 🔥 AUTO STOCK REDUCE
-      const previousStock = itemData.opening_stock;
-      itemData.opening_stock -= i.qty;
-      await itemData.save();
+      if (!isBulk) {
+        // 🔥 AUTO STOCK REDUCE
+        const previousStock = itemData.opening_stock;
+        itemData.opening_stock -= i.qty;
+        await itemData.save();
 
-      // STOCK HISTORY
-      await createStockHistory({
-        item: itemData._id,
-        type: "SALE",
-        qty: i.qty,
-        previous_stock: previousStock,
-        new_stock: itemData.opening_stock,
-        note: "Invoice Sale",
-        reference_id: invoice_number,
-        created_by: req.user.id,
-      });
+        // STOCK HISTORY
+
+        await createStockHistory({
+          item: itemData._id,
+          type: "SALE",
+          qty: i.qty,
+          previous_stock: previousStock,
+          new_stock: itemData.opening_stock,
+          note: "Invoice Sale",
+          reference_id: invoice_number,
+          created_by: req.user.id,
+        });
+      }
     }
 
     // 💰 CALCULATIONS
@@ -144,6 +150,7 @@ const createInvoice = async (req, res) => {
       paid_amount,
       due_amount,
       payment_status,
+      isBulk: isBulk ? true : false,
       grand_total,
       created_by: req.user.id,
     });
@@ -244,31 +251,31 @@ const updateInvoice = async (req, res) => {
         customer_name,
         phone: customer_mobile,
       });
-      customerId  = existingCustomer._id;
+      customerId = existingCustomer._id;
     }
+    if (!invoice.isBulk) {
+      // =========================
+      // 1. RESTORE OLD STOCK FIRST
+      // =========================
+      for (let oldItem of invoice.items) {
+        const itemData = await Item.findById(oldItem.item_id);
+        if (itemData) {
+          itemData.opening_stock += Number(oldItem.qty || 0);
+          await itemData.save();
 
-    // =========================
-    // 1. RESTORE OLD STOCK FIRST
-    // =========================
-    for (let oldItem of invoice.items) {
-      const itemData = await Item.findById(oldItem.item_id);
-      if (itemData) {
-        itemData.opening_stock += Number(oldItem.qty || 0);
-        await itemData.save();
-
-        await createStockHistory({
-          item: itemData._id,
-          type: "RETURN",
-          qty: oldItem.qty,
-          previous_stock: itemData.opening_stock - oldItem.qty,
-          new_stock: itemData.opening_stock,
-          note: "Invoice Update Restore",
-          reference_id: invoice.invoice_number,
-          created_by: req.user.id,
-        });
+          await createStockHistory({
+            item: itemData._id,
+            type: "RETURN",
+            qty: oldItem.qty,
+            previous_stock: itemData.opening_stock - oldItem.qty,
+            new_stock: itemData.opening_stock,
+            note: "Invoice Update Restore",
+            reference_id: invoice.invoice_number,
+            created_by: req.user.id,
+          });
+        }
       }
     }
-
     // =========================
     // 2. STOCK VALIDATION (NEW ITEMS)
     // =========================
@@ -278,17 +285,19 @@ const updateInvoice = async (req, res) => {
       return acc;
     }, {});
 
-    for (let itemId of Object.keys(requestedQty)) {
-      const itemData = await Item.findById(itemId);
+    if (!invoice.isBulk) {
+      for (let itemId of Object.keys(requestedQty)) {
+        const itemData = await Item.findById(itemId);
 
-      if (!itemData) {
-        return res.status(404).json({ message: "Item not found" });
-      }
+        if (!itemData) {
+          return res.status(404).json({ message: "Item not found" });
+        }
 
-      if (itemData.opening_stock < requestedQty[itemId]) {
-        return res.status(400).json({
-          message: `${itemData.item_name} only ${itemData.opening_stock} in stock`,
-        });
+        if (itemData.opening_stock < requestedQty[itemId]) {
+          return res.status(400).json({
+            message: `${itemData.item_name} only ${itemData.opening_stock} in stock`,
+          });
+        }
       }
     }
 
@@ -316,22 +325,23 @@ const updateInvoice = async (req, res) => {
         serial_number: i.serial_number || "",
       });
 
-      // reduce stock
-      itemData.opening_stock -= Number(i.qty);
-      await itemData.save();
+      if (!invoice.isBulk) {
+        // reduce stock
+        itemData.opening_stock -= Number(i.qty);
+        await itemData.save();
 
-      await createStockHistory({
-        item: itemData._id,
-        type: "SALE",
-        qty: Number(i.qty),
-        previous_stock: itemData.opening_stock + Number(i.qty),
-        new_stock: itemData.opening_stock,
-        note: "Invoice Update Sale",
-        reference_id: invoice.invoice_number,
-        created_by: req.user.id,
-      });
+        await createStockHistory({
+          item: itemData._id,
+          type: "SALE",
+          qty: Number(i.qty),
+          previous_stock: itemData.opening_stock + Number(i.qty),
+          new_stock: itemData.opening_stock,
+          note: "Invoice Update Sale",
+          reference_id: invoice.invoice_number,
+          created_by: req.user.id,
+        });
+      }
     }
-
     // =========================
     // 4. CALCULATIONS
     // =========================
@@ -394,24 +404,25 @@ const deleteInvoice = async (req, res) => {
         message: "Invoice not found",
       });
     }
+    if (!invoice.isBulk) {
+      for (let oldItem of invoice.items) {
+        const item = await Item.findById(oldItem.item_id);
 
-    for (let oldItem of invoice.items) {
-      const item = await Item.findById(oldItem.item_id);
+        if (item) {
+          item.opening_stock += Number(oldItem.qty || 0);
+          await item.save();
 
-      if (item) {
-        item.opening_stock += Number(oldItem.qty || 0);
-        await item.save();
-
-        await createStockHistory({
-          item: item._id,
-          type: "RETURN",
-          qty: Number(oldItem.qty || 0),
-          previous_stock: item.opening_stock - Number(oldItem.qty || 0),
-          new_stock: item.opening_stock,
-          note: "Invoice Deleted",
-          reference_id: invoice.invoice_number,
-          created_by: req.user.id,
-        });
+          await createStockHistory({
+            item: item._id,
+            type: "RETURN",
+            qty: Number(oldItem.qty || 0),
+            previous_stock: item.opening_stock - Number(oldItem.qty || 0),
+            new_stock: item.opening_stock,
+            note: "Invoice Deleted",
+            reference_id: invoice.invoice_number,
+            created_by: req.user.id,
+          });
+        }
       }
     }
 

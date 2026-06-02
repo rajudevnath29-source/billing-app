@@ -2,11 +2,10 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
-import { getUser, isSuperAdmin } from "../utils/role";
+import { isSuperAdmin } from "../utils/role";
 import { hasPermission } from "../utils/permissions";
 
 export default function Sidebar({ collapsed, hovered, setHovered }) {
-  const user = getUser();
   const [syncingType, setSyncingType] = useState("");
   const [confirmModal, setConfirmModal] = useState({
     open: false,
