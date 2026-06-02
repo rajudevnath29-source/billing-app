@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function EditCustomer() {
@@ -30,7 +31,7 @@ export default function EditCustomer() {
 
         setForm(res.data.customer || {});
       } catch (error) {
-        alert("Failed to load customer");
+        toast.error("Failed to load customer");
       }
     };
 
@@ -54,10 +55,10 @@ export default function EditCustomer() {
         },
       });
 
-      alert("Customer updated");
+      toast.success("Customer updated");
       navigate("/customers");
     } catch (error) {
-      alert("Error updating customer");
+      toast.error("Error updating customer");
     }
   };
 

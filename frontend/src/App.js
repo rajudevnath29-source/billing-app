@@ -8,7 +8,6 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PermissionGuard from "./components/PermissionGuard";
 
-
 // PAGES
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -46,8 +45,8 @@ import UserList from "./pages/UserList";
 import EditUser from "./pages/EditUser";
 import PermissionManager from "./pages/PermissionManager";
 
-
 import RoleManager from "./pages/RoleManager";
+import BulkInvoice from "./pages/BulkInvoice";
 
 function App() {
   useEffect(() => {
@@ -155,6 +154,15 @@ function App() {
             element={
               <PermissionGuard permission="EDIT_INVOICE">
                 <EditInvoice />
+              </PermissionGuard>
+            }
+          />
+
+          <Route
+            path="/bulk-invoice"
+            element={
+              <PermissionGuard permission="BULK_INVOICE">
+                <BulkInvoice />
               </PermissionGuard>
             }
           />

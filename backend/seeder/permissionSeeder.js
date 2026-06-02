@@ -3,211 +3,140 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
 const Permission = require("../models/Permission");
+const PERMISSIONS = require("../constants/permissions");
 
 dotenv.config();
 
 // =========================
-// DB CONNECT
-// =========================
-mongoose.connect(process.env.MONGO_URI);
-
-// =========================
 // PERMISSIONS
 // =========================
+const permission = (name, label, module) => ({ name, label, module });
+
 const permissions = [
-  // USERS
-  {
-    name: "VIEW_USERS",
-    label: "View Users",
-    module: "USERS",
-  },
+  // DASHBOARD
+  permission(PERMISSIONS.DASHBOARD_ACCESS, "Dashboard Access", "DASHBOARD"),
 
-  {
-    name: "EDIT_USER",
-    label: "Edit User",
-    module: "USERS",
-  },
-
-  {
-    name: "DELETE_USER",
-    label: "Delete User",
-    module: "USERS",
-  },
-
-  {
-    name: "MANAGE_PERMISSIONS",
-    label: "Manage Permissions",
-    module: "USERS",
-  },
+  // ROLES / PERMISSIONS MANAGEMENT
+  permission(PERMISSIONS.MANAGE_ROLES, "Manage Roles", "USERS"),
+  permission(PERMISSIONS.MANAGE_PERMISSIONS, "Manage Permissions", "USERS"),
+  permission(PERMISSIONS.MANAGE_USER_ACCESS, "Manage User Access", "USERS"),
 
   // ITEMS
-  {
-    name: "ITEMS_MODULE",
-    label: "Items Module",
-    module: "ITEMS",
-  },
-
-  {
-    name: "VIEW_ITEMS",
-    label: "View Items",
-    module: "ITEMS",
-  },
-
-  {
-    name: "ADD_ITEM",
-    label: "Add Item",
-    module: "ITEMS",
-  },
-
-  {
-    name: "EDIT_ITEM",
-    label: "Edit Item",
-    module: "ITEMS",
-  },
-
-  {
-    name: "DELETE_ITEM",
-    label: "Delete Item",
-    module: "ITEMS",
-  },
+  permission(PERMISSIONS.ITEMS_MODULE, "Items Module", "ITEMS"),
+  permission(PERMISSIONS.VIEW_ITEMS, "View Items", "ITEMS"),
+  permission(PERMISSIONS.ADD_ITEM, "Add Item", "ITEMS"),
+  permission(PERMISSIONS.EDIT_ITEM, "Edit Item", "ITEMS"),
+  permission(PERMISSIONS.DELETE_ITEM, "Delete Item", "ITEMS"),
 
   // PURCHASE
-  {
-    name: "VIEW_PURCHASE",
-    label: "View Purchase",
-    module: "PURCHASE",
-  },
-
-  {
-    name: "CREATE_PURCHASE",
-    label: "Create Purchase",
-    module: "PURCHASE",
-  },
-
-  {
-    name: "EDIT_PURCHASE",
-    label: "Edit Purchase",
-    module: "PURCHASE",
-  },
-
-  {
-    name: "DELETE_PURCHASE",
-    label: "Delete Purchase",
-    module: "PURCHASE",
-  },
+  permission(PERMISSIONS.PURCHASE_MODULE, "Purchase Module", "PURCHASE"),
+  permission(PERMISSIONS.VIEW_PURCHASE, "View Purchase", "PURCHASE"),
+  permission(PERMISSIONS.CREATE_PURCHASE, "Create Purchase", "PURCHASE"),
+  permission(PERMISSIONS.EDIT_PURCHASE, "Edit Purchase", "PURCHASE"),
+  permission(PERMISSIONS.DELETE_PURCHASE, "Delete Purchase", "PURCHASE"),
+  permission(PERMISSIONS.PRINT_PURCHASE, "Print Purchase", "PURCHASE"),
+  permission(
+    PERMISSIONS.DOWNLOAD_PURCHASE_PDF,
+    "Download Purchase PDF",
+    "PURCHASE"
+  ),
 
   // INVOICE
-  {
-    name: "INVOICE_MODULE",
-    label: "Invoice Module",
-    module: "INVOICE",
-  },
-
-  {
-    name: "VIEW_INVOICE",
-    label: "View Invoice",
-    module: "INVOICE",
-  },
-
-  {
-    name: "CREATE_INVOICE",
-    label: "Create Invoice",
-    module: "INVOICE",
-  },
-
-  {
-    name: "EDIT_INVOICE",
-    label: "Edit Invoice",
-    module: "INVOICE",
-  },
-
-  {
-    name: "CHNAGE_INVOICE_DATE",
-    label: "Change Invoice Date",
-    module: "INVOICE",
-  },
-
-  {
-    name: "DELETE_INVOICE",
-    label: "Delete Invoice",
-    module: "INVOICE",
-  },
+  permission(PERMISSIONS.INVOICE_MODULE, "Invoice Module", "INVOICE"),
+  permission(PERMISSIONS.VIEW_INVOICE, "View Invoice", "INVOICE"),
+  permission(PERMISSIONS.CREATE_INVOICE, "Create Invoice", "INVOICE"),
+  permission(PERMISSIONS.EDIT_INVOICE, "Edit Invoice", "INVOICE"),
+  permission(
+    PERMISSIONS.CHNAGE_INVOICE_DATE,
+    "Change Invoice Date",
+    "INVOICE"
+  ),
+  permission(PERMISSIONS.DELETE_INVOICE, "Delete Invoice", "INVOICE"),
+  permission(PERMISSIONS.PRINT_INVOICE, "Print Invoice", "INVOICE"),
+  permission(
+    PERMISSIONS.DOWNLOAD_INVOICE_PDF,
+    "Download Invoice PDF",
+    "INVOICE"
+  ),
 
   // CUSTOMERS
-  {
-    name: "CUSTOMERS_MODULE",
-    label: "Customers Module",
-    module: "CUSTOMERS",
-  },
-
-  {
-    name: "VIEW_CUSTOMERS",
-    label: "View Customers",
-    module: "CUSTOMERS",
-  },
-
-  {
-    name: "ADD_CUSTOMER",
-    label: "Add Customer",
-    module: "CUSTOMERS",
-  },
-
-  {
-    name: "EDIT_CUSTOMER",
-    label: "Edit Customer",
-    module: "CUSTOMERS",
-  },
-
-  {
-    name: "DELETE_CUSTOMER",
-    label: "Delete Customer",
-    module: "CUSTOMERS",
-  },
+  permission(PERMISSIONS.CUSTOMERS_MODULE, "Customers Module", "CUSTOMERS"),
+  permission(PERMISSIONS.VIEW_CUSTOMERS, "View Customers", "CUSTOMERS"),
+  permission(PERMISSIONS.ADD_CUSTOMER, "Add Customer", "CUSTOMERS"),
+  permission(PERMISSIONS.EDIT_CUSTOMER, "Edit Customer", "CUSTOMERS"),
+  permission(PERMISSIONS.DELETE_CUSTOMER, "Delete Customer", "CUSTOMERS"),
 
   // PAYMENTS
-  {
-    name: "PAYMENTS_MODULE",
-    label: "Payments Module",
-    module: "PAYMENTS",
-  },
-
-  {
-    name: "VIEW_PAYMENTS",
-    label: "View Payments",
-    module: "PAYMENTS",
-  },
-
-  {
-    name: "ADD_PAYMENT",
-    label: "Add Payment",
-    module: "PAYMENTS",
-  },
+  permission(PERMISSIONS.PAYMENTS_MODULE, "Payments Module", "PAYMENTS"),
+  permission(PERMISSIONS.VIEW_PAYMENTS, "View Payments", "PAYMENTS"),
+  permission(PERMISSIONS.ADD_PAYMENT, "Add Payment", "PAYMENTS"),
 
   // REPORTS
-  {
-    name: "REPORTS_MODULE",
-    label: "Reports Module",
-    module: "REPORTS",
-  },
+  permission(PERMISSIONS.REPORTS_MODULE, "Reports Module", "REPORTS"),
+
+  // EXPENSES
+  permission(PERMISSIONS.EXPENSES_MODULE, "Expenses Module", "EXPENSES"),
+
+  // ACCOUNTS
+  permission(PERMISSIONS.ACCOUNTS_MODULE, "Accounts Module", "ACCOUNTS"),
+
+  // VOUCHERS
+  permission(PERMISSIONS.VOUCHERS_MODULE, "Vouchers Module", "VOUCHERS"),
+
+  // STOCK
+  permission(PERMISSIONS.STOCK_MODULE, "Stock Module", "STOCK"),
+
+  // USERS
+  permission(PERMISSIONS.USERS_MODULE, "Users Module", "USERS"),
+  permission(PERMISSIONS.VIEW_USERS, "View Users", "USERS"),
+  permission(PERMISSIONS.ADD_USER, "Add User", "USERS"),
+  permission(PERMISSIONS.EDIT_USER, "Edit User", "USERS"),
+  permission(PERMISSIONS.DELETE_USER, "Delete User", "USERS"),
+
+  // LEDGER
+  permission(PERMISSIONS.CUSTOMER_LEDGER, "Customer Ledger", "LEDGER"),
 ];
 
-// =========================
-// INSERT
-// =========================
+const syncPermissions = async () => {
+  let inserted = 0;
+  let updated = 0;
+
+  // IMPORTANT:
+  // We do NOT delete old permission docs here, because users may reference
+  // those documents by _id. Deleting and recreating would break relations.
+  for (const item of permissions) {
+    const result = await Permission.updateOne(
+      { name: item.name },
+      { $set: item },
+      { upsert: true }
+    );
+
+    if (result.upsertedCount > 0) inserted += 1;
+    else if (result.modifiedCount > 0) updated += 1;
+  }
+
+  return { inserted, updated, total: permissions.length };
+};
+
 const seedPermissions = async () => {
   try {
-    await Permission.deleteMany();
-
-    await Permission.insertMany(permissions);
-
-    console.log("Permissions Seeded");
-
+    await mongoose.connect(process.env.MONGO_URI);
+    const summary = await syncPermissions();
+    console.log(
+      `Permissions synced safely | inserted: ${summary.inserted}, updated: ${summary.updated}, total: ${summary.total}`
+    );
     process.exit();
   } catch (error) {
     console.log(error);
-
     process.exit(1);
   }
 };
 
-seedPermissions();
+if (require.main === module) {
+  seedPermissions();
+}
+
+module.exports = {
+  permissions,
+  syncPermissions,
+};

@@ -48,7 +48,7 @@ export default function Header({ collapsed, setCollapsed }) {
             <div style={styles.dropdown}>
               <p onClick={() => navigate("/profile")}>👤 My Profile</p>
 
-              <p onClick={() => navigate("/profile/edit")}>✏️ Edit Profile</p>
+              {/* <p onClick={() => navigate("/profile/edit")}>✏️ Edit Profile</p> */}
             </div>
           )}
         </div>

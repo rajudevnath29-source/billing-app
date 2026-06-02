@@ -6,9 +6,13 @@ const {
   login,
   getProfile,
   updateProfileImage,
+  syncAccessMasterData,
+  syncPermissionsMasterData,
+  syncRolesMasterData,
 } = require("../controllers/authController");
 
 const authMiddleware = require("../middleware/authMiddleware");
+const roleMiddleware = require("../middleware/roleMiddleware");
 
 const upload = require("../middleware/upload");
 
@@ -35,6 +39,28 @@ router.put(
   authMiddleware,
   upload.single("image"),
   updateProfileImage,
+);
+
+// SYNC ROLE/PERMISSION MASTER DATA (SUPER ADMIN ONLY)
+router.post(
+  "/sync-access-master",
+  authMiddleware,
+  roleMiddleware(["SUPER_ADMIN"]),
+  syncAccessMasterData,
+);
+
+router.post(
+  "/sync-permissions-master",
+  authMiddleware,
+  roleMiddleware(["SUPER_ADMIN"]),
+  syncPermissionsMasterData,
+);
+
+router.post(
+  "/sync-roles-master",
+  authMiddleware,
+  roleMiddleware(["SUPER_ADMIN"]),
+  syncRolesMasterData,
 );
 
 // ==========================

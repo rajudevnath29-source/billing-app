@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 export default function AddCustomer() {
@@ -35,10 +36,10 @@ export default function AddCustomer() {
         },
       });
 
-      alert("Customer added");
+      toast.success("Customer added");
       navigate("/customers");
     } catch (err) {
-      alert("Error adding customer");
+      toast.error("Error adding customer");
     }
   };
 

@@ -9,7 +9,7 @@ export default function StockHistory() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const token = localStorage.getItem("token");
-  const pageSize = 10;
+  const pageSize = 15;
 
   const loadHistory = async () => {
     try {

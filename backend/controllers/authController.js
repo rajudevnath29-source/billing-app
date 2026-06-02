@@ -4,6 +4,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const PERMISSIONS = require("../constants/permissions");
+const { syncPermissions } = require("../seeder/permissionSeeder");
+const { syncRoles } = require("../seeder/roleSeeder");
 
 // ==========================
 // REGISTER
@@ -164,6 +166,63 @@ exports.updateProfileImage = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: error.message,
+    });
+  }
+};
+
+// ==========================
+// SYNC ACCESS MASTER DATA
+// ==========================
+exports.syncAccessMasterData = async (req, res) => {
+  try {
+    const [permissions, roles] = await Promise.all([
+      syncPermissions(),
+      syncRoles(),
+    ]);
+
+    return res.json({
+      message: "Permissions and roles synced successfully",
+      result: {
+        permissions,
+        roles,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to sync permissions and roles",
+      error: error.message,
+    });
+  }
+};
+
+exports.syncPermissionsMasterData = async (req, res) => {
+  try {
+    const permissions = await syncPermissions();
+
+    return res.json({
+      message: "Permissions synced successfully",
+      result: permissions,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to sync permissions",
+      error: error.message,
+    });
+  }
+};
+
+exports.syncRolesMasterData = async (req, res) => {
+  try {
+    const roles = await syncRoles();
+
+    return res.json({
+      message: "Roles synced successfully",
+      result: roles,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to sync roles",
+      error: error.message,
     });
   }
 };

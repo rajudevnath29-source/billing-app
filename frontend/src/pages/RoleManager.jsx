@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 export default function RoleManager() {
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
-
   const [search, setSearch] = useState("");
+
+  const [openModules, setOpenModules] = useState({});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -15,34 +16,19 @@ export default function RoleManager() {
 
   const token = localStorage.getItem("token");
 
-  // FETCH ROLES
+  // ================= FETCH =================
   const fetchRoles = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/roles", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setRoles(res.data);
-    } catch (error) {
-      console.log(error);
-    }
+    const res = await axios.get("http://localhost:5000/api/roles", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setRoles(res.data);
   };
 
-  // FETCH PERMISSIONS
   const fetchPermissions = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/permissions", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setPermissions(res.data);
-    } catch (error) {
-      console.log(error);
-    }
+    const res = await axios.get("http://localhost:5000/api/permissions", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setPermissions(res.data);
   };
 
   useEffect(() => {
@@ -50,50 +36,97 @@ export default function RoleManager() {
     fetchPermissions();
   }, []);
 
-  // CREATE ROLE
+  // ================= CREATE ROLE =================
   const createRole = async () => {
-    try {
-      await axios.post("http://localhost:5000/api/roles", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    await axios.post("http://localhost:5000/api/roles", formData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      fetchRoles();
+    fetchRoles();
 
-      setFormData({
-        name: "",
-        label: "",
-        permissions: [],
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    setFormData({
+      name: "",
+      label: "",
+      permissions: [],
+    });
   };
 
-  // TOGGLE PERMISSION
+  // ================= TOGGLE PERMISSION =================
   const togglePermission = (id) => {
-    const exists = formData.permissions.includes(id);
-
-    if (exists) {
-      setFormData({
-        ...formData,
-        permissions: formData.permissions.filter((p) => p !== id),
-      });
-    } else {
-      setFormData({
-        ...formData,
-        permissions: [...formData.permissions, id],
-      });
-    }
+    setFormData((prev) => ({
+      ...prev,
+      permissions: prev.permissions.includes(id)
+        ? prev.permissions.filter((p) => p !== id)
+        : [...prev.permissions, id],
+    }));
   };
 
-  // FILTERED
-  const filteredPermissions = permissions.filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.label.toLowerCase().includes(search.toLowerCase()),
-  );
+  // ================= SMART SEARCH + GROUPING =================
+  const filteredGrouped = useMemo(() => {
+    const keyword = search.toLowerCase();
+
+    const grouped = {};
+
+    permissions.forEach((p) => {
+      const name = p.name.toLowerCase();
+      const label = p.label.toLowerCase();
+      const module = (p.module || "OTHER").toLowerCase();
+
+      const match =
+        name.includes(keyword) ||
+        label.includes(keyword) ||
+        module.includes(keyword);
+
+      const moduleMatch = module.includes(keyword);
+
+      // no search → show all
+      if (!keyword) {
+        const key = p.module || "OTHER";
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(p);
+        return;
+      }
+
+      // module match → show all permissions of module
+      if (moduleMatch) {
+        const key = p.module || "OTHER";
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(p);
+        return;
+      }
+
+      // permission match → show only that permission
+      if (match) {
+        const key = p.module || "OTHER";
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(p);
+      }
+    });
+
+    return grouped;
+  }, [permissions, search]);
+
+  // ================= MODULE TOGGLE =================
+  const toggleModule = (module) => {
+    setOpenModules((prev) => ({
+      ...prev,
+      [module]: !prev[module],
+    }));
+  };
+
+  // ================= SELECT ALL =================
+  const handleSelectAll = (perms) => {
+    const ids = perms.map((p) => p._id);
+
+    const allSelected = ids.every((id) => formData.permissions.includes(id));
+
+    setFormData((prev) => ({
+      ...prev,
+      permissions: allSelected
+        ? prev.permissions.filter((id) => !ids.includes(id))
+        : [...new Set([...prev.permissions, ...ids])],
+    }));
+  };
 
   return (
     <div style={styles.container}>
@@ -104,128 +137,167 @@ export default function RoleManager() {
         <input
           placeholder="Role Name"
           value={formData.name}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              name: e.target.value,
-            })
-          }
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           style={styles.input}
         />
 
         <input
           placeholder="Role Label"
           value={formData.label}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              label: e.target.value,
-            })
-          }
+          onChange={(e) => setFormData({ ...formData, label: e.target.value })}
           style={styles.input}
         />
 
         {/* SEARCH */}
         <input
-          placeholder="Search permission..."
+          placeholder="Search permissions..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={styles.input}
         />
 
         {/* PERMISSIONS */}
-        <div style={styles.permissionBox}>
-          {filteredPermissions.map((permission) => (
-            <label key={permission._id} style={styles.permissionItem}>
-              <input
-                type="checkbox"
-                checked={formData.permissions.includes(permission._id)}
-                onChange={() => togglePermission(permission._id)}
-              />
+        {Object.entries(filteredGrouped).map(([module, perms]) => {
+          const expanded = search.trim() !== "" || openModules[module];
 
-              {permission.label}
-            </label>
-          ))}
-        </div>
+          return (
+            <div key={module} style={styles.moduleCard}>
+              {/* HEADER */}
+              <div style={styles.moduleHeader}>
+                <input
+                  type="checkbox"
+                  checked={perms.every((p) =>
+                    formData.permissions.includes(p._id),
+                  )}
+                  onChange={() => handleSelectAll(perms)}
+                />
+
+                <div
+                  style={styles.moduleTitle}
+                  onClick={() => toggleModule(module)}
+                >
+                  <strong>{module}</strong>
+                  <span>{expanded ? "▼" : "▶"}</span>
+                </div>
+              </div>
+
+              {/* BODY */}
+              {expanded && (
+                <div style={styles.permissionGrid}>
+                  {perms.map((p) => (
+                    <label key={p._id} style={styles.permissionItem}>
+                      <input
+                        type="checkbox"
+                        checked={formData.permissions.includes(p._id)}
+                        onChange={() => togglePermission(p._id)}
+                      />
+                      {p.label}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
 
         <button onClick={createRole} style={styles.button}>
           Create Role
         </button>
       </div>
 
-      {/* ROLE LIST */}
+      {/* ROLES LIST */}
       <div style={styles.grid}>
         {roles.map((role) => (
           <div key={role._id} style={styles.card}>
-            <h3>{role.label}</h3>
-
-            <p>{role.name}</p>
-
-            <hr />
-
-            {role.permissions.map((p) => (
-              <div key={p._id}>✅ {p.label}</div>
-            ))}
+            <h3>{role.name}</h3>
+            <div>
+              {role.permissions.map((p) => (
+                <div key={p}>✔ {p}</div>
+              ))}
+            </div>
           </div>
         ))}
       </div>
     </div>
   );
 }
-
 const styles = {
-  container: {
-    padding: 20,
-  },
+  container: { padding: 20 },
 
   form: {
     background: "#fff",
     padding: 20,
-    borderRadius: 20,
-    marginBottom: 30,
+    borderRadius: 14,
+    marginBottom: 20,
   },
 
   input: {
     width: "100%",
-    padding: 12,
-    marginBottom: 15,
-    borderRadius: 12,
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 8,
     border: "1px solid #ddd",
   },
 
-  permissionBox: {
-    maxHeight: 300,
-    overflowY: "auto",
-    border: "1px solid #eee",
+  moduleCard: {
+    border: "1px solid #e5e7eb",
+    borderRadius: 10,
+    marginBottom: 10,
+    overflow: "hidden",
+  },
+
+  moduleHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "10px",
+    background: "#f8fafc",
+    cursor: "pointer",
+  },
+
+  moduleTitle: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "space-between",
+    paddingLeft: 10,
+  },
+
+  permissionGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
+    gap: 8,
     padding: 10,
-    borderRadius: 12,
-    marginBottom: 20,
   },
 
   permissionItem: {
-    display: "block",
-    padding: 8,
+    display: "flex",
+    gap: 8,
+    padding: 6,
+    borderRadius: 6,
+    border: "1px solid #eee",
+    background: "#fff",
+    fontSize: 13,
   },
 
   button: {
-    padding: "12px 20px",
-    border: "none",
-    borderRadius: 12,
-    background: "#7c93e6",
+    marginTop: 10,
+    padding: "10px 16px",
+    background: "#2563eb",
     color: "#fff",
+    border: "none",
+    borderRadius: 8,
     cursor: "pointer",
   },
 
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))",
-    gap: 20,
+    gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))",
+    gap: 15,
   },
 
   card: {
     background: "#fff",
-    padding: 20,
-    borderRadius: 20,
-    boxShadow: "0 5px 20px rgba(0,0,0,0.05)",
+    padding: 15,
+    borderRadius: 12,
   },
 };

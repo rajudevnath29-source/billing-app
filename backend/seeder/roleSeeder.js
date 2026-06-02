@@ -3,10 +3,9 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
 const Role = require("../models/Role");
+const PERMISSIONS = require("../constants/permissions");
 
 dotenv.config();
-
-mongoose.connect(process.env.MONGO_URI);
 
 const roles = [
   {
@@ -19,15 +18,15 @@ const roles = [
     name: "ITEM_MANAGER",
 
     permissions: [
-      "ITEMS_MODULE",
-      "VIEW_ITEMS",
-      "ADD_ITEM",
-      "EDIT_ITEM",
-      "DELETE_ITEM",
+      PERMISSIONS.ITEMS_MODULE,
+      PERMISSIONS.VIEW_ITEMS,
+      PERMISSIONS.ADD_ITEM,
+      PERMISSIONS.EDIT_ITEM,
+      PERMISSIONS.DELETE_ITEM,
 
-      "VIEW_PURCHASE",
-      "CREATE_PURCHASE",
-      "EDIT_PURCHASE",
+      PERMISSIONS.VIEW_PURCHASE,
+      PERMISSIONS.CREATE_PURCHASE,
+      PERMISSIONS.EDIT_PURCHASE,
     ],
   },
 
@@ -35,33 +34,59 @@ const roles = [
     name: "INVOICE_USER",
 
     permissions: [
-      "INVOICE_MODULE",
-      "VIEW_INVOICE",
-      "CREATE_INVOICE",
+      PERMISSIONS.INVOICE_MODULE,
+      PERMISSIONS.VIEW_INVOICE,
+      PERMISSIONS.CREATE_INVOICE,
 
-      "CUSTOMERS_MODULE",
-      "VIEW_CUSTOMERS",
+      PERMISSIONS.CUSTOMERS_MODULE,
+      PERMISSIONS.VIEW_CUSTOMERS,
 
-      "PAYMENTS_MODULE",
-      "VIEW_PAYMENTS",
+      PERMISSIONS.PAYMENTS_MODULE,
+      PERMISSIONS.VIEW_PAYMENTS,
     ],
   },
 ];
 
 const seedRoles = async () => {
   try {
-    await Role.deleteMany();
-
-    await Role.insertMany(roles);
-
-    console.log("Roles Seeded");
-
+    await mongoose.connect(process.env.MONGO_URI);
+    const summary = await syncRoles();
+    console.log(
+      `Roles synced safely | inserted: ${summary.inserted}, updated: ${summary.updated}, total: ${summary.total}`
+    );
     process.exit();
   } catch (error) {
     console.log(error);
-
     process.exit(1);
   }
 };
 
-seedRoles();
+const syncRoles = async () => {
+  let inserted = 0;
+  let updated = 0;
+
+  // IMPORTANT:
+  // We do NOT delete old role docs here, because users may reference
+  // those roles by _id. Deleting and recreating would break relations.
+  for (const item of roles) {
+    const result = await Role.updateOne(
+      { name: item.name },
+      { $set: item },
+      { upsert: true }
+    );
+
+    if (result.upsertedCount > 0) inserted += 1;
+    else if (result.modifiedCount > 0) updated += 1;
+  }
+
+  return { inserted, updated, total: roles.length };
+};
+
+if (require.main === module) {
+  seedRoles();
+}
+
+module.exports = {
+  roles,
+  syncRoles,
+};
