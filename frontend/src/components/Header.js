@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser } from "../utils/role";
+import { clearAuthSession } from "../utils/session";
 
 export default function Header({ collapsed, setCollapsed }) {
   const user = getUser();
@@ -9,8 +10,7 @@ export default function Header({ collapsed, setCollapsed }) {
   const [profileOpen, setProfileOpen] = useState(false);
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAuthSession();
     navigate("/");
   };
 
