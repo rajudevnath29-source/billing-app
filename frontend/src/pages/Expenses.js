@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { API_URL } from "../config/api";
@@ -24,7 +24,7 @@ export default function Expenses() {
   // LOAD
   // ====================================
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     try {
       const res = await axios.get(
         `${API_URL}/expenses`,
@@ -40,11 +40,11 @@ export default function Expenses() {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchExpenses();
-  }, []);
+  }, [fetchExpenses]);
 
   // ====================================
   // CREATE

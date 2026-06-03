@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +18,7 @@ export default function Customers() {
   const navigate = useNavigate();
 
   // FETCH CUSTOMERS
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/customers`, {
         headers: {
@@ -30,11 +30,11 @@ export default function Customers() {
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchCustomers();
-  }, []);
+  }, [fetchCustomers]);
 
   // DELETE CUSTOMER
   const openDeleteModal = (customer) => {

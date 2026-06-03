@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
@@ -31,7 +31,7 @@ export default function PurchaseView() {
     [token],
   );
 
-  const fetchPurchases = async () => {
+  const fetchPurchases = useCallback(async () => {
     try {
       const res = await axios.get(
         `${API_URL}/purchases`,
@@ -43,11 +43,11 @@ export default function PurchaseView() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authHeader]);
 
   useEffect(() => {
     fetchPurchases();
-  }, []);
+  }, [fetchPurchases]);
 
   const filteredPurchases = useMemo(() => {
     const keyword = search.toLowerCase();
@@ -658,16 +658,6 @@ const styles = {
     paddingTop: 10,
     color: "#0f172a",
     fontSize: 17,
-  },
-  modalOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.55)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 9999,
-    padding: "20px",
   },
   deleteModal: {
     background: "#fff",

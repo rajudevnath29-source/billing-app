@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -6,7 +6,6 @@ import { API_URL } from "../config/api";
 
 export default function EditUser() {
   const { id } = useParams();
-  console.log('raju');
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
@@ -28,7 +27,7 @@ export default function EditUser() {
   // =========================
   // GET USER + PERMISSIONS
   // =========================
-  const getData = async () => {
+  const getData = useCallback(async () => {
     try {
       const [userRes, permissionRes, roleRes] = await Promise.all([
         axios.get(`${API_URL}/users/${id}`, {
@@ -49,10 +48,6 @@ export default function EditUser() {
           },
         }),
       ]);
-      console.log(userRes);
-      console.log(roleRes.data);
-      console.log(userRes.data);
-      console.log(permissionRes.data);
       setFormData({
         name: userRes.data.name,
         email: userRes.data.email,
@@ -70,11 +65,11 @@ export default function EditUser() {
     } catch (error) {
       toast.error("Failed to load data");
     }
-  };
+  }, [id, token]);
 
   useEffect(() => {
     getData();
-  }, []);
+  }, [getData]);
 
   // =========================
   // HANDLE PERMISSION

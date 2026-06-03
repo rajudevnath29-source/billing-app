@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
@@ -27,7 +27,7 @@ export default function EditPurchase() {
     [token],
   );
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [itemRes, purchaseRes] = await Promise.all([
         axios.get(`${API_URL}/items`, authHeader),
@@ -54,11 +54,11 @@ export default function EditPurchase() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authHeader, id]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const filteredItems = items.filter((item) =>
     item.item_name?.toLowerCase().includes(search.toLowerCase()),

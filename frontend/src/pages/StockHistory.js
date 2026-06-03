@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config/api";
 
@@ -12,7 +12,7 @@ export default function StockHistory() {
   const token = localStorage.getItem("token");
   const pageSize = 15;
 
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/stock-history`, {
         headers: {
@@ -24,11 +24,11 @@ export default function StockHistory() {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     loadHistory();
-  }, []);
+  }, [loadHistory]);
 
   const filtered = history.filter((h) => {
     const keyword = search.toLowerCase();

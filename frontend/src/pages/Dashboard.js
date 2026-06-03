@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config/api";
@@ -45,14 +45,7 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  // =========================
-  // FETCH DATA
-  // =========================
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -91,7 +84,14 @@ export default function Dashboard() {
       console.log(error);
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  // =========================
+  // FETCH DATA
+  // =========================
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // =========================
   // FILTER LOGIC

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
@@ -30,7 +30,7 @@ export default function UserList() {
   // =========================
   // GET USERS
   // =========================
-  const getUsers = async () => {
+  const getUsers = useCallback(async () => {
     try {
       const res = await axios.get(
         `${API_URL}/users`,
@@ -47,11 +47,11 @@ export default function UserList() {
     } catch (error) {
       toast.error("Failed to load users");
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     getUsers();
-  }, []);
+  }, [getUsers]);
 
   // =========================
   // OPEN DELETE MODAL

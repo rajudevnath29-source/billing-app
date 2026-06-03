@@ -134,6 +134,7 @@ export default function Profile() {
                   ? getUploadUrl(user.profile_image)
                   : "https://i.pravatar.cc/150"
               }
+              alt="User profile"
               style={styles.avatar}
             />
 

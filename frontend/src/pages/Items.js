@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +25,7 @@ export default function Items() {
   // =========================
   // GET ITEMS
   // =========================
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/items`, {
         headers: {
@@ -39,11 +39,11 @@ export default function Items() {
       toast.error("Failed to load items");
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchItems();
-  }, []);
+  }, [fetchItems]);
 
   useEffect(() => {
     setCurrentPage(1);

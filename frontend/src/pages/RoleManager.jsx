@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config/api";
 
@@ -18,24 +18,24 @@ export default function RoleManager() {
   const token = localStorage.getItem("token");
 
   // ================= FETCH =================
-  const fetchRoles = async () => {
+  const fetchRoles = useCallback(async () => {
     const res = await axios.get(`${API_URL}/roles`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setRoles(res.data);
-  };
+  }, [token]);
 
-  const fetchPermissions = async () => {
+  const fetchPermissions = useCallback(async () => {
     const res = await axios.get(`${API_URL}/permissions`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setPermissions(res.data);
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchRoles();
     fetchPermissions();
-  }, []);
+  }, [fetchPermissions, fetchRoles]);
 
   // ================= CREATE ROLE =================
   const createRole = async () => {

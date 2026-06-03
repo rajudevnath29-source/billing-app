@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { API_URL } from "../config/api";
@@ -25,7 +25,7 @@ export default function Payments() {
   // LOAD
   // ====================================
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       // DUE INVOICES
 
@@ -61,11 +61,11 @@ export default function Payments() {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   // ====================================
   // CREATE PAYMENT

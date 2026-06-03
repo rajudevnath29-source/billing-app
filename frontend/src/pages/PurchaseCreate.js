@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { API_URL } from "../config/api";
@@ -23,7 +23,7 @@ export default function PurchaseCreate() {
   // FETCH ITEMS
   // =========================
 
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/items`, {
         headers: {
@@ -37,11 +37,11 @@ export default function PurchaseCreate() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchItems();
-  }, []);
+  }, [fetchItems]);
 
   // =========================
   // SEARCH ITEMS

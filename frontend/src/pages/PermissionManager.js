@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config/api";
 
@@ -8,7 +8,7 @@ export default function PermissionManager() {
 
   const token = localStorage.getItem("token");
 
-  const fetchPermissions = async () => {
+  const fetchPermissions = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/permissions`, {
         headers: {
@@ -20,11 +20,11 @@ export default function PermissionManager() {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchPermissions();
-  }, []);
+  }, [fetchPermissions]);
 
   const filteredPermissions = permissions.filter(
     (p) =>

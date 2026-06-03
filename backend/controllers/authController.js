@@ -3,7 +3,6 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const PERMISSIONS = require("../constants/permissions");
 const { syncPermissions } = require("../seeder/permissionSeeder");
 const { syncRoles } = require("../seeder/roleSeeder");
 
@@ -26,28 +25,12 @@ exports.register = async (req, res) => {
     // HASH PASSWORD
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ==========================
-    // DEFAULT PERMISSIONS
-    // ==========================
-    let permissions = [];
-
-    // SUPER ADMIN
-    if (role === "SUPER_ADMIN") {
-      permissions = [];
-    }
-
-    // EMPLOYEE DEFAULT
-    else {
-      permissions = [PERMISSIONS.DASHBOARD_ACCESS];
-    }
-
     // CREATE USER
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
       role,
-      permissions,
     });
 
     res.status(201).json({
@@ -58,7 +41,7 @@ exports.register = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        permissions: user.permissions,
+        permissions: user.permissions || [],
         profile_image: user.profile_image,
       },
     });
@@ -137,7 +120,9 @@ exports.login = async (req, res) => {
 // ==========================
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate("permissions").select("-password");
+    const user = await User.findById(req.user.id)
+      .populate("permissions")
+      .select("-password");
 
     res.json(user);
   } catch (error) {

@@ -12,7 +12,6 @@ export default function BulkInvoice() {
   const [rows, setRows] = useState([]);
   const [items, setItems] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [fileName, setFileName] = useState("");
 
   const [rowStatus, setRowStatus] = useState({});
 
@@ -65,8 +64,6 @@ export default function BulkInvoice() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setFileName(file.name);
-
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -90,7 +87,6 @@ export default function BulkInvoice() {
   const resetAll = () => {
     setRows([]);
     setItems([]);
-    setFileName("");
     setRowStatus({});
 
     // ✅ IMPORTANT: clear file input also

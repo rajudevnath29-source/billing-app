@@ -15,7 +15,7 @@ export default function InvoiceView() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const printRef = useRef(null);
-console.log(token);
+
   const [invoices, setInvoices] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [loading, setLoading] = useState(true);

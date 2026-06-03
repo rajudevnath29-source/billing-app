@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config/api";
 
@@ -24,22 +24,21 @@ export default function CustomerLedger() {
     [token],
   );
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
     try {
       const res = await axios.get(
         `${API_URL}/customers/with-sales`,
         authHeader,
       );
-      console.log(res);
       setCustomers(res.data.customers || []);
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [authHeader]);
 
   useEffect(() => {
     fetchCustomers();
-  }, []);
+  }, [fetchCustomers]);
 
   const openLedger = async (customer) => {
     try {

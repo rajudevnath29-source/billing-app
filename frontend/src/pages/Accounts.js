@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import jsPDF from "jspdf";
 import { API_URL } from "../config/api";
 
 export default function Accounts() {
@@ -21,7 +20,7 @@ export default function Accounts() {
   // LOAD
   // ====================================
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/accounts`, {
         headers: {
@@ -33,11 +32,11 @@ export default function Accounts() {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchAccounts();
-  }, []);
+  }, [fetchAccounts]);
 
   // ====================================
   // CREATE

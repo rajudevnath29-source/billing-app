@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { API_URL } from "../config/api";
@@ -30,7 +30,7 @@ export default function Vouchers() {
   // LOAD
   // ====================================
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const accRes = await axios.get(
         `${API_URL}/accounts`,
@@ -58,11 +58,11 @@ export default function Vouchers() {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   // ====================================
   // CREATE

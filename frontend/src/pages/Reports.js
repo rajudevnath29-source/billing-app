@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import axios from "axios";
 
 import * as XLSX from "xlsx";
@@ -32,7 +32,7 @@ export default function Reports() {
   // =========================
   // FETCH DATA
   // =========================
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const invoiceRes = await axios.get(`${API_URL}/invoices`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -58,11 +58,11 @@ export default function Reports() {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   // =========================
   // CALCULATIONS
