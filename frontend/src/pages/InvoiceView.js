@@ -14,7 +14,7 @@ export default function InvoiceView() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const printRef = useRef(null);
-
+console.log(token);
   const [invoices, setInvoices] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +38,8 @@ export default function InvoiceView() {
       const res = await axios.get(`${API_URL}/invoices`, authHeader);
       setInvoices(res.data.invoices || []);
     } catch (error) {
-      toast.error("Failed to load invoices");
+      // toast.error("Failed to load invoices");
+      toast.error(error?.response?.data?.message || "Failed to load invoices");
     } finally {
       setLoading(false);
     }

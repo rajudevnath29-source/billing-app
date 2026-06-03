@@ -1,0 +1,4 @@
+customer_name;customer_mobile;invoiceDate;item_name;qty;price;discount;gst_enabled;paid_amount;serial_number
+                  Rahul;9876543210;02,06,2026;Consistence 16GB DDR3 RAM;1;45000;0;TRUE;0;
+                  Rahul;9876543210;02,06,2026;Consistence 4GB DDR3 RAM;1;500;;TRUE;0;
+                  Cash;;02,06,2026;Zebronics H61 Motherboard Nvme;1;2250;100;;0;SN123

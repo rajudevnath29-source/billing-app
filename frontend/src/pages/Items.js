@@ -459,15 +459,16 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-end",
-    gap: 10,
-    marginTop: 16,
+    gap: 12,
+    marginTop: 20,
   },
 
   pageBtn: {
     border: "none",
+    padding: "10px 14px",
+    borderRadius: 10,
     background: "#e2e8f0",
-    padding: "8px 12px",
-    borderRadius: 8,
+    color: "#0f172a",
     cursor: "pointer",
     fontWeight: 700,
   },
@@ -475,6 +476,8 @@ const styles = {
   activePage: {
     background: "#2563eb",
     color: "#fff",
+    cursor: "not-allowed",
+    opacity: 0.8,
   },
 
   modalOverlay: {

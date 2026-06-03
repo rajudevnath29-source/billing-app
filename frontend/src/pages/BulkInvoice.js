@@ -103,19 +103,15 @@ export default function BulkInvoice() {
   // =========================
   // SAMPLE CSV (UNCHANGED BUTTON)
   // =========================
+
   const downloadSample = () => {
-    const csv = `customer_name,customer_mobile,invoiceDate,item_name,qty,price,discount,gst_enabled,paid_amount,serial_number
-                  Rahul,9876543210,2026-06-02,Laptop,1,45000,0,true,0,
-                  Rahul,9876543210,2026-06-02,Mouse,1,500,,true,0,
-                  Cash,,2026-06-02,SSD 128GB,1,2250,100,,0,SN123`;
+    const link = document.createElement("a");
+    link.href = "/samples/bulk_invoice_sample.csv";
+    link.download = "bulk_invoice_sample.csv";
 
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "bulk_invoice_sample.csv";
-    a.click();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // =========================
@@ -130,8 +126,6 @@ export default function BulkInvoice() {
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      console.log(row.gst_enabled);
-      console.log(safeBool(row.gst_enabled));
       const cleanRow = {
         customer_name: safeString(row.customer_name),
         customer_mobile: safeString(row.customer_mobile),

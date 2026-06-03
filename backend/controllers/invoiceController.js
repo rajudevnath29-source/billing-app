@@ -25,17 +25,36 @@ const createInvoice = async (req, res) => {
         message: "Items required",
       });
     }
-
-    // 🔥 AUTO CUSTOMER CREATE
+    
+    // 🔥 AUTO CUSTOMER CREATE / FIND
     let customerId = customer || null;
 
-    // IF CUSTOMER NOT SELECTED  // CREATE NEW CUSTOMER
     if (!customerId) {
-      const existingCustomer = await Customer.create({
-        customer_name,
-        phone: customer_mobile,
-      });
-      customerId = existingCustomer._id;
+      // Bulk upload me pehle customer find karo
+      if (isBulk) {
+        const existingCustomer = await Customer.findOne({
+          customer_name: customer_name?.trim(),
+        });
+
+        if (existingCustomer) {
+          customerId = existingCustomer._id;
+        } else {
+          const newCustomer = await Customer.create({
+            customer_name,
+            phone: customer_mobile,
+          });
+
+          customerId = newCustomer._id;
+        }
+      } else {
+        // Normal invoice behaviour
+        const newCustomer = await Customer.create({
+          customer_name,
+          phone: customer_mobile,
+        });
+
+        customerId = newCustomer._id;
+      }
     }
 
     const counter = await Counter.findOneAndUpdate(

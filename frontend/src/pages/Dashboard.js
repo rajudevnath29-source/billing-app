@@ -291,7 +291,7 @@ export default function Dashboard() {
               <h1>₹ {totalPurchase}</h1>
             </div>
 
-            <div style={styles.card}>
+            <div style={pendingPayments >= 0 ? styles.lossCard : styles.card}>
               <h3>⏳ Pending</h3>
               <h1>₹ {pendingPayments}</h1>
             </div>
@@ -325,7 +325,7 @@ export default function Dashboard() {
               <h3>📦 Items</h3>
               <h1>{totalItems}</h1>
             </div>
-            
+
             <div style={styles.dangerCard}>
               <h3>⚠️ Low Stock</h3>
               <h1>{lowStockItems.length}</h1>

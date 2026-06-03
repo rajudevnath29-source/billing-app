@@ -8,6 +8,10 @@ export default function CustomerLedger() {
   const [search, setSearch] = useState("");
   const [loadingLedger, setLoadingLedger] = useState(false);
 
+  const LEDGER_PAGE_SIZE = 10;
+
+  const [ledgerPage, setLedgerPage] = useState(1);
+
   const token = localStorage.getItem("token");
 
   const authHeader = useMemo(
@@ -21,7 +25,10 @@ export default function CustomerLedger() {
 
   const fetchCustomers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/customers/with-sales", authHeader);
+      const res = await axios.get(
+        "http://localhost:5000/api/customers/with-sales",
+        authHeader,
+      );
       console.log(res);
       setCustomers(res.data.customers || []);
     } catch (error) {
@@ -36,6 +43,7 @@ export default function CustomerLedger() {
   const openLedger = async (customer) => {
     try {
       setSelectedCustomer(customer);
+      setLedgerPage(1);
       setLoadingLedger(true);
 
       const res = await axios.get(
@@ -77,6 +85,16 @@ export default function CustomerLedger() {
     0,
   );
 
+  const ledgerTotalPages = Math.max(
+    1,
+    Math.ceil(customerInvoices.length / LEDGER_PAGE_SIZE),
+  );
+
+  const paginatedInvoices = customerInvoices.slice(
+    (ledgerPage - 1) * LEDGER_PAGE_SIZE,
+    ledgerPage * LEDGER_PAGE_SIZE,
+  );
+
   const formatDate = (date) => {
     if (!date) return "-";
 
@@ -97,7 +115,9 @@ export default function CustomerLedger() {
       <div style={styles.header}>
         <div>
           <h1 style={styles.title}>Customer Ledger</h1>
-          <p style={styles.subtitle}>Customer-wise sales, paid amount and balance</p>
+          <p style={styles.subtitle}>
+            Customer-wise sales, paid amount and balance
+          </p>
         </div>
       </div>
 
@@ -124,9 +144,12 @@ export default function CustomerLedger() {
                   }}
                   onClick={() => openLedger(customer)}
                 >
-                  <span style={styles.customerName}>{customer.customer_name}</span>
+                  <span style={styles.customerName}>
+                    {customer.customer_name}
+                  </span>
                   <span style={styles.customerMeta}>
-                    {customer.phone || "-"} {customer.city ? `• ${customer.city}` : ""}
+                    {customer.phone || "-"}{" "}
+                    {customer.city ? `• ${customer.city}` : ""}
                   </span>
                   <span className="money-text" style={styles.customerMoney}>
                     ₹ {formatMoney(customer.totalSales)}
@@ -153,17 +176,23 @@ export default function CustomerLedger() {
 
                 <div style={styles.summaryCard}>
                   <span style={styles.summaryLabel}>Total Sales</span>
-                  <strong style={styles.summaryValue}>₹ {formatMoney(totalSales)}</strong>
+                  <strong style={styles.summaryValue}>
+                    ₹ {formatMoney(totalSales)}
+                  </strong>
                 </div>
 
                 <div style={styles.summaryCard}>
                   <span style={styles.summaryLabel}>Paid</span>
-                  <strong style={styles.summaryValue}>₹ {formatMoney(totalPaid)}</strong>
+                  <strong style={styles.summaryValue}>
+                    ₹ {formatMoney(totalPaid)}
+                  </strong>
                 </div>
 
                 <div style={styles.summaryCard}>
                   <span style={styles.summaryLabel}>Balance</span>
-                  <strong style={styles.summaryValue}>₹ {formatMoney(totalDue)}</strong>
+                  <strong style={styles.summaryValue}>
+                    ₹ {formatMoney(totalDue)}
+                  </strong>
                 </div>
               </div>
 
@@ -181,12 +210,14 @@ export default function CustomerLedger() {
                   </thead>
 
                   <tbody>
-                    {customerInvoices.map((invoice) => (
+                    {paginatedInvoices.map((invoice) => (
                       <tr key={invoice._id} className="table-row">
                         <td>
                           <strong>{invoice.invoice_number}</strong>
                         </td>
-                        <td>{formatDate(invoice.invoiceDate || invoice.createdAt)}</td>
+                        <td>
+                          {formatDate(invoice.invoiceDate || invoice.createdAt)}
+                        </td>
                         <td>
                           <span className="money-text">
                             ₹ {formatMoney(invoice.grand_total)}
@@ -220,19 +251,64 @@ export default function CustomerLedger() {
                     ))}
                   </tbody>
                 </table>
-
-                {loadingLedger && <div style={styles.emptyBox}>Loading ledger...</div>}
-
-                {!loadingLedger && customerInvoices.length === 0 && (
-                  <div style={styles.emptyBox}>No invoice found for this customer</div>
-                )}
               </div>
+
+              {customerInvoices.length > 0 && (
+                <div style={styles.pagination}>
+                  {ledgerPage > 1 && (
+                    <button
+                      style={styles.pageBtn}
+                      onClick={() => setLedgerPage((p) => p - 1)}
+                    >
+                      Prev
+                    </button>
+                  )}
+
+                  {[...Array(ledgerTotalPages)].map((_, index) => {
+                    const page = index + 1;
+
+                    return (
+                      <button
+                        key={page}
+                        disabled={ledgerPage === page}
+                        onClick={() => setLedgerPage(page)}
+                        style={{
+                          ...styles.pageBtn,
+                          ...(ledgerPage === page ? styles.activePageBtn : {}),
+                        }}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+
+                  {ledgerPage < ledgerTotalPages && (
+                    <button
+                      style={styles.pageBtn}
+                      onClick={() => setLedgerPage((p) => p + 1)}
+                    >
+                      Next
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {loadingLedger && (
+                <div style={styles.emptyBox}>Loading ledger...</div>
+              )}
+
+              {!loadingLedger && customerInvoices.length === 0 && (
+                <div style={styles.emptyBox}>
+                  No invoice found for this customer
+                </div>
+              )}
             </>
           ) : (
             <div style={styles.emptyState}>
               <h2 style={styles.emptyTitle}>Select Customer</h2>
               <p style={styles.subtitle}>
-                Left side se customer choose karte hi uska ledger yahan dikh jayega.
+                Left side se customer choose karte hi uska ledger yahan dikh
+                jayega.
               </p>
             </div>
           )}
@@ -271,7 +347,7 @@ const styles = {
     background: "#fff",
     borderRadius: 10,
     padding: 8,
-    height: "calc(100vh - 160px)",
+    height: "calc(100vh - 220px)",
     overflow: "hidden",
     boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
@@ -397,4 +473,29 @@ const styles = {
     margin: 0,
     color: "#0f172a",
   },
+  pagination: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 12,
+    marginTop: 20,
+  },
+
+  pageBtn: {
+    border: "none",
+    padding: "10px 14px",
+    borderRadius: 10,
+    background: "#e2e8f0",
+    color: "#0f172a",
+    cursor: "pointer",
+    fontWeight: 700,
+  },
+
+  activePageBtn: {
+    background: "#2563eb",
+    color: "#fff",
+    cursor: "not-allowed",
+    opacity: 0.8,
+  },
+
 };
