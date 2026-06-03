@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import { API_URL } from "../config/api";
 
 export default function EditCustomer() {
   const { id } = useParams();
@@ -23,7 +24,7 @@ export default function EditCustomer() {
   useEffect(() => {
     const fetchCustomer = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/customers/${id}`, {
+        const res = await axios.get(`${API_URL}/customers/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -49,7 +50,7 @@ export default function EditCustomer() {
     e.preventDefault();
 
     try {
-      await axios.put(`http://localhost:5000/api/customers/${id}`, form, {
+      await axios.put(`${API_URL}/customers/${id}`, form, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -5,6 +5,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useNavigate } from "react-router-dom";
 import { hasPermission } from "../utils/permissions";
+import { API_URL } from "../config/api";
 
 const PAGE_SIZE = 10;
 
@@ -33,7 +34,7 @@ export default function PurchaseView() {
   const fetchPurchases = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/purchases",
+        `${API_URL}/purchases`,
         authHeader,
       );
       setPurchases(res.data.purchases || []);
@@ -151,7 +152,7 @@ export default function PurchaseView() {
     if (!purchaseToDelete) return;
     try {
       await axios.delete(
-        `http://localhost:5000/api/purchases/${purchaseToDelete._id}`,
+        `${API_URL}/purchases/${purchaseToDelete._id}`,
         authHeader,
       );
       toast.success("Purchase deleted");

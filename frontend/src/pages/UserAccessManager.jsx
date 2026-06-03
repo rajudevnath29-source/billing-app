@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { API_URL } from "../config/api";
 
 export default function UserAccessManager() {
   const [users, setUsers] = useState([]);
@@ -20,7 +21,7 @@ export default function UserAccessManager() {
   // ==========================
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/users", {
+      const res = await axios.get(`${API_URL}/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -37,7 +38,7 @@ export default function UserAccessManager() {
   // ==========================
   const fetchRoles = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/roles", {
+      const res = await axios.get(`${API_URL}/roles`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -54,7 +55,7 @@ export default function UserAccessManager() {
   // ==========================
   const fetchPermissions = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/permissions", {
+      const res = await axios.get(`${API_URL}/permissions`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -137,7 +138,7 @@ export default function UserAccessManager() {
   const saveAccess = async () => {
     try {
       await axios.put(
-        `http://localhost:5000/api/users/${selectedUser._id}/access`,
+        `${API_URL}/users/${selectedUser._id}/access`,
         {
           roles: selectedUser.roles,
           permissions: selectedUser.permissions,

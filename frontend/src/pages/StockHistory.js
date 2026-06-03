@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 export default function StockHistory() {
   const [history, setHistory] = useState([]);
@@ -13,7 +14,7 @@ export default function StockHistory() {
 
   const loadHistory = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/stock-history", {
+      const res = await axios.get(`${API_URL}/stock-history`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { API_URL } from "../config/api";
 
 export default function AddItem() {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function AddItem() {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/items", form, {
+      await axios.post(`${API_URL}/items`, form, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

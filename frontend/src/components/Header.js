@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUser } from "../utils/role";
 import { clearAuthSession } from "../utils/session";
+import { getUploadUrl } from "../config/api";
 
 export default function Header({ collapsed, setCollapsed }) {
   const user = getUser();
@@ -35,7 +36,7 @@ export default function Header({ collapsed, setCollapsed }) {
           <img
             src={
               user?.profile_image
-                ? `http://localhost:5000/uploads/${user.profile_image}`
+                ? getUploadUrl(user.profile_image)
                 : "https://i.pravatar.cc/80"
             }
             alt="User Profile"

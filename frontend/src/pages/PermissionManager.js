@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 export default function PermissionManager() {
   const [permissions, setPermissions] = useState([]);
@@ -9,7 +10,7 @@ export default function PermissionManager() {
 
   const fetchPermissions = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/permissions", {
+      const res = await axios.get(`${API_URL}/permissions`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

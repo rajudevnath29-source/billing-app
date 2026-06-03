@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 export default function RoleManager() {
   const [roles, setRoles] = useState([]);
@@ -18,14 +19,14 @@ export default function RoleManager() {
 
   // ================= FETCH =================
   const fetchRoles = async () => {
-    const res = await axios.get("http://localhost:5000/api/roles", {
+    const res = await axios.get(`${API_URL}/roles`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setRoles(res.data);
   };
 
   const fetchPermissions = async () => {
-    const res = await axios.get("http://localhost:5000/api/permissions", {
+    const res = await axios.get(`${API_URL}/permissions`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setPermissions(res.data);
@@ -38,7 +39,7 @@ export default function RoleManager() {
 
   // ================= CREATE ROLE =================
   const createRole = async () => {
-    await axios.post("http://localhost:5000/api/roles", formData, {
+    await axios.post(`${API_URL}/roles`, formData, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

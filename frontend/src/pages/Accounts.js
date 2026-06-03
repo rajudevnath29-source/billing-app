@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
+import { API_URL } from "../config/api";
 
 export default function Accounts() {
   const [accounts, setAccounts] = useState([]);
@@ -22,7 +23,7 @@ export default function Accounts() {
 
   const fetchAccounts = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/accounts", {
+      const res = await axios.get(`${API_URL}/accounts`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -45,7 +46,7 @@ export default function Accounts() {
   const createAccount = async () => {
     try {
       await axios.post(
-        "http://localhost:5000/api/accounts",
+        `${API_URL}/accounts`,
         {
           account_name,
           account_type,
@@ -75,7 +76,7 @@ export default function Accounts() {
   const deleteAccount = async () => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/accounts/${selectedAccount._id}`,
+        `${API_URL}/accounts/${selectedAccount._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

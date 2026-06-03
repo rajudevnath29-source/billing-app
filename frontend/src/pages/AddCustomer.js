@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config/api";
 
 export default function AddCustomer() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function AddCustomer() {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:5000/api/customers", form, {
+      await axios.post(`${API_URL}/customers`, form, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

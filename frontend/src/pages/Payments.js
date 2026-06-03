@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 export default function Payments() {
   const [invoices, setInvoices] = useState([]);
@@ -29,7 +30,7 @@ export default function Payments() {
       // DUE INVOICES
 
       const invoiceRes = await axios.get(
-        "http://localhost:5000/api/invoices",
+        `${API_URL}/invoices`,
 
         {
           headers: {
@@ -47,7 +48,7 @@ export default function Payments() {
       // PAYMENTS
 
       const paymentRes = await axios.get(
-        "http://localhost:5000/api/payments",
+        `${API_URL}/payments`,
 
         {
           headers: {
@@ -95,7 +96,7 @@ export default function Payments() {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/payments",
+        `${API_URL}/payments`,
         {
           customer: invoiceData.customer,
           invoice: invoiceData._id,
@@ -126,7 +127,7 @@ export default function Payments() {
   const deletePayment = async () => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/payments/${selectedPayment._id}`,
+        `${API_URL}/payments/${selectedPayment._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

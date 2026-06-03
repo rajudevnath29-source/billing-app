@@ -4,8 +4,9 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { hasPermission } from "../utils/permissions";
 import Select from "react-select";
+import { API_URL } from "../config/api";
 
-const API_URL = "http://localhost:5000/api";
+
 
 const toDateInputValue = (date = new Date()) => {
   const parsedDate = new Date(date);

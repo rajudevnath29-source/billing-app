@@ -2,6 +2,7 @@ import toast from "react-hot-toast";
 import { useState } from "react";
 import axios from "axios";
 import "../styles/auth.css";
+import { API_URL } from "../config/api";
 
 export default function Login() {
   const [isActive, setIsActive] = useState(false);
@@ -27,7 +28,7 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        `${API_URL}/auth/login`,
         loginData,
       );
       localStorage.setItem("token", res.data.token);
@@ -46,7 +47,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:5000/api/auth/register", registerData);
+      await axios.post(`${API_URL}/auth/register`, registerData);
       toast.success("Registration Successful");
       setIsActive(false);
     } catch (error) {

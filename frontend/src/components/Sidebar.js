@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { isSuperAdmin } from "../utils/role";
 import { hasPermission } from "../utils/permissions";
+import { API_URL } from "../config/api";
 
 export default function Sidebar({ collapsed, hovered, setHovered }) {
   const [syncingType, setSyncingType] = useState("");
@@ -23,8 +24,8 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       const token = localStorage.getItem("token");
       const endpoint =
         type === "permissions"
-          ? "http://localhost:5000/api/auth/sync-permissions-master"
-          : "http://localhost:5000/api/auth/sync-roles-master";
+          ? `${API_URL}/auth/sync-permissions-master`
+          : `${API_URL}/auth/sync-roles-master`;
 
       const res = await axios.post(
         endpoint,

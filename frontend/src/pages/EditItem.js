@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { API_URL } from "../config/api";
 
 export default function EditItem() {
   const { id } = useParams();
@@ -27,7 +28,7 @@ export default function EditItem() {
 
   const fetchItem = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/items", {
+      const res = await axios.get(`${API_URL}/items`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -76,7 +77,7 @@ export default function EditItem() {
     e.preventDefault();
 
     try {
-      await axios.put(`http://localhost:5000/api/items/${id}`, form, {
+      await axios.put(`${API_URL}/items/${id}`, form, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -3,6 +3,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { API_URL, getUploadUrl } from "../config/api";
 
 export default function UserList() {
   const token = localStorage.getItem("token");
@@ -32,7 +33,7 @@ export default function UserList() {
   const getUsers = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/users",
+        `${API_URL}/users`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -67,7 +68,7 @@ export default function UserList() {
   const confirmDelete = async () => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/users/${selectedUser._id}`,
+        `${API_URL}/users/${selectedUser._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -194,7 +195,7 @@ export default function UserList() {
                     <img
                       src={
                         user.profile_image
-                          ? `http://localhost:5000/uploads/${user.profile_image}`
+                          ? getUploadUrl(user.profile_image)
                           : "https://i.pravatar.cc/60"
                       }
                       alt=""

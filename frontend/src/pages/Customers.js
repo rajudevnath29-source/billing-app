@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config/api";
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -19,7 +20,7 @@ export default function Customers() {
   // FETCH CUSTOMERS
   const fetchCustomers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/customers", {
+      const res = await axios.get(`${API_URL}/customers`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -49,7 +50,7 @@ export default function Customers() {
   const deleteCustomer = async () => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/customers/${customerToDelete._id}`,
+        `${API_URL}/customers/${customerToDelete._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

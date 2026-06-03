@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config/api";
 
 import {
   ResponsiveContainer,
@@ -55,26 +56,26 @@ export default function Dashboard() {
     try {
       setLoading(true);
 
-      const itemRes = await axios.get("http://localhost:5000/api/items", {
+      const itemRes = await axios.get(`${API_URL}/items`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const invoiceRes = await axios.get("http://localhost:5000/api/invoices", {
+      const invoiceRes = await axios.get(`${API_URL}/invoices`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const expenceRes = await axios.get("http://localhost:5000/api/expenses", {
+      const expenceRes = await axios.get(`${API_URL}/expenses`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       const purchaseRes = await axios.get(
-        "http://localhost:5000/api/purchases",
+        `${API_URL}/purchases`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import { API_URL } from "../config/api";
 
 export default function EditPurchase() {
   const { id } = useParams();
@@ -29,8 +30,8 @@ export default function EditPurchase() {
   const loadData = async () => {
     try {
       const [itemRes, purchaseRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/items", authHeader),
-        axios.get(`http://localhost:5000/api/purchases/${id}`, authHeader),
+        axios.get(`${API_URL}/items`, authHeader),
+        axios.get(`${API_URL}/purchases/${id}`, authHeader),
       ]);
 
       const purchase = purchaseRes.data.purchase;
@@ -122,7 +123,7 @@ export default function EditPurchase() {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/purchases/${id}`,
+        `${API_URL}/purchases/${id}`,
         {
           supplier_name: supplierName,
           supplier_mobile: supplierMobile,

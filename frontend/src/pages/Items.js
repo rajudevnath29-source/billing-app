@@ -3,6 +3,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { hasPermission } from "../utils/permissions";
+import { API_URL } from "../config/api";
 
 export default function Items() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export default function Items() {
   // =========================
   const fetchItems = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/items", {
+      const res = await axios.get(`${API_URL}/items`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -54,7 +55,7 @@ export default function Items() {
   const deleteItem = async () => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/items/${selectedItem._id}`,
+        `${API_URL}/items/${selectedItem._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

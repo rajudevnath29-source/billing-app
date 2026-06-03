@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { API_URL } from "../config/api";
 
 export default function PurchaseCreate() {
   const token = localStorage.getItem("token");
@@ -24,7 +25,7 @@ export default function PurchaseCreate() {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/items", {
+      const res = await axios.get(`${API_URL}/items`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -159,7 +160,7 @@ export default function PurchaseCreate() {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/purchases",
+        `${API_URL}/purchases`,
         {
           supplier_name,
           supplier_mobile,

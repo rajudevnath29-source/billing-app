@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 export default function CustomerLedger() {
   const [customers, setCustomers] = useState([]);
@@ -26,7 +27,7 @@ export default function CustomerLedger() {
   const fetchCustomers = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/customers/with-sales",
+        `${API_URL}/customers/with-sales`,
         authHeader,
       );
       console.log(res);
@@ -47,7 +48,7 @@ export default function CustomerLedger() {
       setLoadingLedger(true);
 
       const res = await axios.get(
-        `http://localhost:5000/api/invoices/customer/${customer._id}`,
+        `${API_URL}/invoices/customer/${customer._id}`,
         authHeader,
       );
 

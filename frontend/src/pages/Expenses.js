@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
@@ -26,7 +27,7 @@ export default function Expenses() {
   const fetchExpenses = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/expenses",
+        `${API_URL}/expenses`,
 
         {
           headers: {
@@ -52,7 +53,7 @@ export default function Expenses() {
   const addExpense = async () => {
     try {
       await axios.post(
-        "http://localhost:5000/api/expenses",
+        `${API_URL}/expenses`,
 
         {
           title,
@@ -89,7 +90,7 @@ export default function Expenses() {
   const deleteExpense = async () => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/expenses/${selectedExpense._id}`,
+        `${API_URL}/expenses/${selectedExpense._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

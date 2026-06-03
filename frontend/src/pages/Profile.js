@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import Cropper from "react-easy-crop";
+import { API_URL, getUploadUrl } from "../config/api";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -83,7 +84,7 @@ export default function Profile() {
       formData.append("image", croppedBlob, "profile.jpg");
 
       const res = await axios.put(
-        "http://localhost:5000/api/auth/profile-image",
+        `${API_URL}/auth/profile-image`,
         formData,
         {
           headers: {
@@ -130,7 +131,7 @@ export default function Profile() {
             <img
               src={
                 user?.profile_image
-                  ? `http://localhost:5000/uploads/${user.profile_image}`
+                  ? getUploadUrl(user.profile_image)
                   : "https://i.pravatar.cc/150"
               }
               style={styles.avatar}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 export default function Vouchers() {
   const [accounts, setAccounts] = useState([]);
@@ -32,7 +33,7 @@ export default function Vouchers() {
   const loadData = async () => {
     try {
       const accRes = await axios.get(
-        "http://localhost:5000/api/accounts",
+        `${API_URL}/accounts`,
 
         {
           headers: {
@@ -44,7 +45,7 @@ export default function Vouchers() {
       setAccounts(accRes.data.accounts);
 
       const vouRes = await axios.get(
-        "http://localhost:5000/api/vouchers",
+        `${API_URL}/vouchers`,
 
         {
           headers: {
@@ -86,7 +87,7 @@ export default function Vouchers() {
         payload.to_account = to_account;
       }
 
-      await axios.post("http://localhost:5000/api/vouchers", payload, {
+      await axios.post(`${API_URL}/vouchers`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -109,7 +110,7 @@ export default function Vouchers() {
   const deleteVoucher = async () => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/vouchers/${selectedVoucher._id}`,
+        `${API_URL}/vouchers/${selectedVoucher._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

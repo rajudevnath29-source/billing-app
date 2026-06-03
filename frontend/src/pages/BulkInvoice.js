@@ -2,8 +2,9 @@ import { useState, useMemo } from "react";
 import axios from "axios";
 import Papa from "papaparse";
 import toast from "react-hot-toast";
+import { API_URL } from "../config/api";
 
-const API_URL = "http://localhost:5000/api";
+
 
 export default function BulkInvoice() {
   const token = localStorage.getItem("token");

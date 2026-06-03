@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { API_URL } from "../config/api";
 
 export default function EditUser() {
   const { id } = useParams();
@@ -30,19 +31,19 @@ export default function EditUser() {
   const getData = async () => {
     try {
       const [userRes, permissionRes, roleRes] = await Promise.all([
-        axios.get(`http://localhost:5000/api/users/${id}`, {
+        axios.get(`${API_URL}/users/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }),
 
-        axios.get("http://localhost:5000/api/permissions", {
+        axios.get(`${API_URL}/permissions`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }),
 
-        axios.get("http://localhost:5000/api/roles", {
+        axios.get(`${API_URL}/roles`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -118,7 +119,7 @@ export default function EditUser() {
         permissions: selectedPermissionIds,
       };
 
-      await axios.put(`http://localhost:5000/api/users/${id}`, payload, {
+      await axios.put(`${API_URL}/users/${id}`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

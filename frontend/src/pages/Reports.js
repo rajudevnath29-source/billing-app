@@ -4,6 +4,7 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { API_URL } from "../config/api";
 
 import {
   BarChart,
@@ -33,20 +34,20 @@ export default function Reports() {
   // =========================
   const loadData = async () => {
     try {
-      const invoiceRes = await axios.get("http://localhost:5000/api/invoices", {
+      const invoiceRes = await axios.get(`${API_URL}/invoices`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const purchaseRes = await axios.get(
-        "http://localhost:5000/api/purchases",
+        `${API_URL}/purchases`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      const itemRes = await axios.get("http://localhost:5000/api/items", {
+      const itemRes = await axios.get(`${API_URL}/items`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const expenseRes = await axios.get("http://localhost:5000/api/expenses", {
+      const expenseRes = await axios.get(`${API_URL}/expenses`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

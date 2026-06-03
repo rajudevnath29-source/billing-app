@@ -1,5 +1,6 @@
 import axios from "axios";
 import { redirectToLogin } from "./session";
+import { API_URL } from "../config/api";
 
 export const refreshUser = async () => {
     try {
@@ -8,7 +9,7 @@ export const refreshUser = async () => {
         if (!token) return;
 
         const res = await axios.get(
-            "http://localhost:5000/api/auth/profile",
+            `${API_URL}/auth/profile`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
