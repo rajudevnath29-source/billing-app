@@ -19,6 +19,9 @@ const roles = [
     name: "ITEM_MANAGER",
 
     permissions: [
+      PERMISSIONS.DASHBOARD_ACCESS,
+      PERMISSIONS.PROFILE_ACCESS,
+
       PERMISSIONS.ITEMS_MODULE,
       PERMISSIONS.VIEW_ITEMS,
 
@@ -31,6 +34,9 @@ const roles = [
     name: "INVOICE_USER",
 
     permissions: [
+      PERMISSIONS.DASHBOARD_ACCESS,
+      PERMISSIONS.PROFILE_ACCESS,
+      
       PERMISSIONS.INVOICE_MODULE,
       PERMISSIONS.VIEW_INVOICE,
 
