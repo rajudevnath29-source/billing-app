@@ -16,6 +16,9 @@ const permissions = [
   // DASHBOARD
   permission(PERMISSIONS.DASHBOARD_ACCESS, "Dashboard Access", "DASHBOARD"),
 
+   // Profile
+  permission(PERMISSIONS.PROFILE_ACCESS, "Profile Access", "PROFILE"),
+
   // ROLES / PERMISSIONS MANAGEMENT
   permission(PERMISSIONS.MANAGE_ROLES, "Manage Roles", "USERS"),
   permission(PERMISSIONS.MANAGE_PERMISSIONS, "Manage Permissions", "USERS"),
@@ -46,6 +49,7 @@ const permissions = [
   permission(PERMISSIONS.VIEW_INVOICE, "View Invoice", "INVOICE"),
   permission(PERMISSIONS.CREATE_INVOICE, "Create Invoice", "INVOICE"),
   permission(PERMISSIONS.EDIT_INVOICE, "Edit Invoice", "INVOICE"),
+  permission(PERMISSIONS.BULK_INVOICE, "Bulk Invoice", "INVOICE"),
   permission(
     PERMISSIONS.CHNAGE_INVOICE_DATE,
     "Change Invoice Date",
@@ -65,6 +69,7 @@ const permissions = [
   permission(PERMISSIONS.ADD_CUSTOMER, "Add Customer", "CUSTOMERS"),
   permission(PERMISSIONS.EDIT_CUSTOMER, "Edit Customer", "CUSTOMERS"),
   permission(PERMISSIONS.DELETE_CUSTOMER, "Delete Customer", "CUSTOMERS"),
+  permission(PERMISSIONS.CUSTOMER_LEDGER, "Customer Ledger", "LEDGER"),
 
   // PAYMENTS
   permission(PERMISSIONS.PAYMENTS_MODULE, "Payments Module", "PAYMENTS"),
@@ -73,18 +78,20 @@ const permissions = [
 
   // REPORTS
   permission(PERMISSIONS.REPORTS_MODULE, "Reports Module", "REPORTS"),
+  permission(PERMISSIONS.VIEW_REPORTS, "View Reports", "REPORTS"),
 
   // EXPENSES
   permission(PERMISSIONS.EXPENSES_MODULE, "Expenses Module", "EXPENSES"),
+  permission(PERMISSIONS.CREATE_EXPENSES, "Create Expenses", "EXPENSES"),
 
   // ACCOUNTS
   permission(PERMISSIONS.ACCOUNTS_MODULE, "Accounts Module", "ACCOUNTS"),
-
-  // VOUCHERS
-  permission(PERMISSIONS.VOUCHERS_MODULE, "Vouchers Module", "VOUCHERS"),
+  permission(PERMISSIONS.CREATE_ACCOUNTS, "Create Accounts", "VOUCHERS"),
+  permission(PERMISSIONS.CREATE_VOUCHERS, "Create Vouchers", "VOUCHERS"),
 
   // STOCK
   permission(PERMISSIONS.STOCK_MODULE, "Stock Module", "STOCK"),
+  permission(PERMISSIONS.VIEW_STOCK, "View Stock", "STOCK"),
 
   // USERS
   permission(PERMISSIONS.USERS_MODULE, "Users Module", "USERS"),
@@ -93,8 +100,7 @@ const permissions = [
   permission(PERMISSIONS.EDIT_USER, "Edit User", "USERS"),
   permission(PERMISSIONS.DELETE_USER, "Delete User", "USERS"),
 
-  // LEDGER
-  permission(PERMISSIONS.CUSTOMER_LEDGER, "Customer Ledger", "LEDGER"),
+ 
 ];
 
 const syncPermissions = async () => {

@@ -77,42 +77,17 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       <h2 style={styles.logo}>{expanded ? "ERP" : "🧾"}</h2>
 
       {/* DASHBOARD */}
-      <Link style={styles.link} to="/dashboard">
-        📊 {expanded && "Dashboard"}
-      </Link>
+      {hasPermission("DASHBOARD_ACCESS") && (
+        <Link style={styles.link} to="/dashboard">
+          📊 {expanded && "Dashboard"}
+        </Link>
+      )}
 
       {/* PROFILE */}
-      <Link style={styles.link} to="/profile">
-        👤 {expanded && "Profile"}
-      </Link>
-
-      {/* ITEMS MODULE */}
-      {hasPermission("ITEMS_MODULE") && (
-        <>
-          {expanded && <p style={styles.section}>Inventory</p>}
-
-          <Link style={styles.link} to="/items">
-            📦 {expanded && "Items"}
-          </Link>
-
-          {hasPermission("ADD_ITEM") && (
-            <Link style={styles.link} to="/items/add">
-              ➕ {expanded && "Add Item"}
-            </Link>
-          )}
-
-          {hasPermission("CREATE_PURCHASE") && (
-            <Link style={styles.link} to="/purchase">
-              🛒 {expanded && "Purchase"}
-            </Link>
-          )}
-
-          {hasPermission("VIEW_PURCHASE") && (
-            <Link style={styles.link} to="/purchase-view">
-              📄 {expanded && "Purchase View"}
-            </Link>
-          )}
-        </>
+      {hasPermission("PROFILE_ACCESS") && (
+        <Link style={styles.link} to="/profile">
+          👤 {expanded && "Profile"}
+        </Link>
       )}
 
       {/* INVOICE MODULE */}
@@ -126,31 +101,93 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
             </Link>
           )}
 
-          <Link style={styles.link} to="/invoice-view">
-            📄 {expanded && "Invoice List"}
-          </Link>
+          {hasPermission("VIEW_INVOICE") && (
+            <Link style={styles.link} to="/invoice-view">
+              📄 {expanded && "Invoice List"}
+            </Link>
+          )}
 
-          <Link style={styles.link} to="/bulk-invoice">
-            📁 {expanded && "Bulk Invoice"}
-          </Link>
+          {hasPermission("BULK_INVOICE") && (
+            <Link style={styles.link} to="/bulk-invoice">
+              📁 {expanded && "Bulk Invoice Upload"}
+            </Link>
+          )}
+        </>
+      )}
 
+      {/* ITEMS MODULE */}
+      {hasPermission("ITEMS_MODULE") && (
+        <>
+          {expanded && <p style={styles.section}>Inventory</p>}
+
+          {hasPermission("ADD_ITEM") && (
+            <Link style={styles.link} to="/items/add">
+              ➕ {expanded && "Add Item"}
+            </Link>
+          )}
+
+          {hasPermission("VIEW_ITEMS") && (
+            <Link style={styles.link} to="/items">
+              📦 {expanded && "Items"}
+            </Link>
+          )}
+        </>
+      )}
+
+      {/* PURCHASE MODULE */}
+      {hasPermission("PURCHASE_MODULE") && (
+        <>
+          {expanded && <p style={styles.section}>Purchase</p>}
+
+          {hasPermission("CREATE_PURCHASE") && (
+            <Link style={styles.link} to="/purchase">
+              🛒 {expanded && "Create Purchase"}
+            </Link>
+          )}
+
+          {hasPermission("VIEW_PURCHASE") && (
+            <Link style={styles.link} to="/purchase-view">
+              📄 {expanded && "Purchase"}
+            </Link>
+          )}
+        </>
+      )}
+
+      {/* CUSTOMERS MODULE */}
+      {hasPermission("CUSTOMERS_MODULE") && (
+        <>
           {expanded && <p style={styles.section}>Customers</p>}
 
-          <Link style={styles.link} to="/customers/add">
-            🧑 {expanded && "Add Customer"}
-          </Link>
+          {hasPermission("ADD_CUSTOMER") && (
+            <Link style={styles.link} to="/customers/add">
+              🧑 {expanded && "Add Customer"}
+            </Link>
+          )}
 
-          <Link style={styles.link} to="/customers">
-            👥 {expanded && "Customers View"}
-          </Link>
+          {hasPermission("VIEW_CUSTOMERS") && (
+            <Link style={styles.link} to="/customers">
+              👥 {expanded && "Customers View"}
+            </Link>
+          )}
 
-          <Link style={styles.link} to="/customer-ledger">
-            📒 {expanded && "Customer Ledger"}
-          </Link>
+          {hasPermission("CUSTOMER_LEDGER") && (
+            <Link style={styles.link} to="/customer-ledger">
+              📒 {expanded && "Customer Ledger"}
+            </Link>
+          )}
+        </>
+      )}
 
-          <Link style={styles.link} to="/payments">
-            💰 {expanded && "Payments"}
-          </Link>
+      {/* PAYMENTS MODULE */}
+      {hasPermission("PAYMENTS_MODULE") && (
+        <>
+          {expanded && <p style={styles.section}>Payments</p>}
+
+          {hasPermission("VIEW_PAYMENTS") && (
+            <Link style={styles.link} to="/payments">
+              💰 {expanded && "Payments"}
+            </Link>
+          )}
         </>
       )}
 
@@ -158,10 +195,23 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       {hasPermission("REPORTS_MODULE") && (
         <>
           {expanded && <p style={styles.section}>Reports</p>}
+          {hasPermission("VIEW_REPORTS") && (
+            <Link style={styles.link} to="/reports">
+              📊 {expanded && "Reports"}
+            </Link>
+          )}
+        </>
+      )}
 
-          <Link style={styles.link} to="/reports">
-            📊 {expanded && "Reports"}
-          </Link>
+      {/* EXPENSES */}
+      {hasPermission("EXPENSES_MODULE") && (
+        <>
+          {expanded && <p style={styles.section}>Expenses</p>}
+          {hasPermission("CREATE_EXPENSES") && (
+            <Link style={styles.link} to="/expenses">
+              💸 {expanded && "Expenses"}
+            </Link>
+          )}
         </>
       )}
 
@@ -170,17 +220,17 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
         <>
           {expanded && <p style={styles.section}>Accounts</p>}
 
-          <Link style={styles.link} to="/expenses">
-            💸 {expanded && "Expenses"}
-          </Link>
+          {hasPermission("CREATE_ACCOUNTS") && (
+            <Link style={styles.link} to="/accounts">
+              🏦 {expanded && "Accounts"}
+            </Link>
+          )}
 
-          <Link style={styles.link} to="/accounts">
-            🏦 {expanded && "Accounts"}
-          </Link>
-
-          <Link style={styles.link} to="/vouchers">
-            💳 {expanded && "Vouchers"}
-          </Link>
+          {hasPermission("CREATE_VOUCHERS") && (
+            <Link style={styles.link} to="/vouchers">
+              💳 {expanded && "Vouchers"}
+            </Link>
+          )}
         </>
       )}
 
@@ -189,20 +239,24 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
         <>
           {expanded && <p style={styles.section}>Stock</p>}
 
-          <Link style={styles.link} to="/stock-history">
-            📊 {expanded && "Stock History"}
-          </Link>
+          {hasPermission("VIEW_STOCK") && (
+            <Link style={styles.link} to="/stock-history">
+              📊 {expanded && "Stock History"}
+            </Link>
+          )}
         </>
       )}
 
       {/* USERS */}
-      {hasPermission("VIEW_USERS") && (
+      {hasPermission("USERS_MODULE") && (
         <>
           {expanded && <p style={styles.section}>Users</p>}
 
-          <Link style={styles.link} to="/users">
-            👥 {!expanded ? "" : "User List"}
-          </Link>
+          {hasPermission("VIEW_USERS") && (
+            <Link style={styles.link} to="/users">
+              👥 {!expanded ? "" : "User List"}
+            </Link>
+          )}
 
           {hasPermission("MANAGE_ROLES") && (
             <Link style={styles.link} to="/roles">

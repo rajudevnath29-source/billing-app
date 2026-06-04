@@ -48,14 +48,18 @@ export default function EditUser() {
           },
         }),
       ]);
+
+      const directPermissions =
+        userRes.data.directPermissions || userRes.data.permissions || [];
+
       setFormData({
         name: userRes.data.name,
         email: userRes.data.email,
         role: userRes.data.role,
         permissions:
-          userRes.data.permissions?.map(
-            (permission) => permission.name,
-          ) || [],
+          userRes.data.role === "SUPER_ADMIN"
+            ? []
+            : directPermissions.map((permission) => permission.name),
       });
 
       setAllPermissions(permissionRes.data);
@@ -99,6 +103,35 @@ export default function EditUser() {
     );
   }, [allPermissions, search]);
 
+  const inheritedPermissionNames = useMemo(() => {
+    const selectedRole = allRoles.find((role) => role.name === formData.role);
+
+    return new Set(
+      selectedRole?.permissions?.map((permission) => permission.name) || [],
+    );
+  }, [allRoles, formData.role]);
+
+  const handleRoleChange = (roleName) => {
+    if (roleName === "SUPER_ADMIN") {
+      setFormData({
+        ...formData,
+        role: roleName,
+        permissions: [],
+      });
+      return;
+    }
+
+    const selectedRole = allRoles.find((role) => role.name === roleName);
+    const rolePermissionNames =
+      selectedRole?.permissions?.map((permission) => permission.name) || [];
+
+    setFormData({
+      ...formData,
+      role: roleName,
+      permissions: [...new Set([...formData.permissions, ...rolePermissionNames])],
+    });
+  };
+
   // =========================
   // UPDATE USER
   // =========================
@@ -106,7 +139,11 @@ export default function EditUser() {
     e.preventDefault();
     try {
       const selectedPermissionIds = allPermissions
-        .filter((p) => formData.permissions.includes(p.name))
+        .filter(
+          (p) =>
+            formData.role !== "SUPER_ADMIN" &&
+            formData.permissions.includes(p.name),
+        )
         .map((p) => p._id);
 
       const payload = {
@@ -166,12 +203,7 @@ export default function EditUser() {
             <label>Role</label>
             <select
               value={formData.role}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  role: e.target.value,
-                })
-              }
+              onChange={(e) => handleRoleChange(e.target.value)}
               style={styles.input}
             >
               <option value="">Select Role</option>
@@ -184,37 +216,52 @@ export default function EditUser() {
             </select>
           </div>
 
-          {/* SEARCH */}
-          <div style={styles.inputGroup}>
-            <label>Search Permission</label>
-
-            <input
-              type="text"
-              placeholder="Search permission..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={styles.input}
-            />
-          </div>
-
-          {/* PERMISSIONS */}
-          <div style={styles.permissionBox}>
-            <h3>Permissions</h3>
-
-            <div style={styles.permissionsGrid}>
-              {filteredPermissions.map((permission) => (
-                <label key={permission._id} style={styles.permissionItem}>
-                  <input
-                    type="checkbox"
-                    checked={formData.permissions.includes(permission.name)}
-                    onChange={() => handlePermission(permission.name)}
-                  />
-
-                  {permission.name}
-                </label>
-              ))}
+          {formData.role === "SUPER_ADMIN" ? (
+            <div style={styles.permissionBox}>
+              <h3>Give all permission</h3>
             </div>
-          </div>
+          ) : (
+            <div style={styles.permissionBox}>
+              <div style={styles.inputGroup}>
+                <label>Search Permission</label>
+
+                <input
+                  type="text"
+                  placeholder="Search permission..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={styles.input}
+                />
+              </div>
+
+              <h3>Permissions</h3>
+
+              <div style={styles.permissionsGrid}>
+                {filteredPermissions.map((permission) => (
+                  <label
+                    key={permission._id}
+                    style={{
+                      ...styles.permissionItem,
+                      ...(inheritedPermissionNames.has(permission.name)
+                        ? styles.inheritedPermissionItem
+                        : {}),
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.permissions.includes(permission.name)}
+                      onChange={() => handlePermission(permission.name)}
+                    />
+
+                    <span>{permission.name}</span>
+                    {inheritedPermissionNames.has(permission.name) && (
+                      <small style={styles.inheritedBadge}>Role</small>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           <button type="submit" style={styles.button}>
             Save Changes
@@ -274,6 +321,21 @@ const styles = {
     alignItems: "center",
     border: "1px solid #e2e8f0",
     fontSize: 14,
+  },
+
+  inheritedPermissionItem: {
+    background: "#eef6ff",
+    color: "#1d4ed8",
+  },
+
+  inheritedBadge: {
+    marginLeft: "auto",
+    background: "#dbeafe",
+    color: "#1d4ed8",
+    padding: "2px 6px",
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 700,
   },
 
   button: {

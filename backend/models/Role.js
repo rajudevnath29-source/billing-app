@@ -8,10 +8,12 @@ const roleSchema = new mongoose.Schema(
       unique: true,
     },
 
-    permissions: {
-      type: [String],
-      default: [],
-    },
+    permissions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Permission",
+      },
+    ],
   },
   {
     timestamps: true,

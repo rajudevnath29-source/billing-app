@@ -1,3 +1,5 @@
+const { getEffectivePermissionNames } = require("../utils/access");
+
 module.exports = (permission) => {
   return async (req, res, next) => {
     try {
@@ -8,8 +10,7 @@ module.exports = (permission) => {
         return next();
       }
 
-      // USER DIRECT PERMISSIONS
-      const userPermissions = user.permissions?.map((p) => p.name) || [];
+      const userPermissions = await getEffectivePermissionNames(user);
 
       // CHECK
       if (!userPermissions.includes(permission)) {

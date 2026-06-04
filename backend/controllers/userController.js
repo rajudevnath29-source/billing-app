@@ -1,10 +1,30 @@
 const User = require("../models/User");
 
+const buildUserAccessPayload = (user) => {
+  if (user.role === "SUPER_ADMIN") {
+    return {
+      ...user.toObject(),
+      permissions: [],
+      directPermissions: [],
+      rolePermissions: [],
+    };
+  }
+
+  return {
+    ...user.toObject(),
+    directPermissions: user.permissions || [],
+  };
+};
+
 // GET USERS
 exports.getUsers = async (req, res) => {
   try {
-    const users = await User.find().populate("permissions").select("-password");
-    res.json(users);
+    const users = await User.find()
+      .populate("permissions")
+      .select("-password");
+    const result = users.map(buildUserAccessPayload);
+
+    res.json(result);
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -25,7 +45,7 @@ exports.getSingleUser = async (req, res) => {
       });
     }
 
-    res.json(user);
+    res.json(buildUserAccessPayload(user));
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -63,9 +83,15 @@ exports.getSingleUser = async (req, res) => {
 // };
 exports.updateUser = async (req, res) => {
   try {
+    const payload = {
+      ...req.body,
+      permissions:
+        req.body.role === "SUPER_ADMIN" ? [] : req.body.permissions || [],
+    };
+
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body },
+      { $set: payload },
       { new: true },
     ).select("-password");
 

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
 const Role = require("../models/Role");
+const Permission = require("../models/Permission");
 const PERMISSIONS = require("../constants/permissions");
 
 dotenv.config();
@@ -20,13 +21,9 @@ const roles = [
     permissions: [
       PERMISSIONS.ITEMS_MODULE,
       PERMISSIONS.VIEW_ITEMS,
-      PERMISSIONS.ADD_ITEM,
-      PERMISSIONS.EDIT_ITEM,
-      PERMISSIONS.DELETE_ITEM,
 
+      PERMISSIONS.PURCHASE_MODULE,
       PERMISSIONS.VIEW_PURCHASE,
-      PERMISSIONS.CREATE_PURCHASE,
-      PERMISSIONS.EDIT_PURCHASE,
     ],
   },
 
@@ -36,7 +33,6 @@ const roles = [
     permissions: [
       PERMISSIONS.INVOICE_MODULE,
       PERMISSIONS.VIEW_INVOICE,
-      PERMISSIONS.CREATE_INVOICE,
 
       PERMISSIONS.CUSTOMERS_MODULE,
       PERMISSIONS.VIEW_CUSTOMERS,
@@ -64,14 +60,30 @@ const seedRoles = async () => {
 const syncRoles = async () => {
   let inserted = 0;
   let updated = 0;
+  const permissionDocs = await Permission.find({
+    name: { $in: Object.values(PERMISSIONS) },
+  }).select("_id name");
+  const permissionIdByName = new Map(
+    permissionDocs.map((permission) => [
+      permission.name,
+      permission._id,
+    ]),
+  );
 
   // IMPORTANT:
   // We do NOT delete old role docs here, because users may reference
   // those roles by _id. Deleting and recreating would break relations.
   for (const item of roles) {
+    const permissions =
+      item.permissions[0] === "ALL"
+        ? []
+        : item.permissions
+            .map((name) => permissionIdByName.get(name))
+            .filter(Boolean);
+
     const result = await Role.updateOne(
       { name: item.name },
-      { $set: item },
+      { $set: { name: item.name, permissions } },
       { upsert: true }
     );
 

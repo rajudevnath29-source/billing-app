@@ -1,10 +1,15 @@
 const User = require("../models/User");
+const Role = require("../models/Role");
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const { syncPermissions } = require("../seeder/permissionSeeder");
 const { syncRoles } = require("../seeder/roleSeeder");
+const {
+  buildPermissionPayload,
+  getEffectivePermissionNames,
+} = require("../utils/access");
 
 // ==========================
 // REGISTER
@@ -25,12 +30,17 @@ exports.register = async (req, res) => {
     // HASH PASSWORD
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const selectedRole = await Role.findOne({ name: role }).select("permissions");
+    const rolePermissions =
+      role === "SUPER_ADMIN" ? [] : selectedRole?.permissions || [];
+
     // CREATE USER
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
       role,
+      permissions: rolePermissions,
     });
 
     res.status(201).json({
@@ -61,7 +71,8 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     // CHECK USER
-    const user = await User.findOne({ email }).populate("permissions");
+    const user = await User.findOne({ email })
+      .populate("permissions");
 
     if (!user) {
       return res.status(400).json({
@@ -90,6 +101,8 @@ exports.login = async (req, res) => {
       },
     );
 
+    const effectivePermissions = await getEffectivePermissionNames(user);
+
     // RESPONSE
     res.json({
       message: "Login successful",
@@ -102,7 +115,7 @@ exports.login = async (req, res) => {
         email: user.email,
         role: user.role,
 
-        permissions: user.permissions,
+        permissions: buildPermissionPayload(effectivePermissions),
 
         profile_image: user.profile_image,
       },
@@ -124,7 +137,13 @@ exports.getProfile = async (req, res) => {
       .populate("permissions")
       .select("-password");
 
-    res.json(user);
+    const effectivePermissions = await getEffectivePermissionNames(user);
+
+    res.json({
+      ...user.toObject(),
+      permissions: buildPermissionPayload(effectivePermissions),
+      directPermissions: user.permissions,
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -137,7 +156,8 @@ exports.getProfile = async (req, res) => {
 // ==========================
 exports.updateProfileImage = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate("permissions");
+    const user = await User.findById(req.user.id)
+      .populate("permissions");
 
     user.profile_image = req.file.filename;
 
@@ -160,10 +180,8 @@ exports.updateProfileImage = async (req, res) => {
 // ==========================
 exports.syncAccessMasterData = async (req, res) => {
   try {
-    const [permissions, roles] = await Promise.all([
-      syncPermissions(),
-      syncRoles(),
-    ]);
+    const permissions = await syncPermissions();
+    const roles = await syncRoles();
 
     return res.json({
       message: "Permissions and roles synced successfully",

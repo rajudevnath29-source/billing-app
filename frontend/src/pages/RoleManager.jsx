@@ -2,6 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config/api";
 
+const isRolePermission = (permissionName = "") => {
+  return (
+    permissionName.endsWith("_MODULE") ||
+    permissionName.startsWith("VIEW_") ||
+    permissionName === "DASHBOARD_ACCESS" ||
+    permissionName === "CUSTOMER_LEDGER"
+  );
+};
+
 export default function RoleManager() {
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
@@ -11,7 +20,6 @@ export default function RoleManager() {
 
   const [formData, setFormData] = useState({
     name: "",
-    label: "",
     permissions: [],
   });
 
@@ -47,7 +55,6 @@ export default function RoleManager() {
 
     setFormData({
       name: "",
-      label: "",
       permissions: [],
     });
   };
@@ -69,6 +76,8 @@ export default function RoleManager() {
     const grouped = {};
 
     permissions.forEach((p) => {
+      if (!isRolePermission(p.name)) return;
+
       const name = p.name.toLowerCase();
       const label = p.label.toLowerCase();
       const module = (p.module || "OTHER").toLowerCase();
@@ -119,7 +128,9 @@ export default function RoleManager() {
   const handleSelectAll = (perms) => {
     const ids = perms.map((p) => p._id);
 
-    const allSelected = ids.every((id) => formData.permissions.includes(id));
+    const allSelected = ids.every((id) =>
+      formData.permissions.includes(id),
+    );
 
     setFormData((prev) => ({
       ...prev,
@@ -139,13 +150,6 @@ export default function RoleManager() {
           placeholder="Role Name"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          style={styles.input}
-        />
-
-        <input
-          placeholder="Role Label"
-          value={formData.label}
-          onChange={(e) => setFormData({ ...formData, label: e.target.value })}
           style={styles.input}
         />
 
@@ -213,7 +217,7 @@ export default function RoleManager() {
             <h3>{role.name}</h3>
             <div>
               {role.permissions.map((p) => (
-                <div key={p}>✔ {p}</div>
+                <div key={p._id}>✔ {p.label || p.name}</div>
               ))}
             </div>
           </div>
