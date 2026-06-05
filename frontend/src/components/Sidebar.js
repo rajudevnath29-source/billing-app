@@ -69,12 +69,12 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
     >
       {/* LOGO */}
 
-      {/* <img
+      <img
         src="/D.png"
         alt="Raaj Computer Services"
         style={expanded ? styles.collapsedlogo : styles.logo}
-      /> */}
-      <h2 style={styles.logo}>{expanded ? "ERP" : "🧾"}</h2>
+      />
+      {/* <h2 style={styles.logo}>{expanded ? "ERP" : "🧾"}</h2> */}
 
       {/* DASHBOARD */}
       {hasPermission("DASHBOARD_ACCESS") && (

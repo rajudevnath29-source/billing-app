@@ -22,12 +22,12 @@ export default function Header({ collapsed, setCollapsed }) {
         ☰
       </button>
 
-      {/* <img
+      <img
         src="/L.png"
         alt="Raaj Computer Service"
         style={styles.logo}
-      /> */}
-      <h3>ERP Dashboard</h3>
+      />
+      {/* <h3>ERP Dashboard</h3> */}
 
       {/* RIGHT SIDE ACTIONS */}
       <div style={styles.right}>

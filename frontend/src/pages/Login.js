@@ -27,10 +27,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const res = await axios.post(
-        `${API_URL}/auth/login`,
-        loginData,
-      );
+      const res = await axios.post(`${API_URL}/auth/login`, loginData);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       toast.success("Login Successful");
@@ -219,6 +216,7 @@ export default function Login() {
         {/* TOGGLE */}
         <div className="toggle-box">
           <div className="toggle-panel toggle-left">
+            <img src="/D.png" alt="Logo" className="auth-logo" />
             <h1>Hello, Welcome!</h1>
 
             <p>Don't have an account?</p>
@@ -233,6 +231,7 @@ export default function Login() {
           </div>
 
           <div className="toggle-panel toggle-right">
+            <img src="/D.png" alt="Logo" className="auth-logo" />
             <h1>Welcome Back!</h1>
 
             <p>Already have an account?</p>

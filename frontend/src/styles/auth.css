@@ -247,6 +247,13 @@
   border: 2px solid #fff;
   box-shadow: none;
 }
+.auth-logo {
+  width: 180px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 20px;
+  filter: brightness(1.5);
+}
 
 /* =========================
    RESPONSIVE
@@ -295,5 +302,9 @@
 
   .container.active .toggle-panel.toggle-right {
     bottom: 0;
+  }
+  .auth-logo {
+    width: 100px;
+    margin-bottom: 10px;
   }
 }
