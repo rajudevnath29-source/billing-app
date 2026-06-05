@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { API_URL } from "../config/api";
+import { hasPermission } from "../utils/permissions";
 
 export default function Vouchers() {
   const [accounts, setAccounts] = useState([]);
@@ -149,6 +150,7 @@ export default function Vouchers() {
 
       {/* FORM */}
 
+      {hasPermission("CREATE_VOUCHER") && (
       <div style={styles.formCard}>
         <div style={styles.formGrid}>
           <select
@@ -222,6 +224,7 @@ export default function Vouchers() {
           </button>
         </div>
       </div>
+      )}
 
       {/* TABLE */}
 
@@ -268,16 +271,18 @@ export default function Vouchers() {
                 <td style={styles.td}>{vou.note}</td>
 
                 <td style={styles.td}>
-                  <button
-                    className="app-action-btn app-action-delete"
-                    style={styles.iconBtn}
-                    onClick={() => {
-                      setSelectedVoucher(vou);
-                      setDeleteModal(true);
-                    }}
-                  >
-                    🗑
-                  </button>
+                  {hasPermission("DELETE_VOUCHER") && (
+                    <button
+                      className="app-action-btn app-action-delete"
+                      style={styles.iconBtn}
+                      onClick={() => {
+                        setSelectedVoucher(vou);
+                        setDeleteModal(true);
+                      }}
+                    >
+                      🗑
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

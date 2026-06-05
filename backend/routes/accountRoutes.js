@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
+const permissionMiddleware = require("../middleware/permissionMiddleware");
 
 const {
   createAccount,
@@ -10,12 +11,25 @@ const {
   deleteAccount,
 } = require("../controllers/accountController");
 
-// CREATE
-router.post("/", authMiddleware, createAccount);
+router.post(
+  "/",
+  authMiddleware,
+  permissionMiddleware("CREATE_ACCOUNT"),
+  createAccount,
+);
 
-// GET
-router.get("/", authMiddleware, getAccounts);
+router.get(
+  "/",
+  authMiddleware,
+  permissionMiddleware("VIEW_ACCOUNT"),
+  getAccounts,
+);
 
-router.delete("/:id", authMiddleware, deleteAccount);
+router.delete(
+  "/:id",
+  authMiddleware,
+  permissionMiddleware("DELETE_ACCOUNT"),
+  deleteAccount,
+);
 
 module.exports = router;

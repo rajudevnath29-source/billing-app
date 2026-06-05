@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { API_URL } from "../config/api";
+import { hasPermission } from "../utils/permissions";
 
 export default function Accounts() {
   const [accounts, setAccounts] = useState([]);
@@ -124,37 +125,39 @@ export default function Accounts() {
 
       {/* FORM */}
 
-      <div style={styles.formCard}>
-        <div style={styles.formGrid}>
-          <input
-            style={styles.input}
-            placeholder="Account Name"
-            value={account_name}
-            onChange={(e) => setAccountName(e.target.value)}
-          />
+      {hasPermission("CREATE_ACCOUNT") && (
+        <div style={styles.formCard}>
+          <div style={styles.formGrid}>
+            <input
+              style={styles.input}
+              placeholder="Account Name"
+              value={account_name}
+              onChange={(e) => setAccountName(e.target.value)}
+            />
 
-          <select
-            style={styles.input}
-            value={account_type}
-            onChange={(e) => setAccountType(e.target.value)}
-          >
-            <option value="CASH">CASH</option>
-            <option value="BANK">BANK</option>
-          </select>
+            <select
+              style={styles.input}
+              value={account_type}
+              onChange={(e) => setAccountType(e.target.value)}
+            >
+              <option value="CASH">CASH</option>
+              <option value="BANK">BANK</option>
+            </select>
 
-          <input
-            style={styles.input}
-            type="number"
-            placeholder="Opening Balance"
-            value={balance}
-            onChange={(e) => setBalance(e.target.value)}
-          />
+            <input
+              style={styles.input}
+              type="number"
+              placeholder="Opening Balance"
+              value={balance}
+              onChange={(e) => setBalance(e.target.value)}
+            />
 
-          <button style={styles.primaryBtn} onClick={createAccount}>
-            + Create Account
-          </button>
+            <button style={styles.primaryBtn} onClick={createAccount}>
+              + Create Account
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* TOTAL CARD */}
 
@@ -199,16 +202,18 @@ export default function Accounts() {
                 <td>₹ {Number(acc.balance || 0).toLocaleString("en-IN")}</td>
 
                 <td>
-                  <button
-                    style={styles.iconBtn}
-                    className="app-action-btn app-action-delete"
-                    onClick={() => {
-                      setSelectedAccount(acc);
-                      setDeleteModal(true);
-                    }}
-                  >
-                    🗑
-                  </button>
+                  {hasPermission("DELETE_ACCOUNT") && (
+                    <button
+                      style={styles.iconBtn}
+                      className="app-action-btn app-action-delete"
+                      onClick={() => {
+                        setSelectedAccount(acc);
+                        setDeleteModal(true);
+                      }}
+                    >
+                      🗑
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

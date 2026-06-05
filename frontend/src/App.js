@@ -78,7 +78,7 @@ function App() {
           <Route
             path="/items"
             element={
-              <PermissionGuard permission="ITEMS_MODULE">
+              <PermissionGuard permission="VIEW_ITEM">
                 <Items />
               </PermissionGuard>
             }
@@ -171,7 +171,7 @@ function App() {
           <Route
             path="/customers"
             element={
-              <PermissionGuard permission="CUSTOMERS_MODULE">
+              <PermissionGuard permission="VIEW_CUSTOMER">
                 <Customers />
               </PermissionGuard>
             }
@@ -208,7 +208,7 @@ function App() {
           <Route
             path="/payments"
             element={
-              <PermissionGuard permission="PAYMENTS_MODULE">
+              <PermissionGuard permission="VIEW_PAYMENT">
                 <Payments />
               </PermissionGuard>
             }
@@ -218,7 +218,7 @@ function App() {
           <Route
             path="/reports"
             element={
-              <PermissionGuard permission="REPORTS_MODULE">
+              <PermissionGuard permission="VIEW_REPORT">
                 <Reports />
               </PermissionGuard>
             }
@@ -228,7 +228,7 @@ function App() {
           <Route
             path="/expenses"
             element={
-              <PermissionGuard permission="EXPENSES_MODULE">
+              <PermissionGuard permission="VIEW_EXPENSE">
                 <Expenses />
               </PermissionGuard>
             }
@@ -238,7 +238,7 @@ function App() {
           <Route
             path="/accounts"
             element={
-              <PermissionGuard permission="ACCOUNTS_MODULE">
+              <PermissionGuard permission="VIEW_ACCOUNT">
                 <Accounts />
               </PermissionGuard>
             }
@@ -248,7 +248,7 @@ function App() {
           <Route
             path="/vouchers"
             element={
-              <PermissionGuard permission="VOUCHERS_MODULE">
+              <PermissionGuard permission="VIEW_VOUCHER">
                 <Vouchers />
               </PermissionGuard>
             }
@@ -258,7 +258,7 @@ function App() {
           <Route
             path="/stock-history"
             element={
-              <PermissionGuard permission="STOCK_MODULE">
+              <PermissionGuard permission="VIEW_STOCK">
                 <StockHistory />
               </PermissionGuard>
             }
@@ -268,7 +268,7 @@ function App() {
           <Route
             path="/users"
             element={
-              <PermissionGuard permission="USERS_MODULE">
+              <PermissionGuard permission="VIEW_USER">
                 <UserList />
               </PermissionGuard>
             }

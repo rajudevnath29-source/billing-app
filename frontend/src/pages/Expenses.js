@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { API_URL } from "../config/api";
+import { hasPermission } from "../utils/permissions";
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
@@ -138,42 +139,44 @@ export default function Expenses() {
 
       {/* FORM */}
 
-      <div style={styles.formCard}>
-        <div style={styles.formGrid}>
-          <input
-            style={styles.input}
-            placeholder="Expense Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+      {hasPermission("CREATE_EXPENSE") && (
+        <div style={styles.formCard}>
+          <div style={styles.formGrid}>
+            <input
+              style={styles.input}
+              placeholder="Expense Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
 
-          <input
-            style={styles.input}
-            placeholder="Category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          />
+            <input
+              style={styles.input}
+              placeholder="Category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            />
 
-          <input
-            style={styles.input}
-            type="number"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
+            <input
+              style={styles.input}
+              type="number"
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
 
-          <input
-            style={styles.input}
-            placeholder="Note"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
+            <input
+              style={styles.input}
+              placeholder="Note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
 
-          <button style={styles.primaryBtn} onClick={addExpense}>
-            + Add Expense
-          </button>
+            <button style={styles.primaryBtn} onClick={addExpense}>
+              + Add Expense
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* TOTAL */}
 
@@ -215,18 +218,20 @@ export default function Expenses() {
                 <td>{exp.note}</td>
 
                 <td>
-                  <button
-                    className="app-action-btn app-action-delete"
-                    style={styles.iconBtn}
-                    title="Delete expense"
-                    aria-label="Delete expense"
-                    onClick={() => {
-                      setSelectedExpense(exp);
-                      setDeleteModal(true);
-                    }}
-                  >
-                    🗑
-                  </button>
+                  {hasPermission("DELETE_EXPENSE") && (
+                    <button
+                      className="app-action-btn app-action-delete"
+                      style={styles.iconBtn}
+                      title="Delete expense"
+                      aria-label="Delete expense"
+                      onClick={() => {
+                        setSelectedExpense(exp);
+                        setDeleteModal(true);
+                      }}
+                    >
+                      🗑
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

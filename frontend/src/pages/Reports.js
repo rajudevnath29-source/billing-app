@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { API_URL } from "../config/api";
+import { hasPermission } from "../utils/permissions";
 
 import {
   BarChart,
@@ -181,15 +182,17 @@ export default function Reports() {
       <div style={headerRow}>
         <h1 style={heading}>📊 ERP Reports</h1>
 
-        <div style={buttonRow}>
-          <button onClick={exportExcel} style={btnGreen}>
-            📥 Excel Export
-          </button>
+        {hasPermission("EXPORT_REPORT") && (
+          <div style={buttonRow}>
+            <button onClick={exportExcel} style={btnGreen}>
+              📥 Excel Export
+            </button>
 
-          <button onClick={exportPDF} style={btnRed}>
-            📄 PDF Export
-          </button>
-        </div>
+            <button onClick={exportPDF} style={btnRed}>
+              📄 PDF Export
+            </button>
+          </div>
+        )}
       </div>
 
       {/* TOP CARDS */}

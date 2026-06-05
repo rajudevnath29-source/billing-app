@@ -15,13 +15,13 @@ const {
 } = require("../controllers/userController");
 
 // GET USERS
-router.get("/", authMiddleware, permissionMiddleware("VIEW_USERS"), getUsers);
+router.get("/", authMiddleware, permissionMiddleware("VIEW_USER"), getUsers);
 
 // GET SINGLE USER
 router.get(
   "/:id",
   authMiddleware,
-  permissionMiddleware("VIEW_USERS"),
+  permissionMiddleware("VIEW_USER"),
   getSingleUser,
 );
 

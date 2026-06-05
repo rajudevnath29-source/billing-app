@@ -117,9 +117,11 @@ export default function Items() {
           <p style={styles.subtitle}>Manage products, stock and pricing</p>
         </div>
 
-        <button style={styles.addBtn} onClick={() => navigate("/items/add")}>
-          + Add Item
-        </button>
+        {hasPermission("ADD_ITEM") && (
+          <button style={styles.addBtn} onClick={() => navigate("/items/add")}>
+            + Add Item
+          </button>
+        )}
       </div>
 
       {/* SEARCH */}

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
-const roleMiddleware = require("../middleware/roleMiddleware");
+const permissionMiddleware = require("../middleware/permissionMiddleware");
 
 const {
   createItem,
@@ -12,33 +12,28 @@ const {
   deleteItem,
 } = require("../controllers/itemController");
 
-// CREATE ITEM (ADMIN + MANAGER)
 router.post(
   "/",
   authMiddleware,
-  // roleMiddleware(["SUPER_ADMIN", "ITEM_MANAGER"]),
+  permissionMiddleware("ADD_ITEM"),
   createItem,
 );
 
-// GET ALL ITEMS (LOGIN REQUIRED)
-router.get("/", authMiddleware, getItems);
+router.get("/", authMiddleware, permissionMiddleware("VIEW_ITEM"), getItems);
 
-// GET SINGLE ITEM
-router.get("/:id", authMiddleware, getItemById);
+router.get("/:id", authMiddleware, permissionMiddleware("VIEW_ITEM"), getItemById);
 
-// UPDATE ITEM
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware(["SUPER_ADMIN", "ITEM_MANAGER"]),
+  permissionMiddleware("EDIT_ITEM"),
   updateItem,
 );
 
-// DELETE ITEM (ONLY SUPER ADMIN)
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(["SUPER_ADMIN"]),
+  permissionMiddleware("DELETE_ITEM"),
   deleteItem,
 );
 

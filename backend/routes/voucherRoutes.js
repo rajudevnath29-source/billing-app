@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
+const permissionMiddleware = require("../middleware/permissionMiddleware");
 
 const {
   createVoucher,
@@ -10,13 +11,25 @@ const {
   deleteVoucher,
 } = require("../controllers/voucherController");
 
-// CREATE
-router.post("/", authMiddleware, createVoucher);
+router.post(
+  "/",
+  authMiddleware,
+  permissionMiddleware("CREATE_VOUCHER"),
+  createVoucher,
+);
 
-// GET
-router.get("/", authMiddleware, getVouchers);
+router.get(
+  "/",
+  authMiddleware,
+  permissionMiddleware("VIEW_VOUCHER"),
+  getVouchers,
+);
 
-// DELETE
-router.delete("/:id", authMiddleware, deleteVoucher);
+router.delete(
+  "/:id",
+  authMiddleware,
+  permissionMiddleware("DELETE_VOUCHER"),
+  deleteVoucher,
+);
 
 module.exports = router;

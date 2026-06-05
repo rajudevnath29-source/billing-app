@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
+const permissionMiddleware = require("../middleware/permissionMiddleware");
 
 const {
   createExpense,
@@ -10,13 +11,25 @@ const {
   deleteExpense,
 } = require("../controllers/expenseController");
 
-// CREATE
-router.post("/", authMiddleware, createExpense);
+router.post(
+  "/",
+  authMiddleware,
+  permissionMiddleware("CREATE_EXPENSE"),
+  createExpense,
+);
 
-// GET
-router.get("/", authMiddleware, getExpenses);
+router.get(
+  "/",
+  authMiddleware,
+  permissionMiddleware("VIEW_EXPENSE"),
+  getExpenses,
+);
 
-// DELETE
-router.delete("/:id", authMiddleware, deleteExpense);
+router.delete(
+  "/:id",
+  authMiddleware,
+  permissionMiddleware("DELETE_EXPENSE"),
+  deleteExpense,
+);
 
 module.exports = router;

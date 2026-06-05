@@ -4,10 +4,10 @@
 // const rolePermissions = {
 //   ITEM_MANAGER: [
 //     // MODULES
-//     "ITEMS_MODULE",
+//     "ITEM_MODULE",
 
-//     // ITEMS
-//     "VIEW_ITEMS",
+//     // ITEM
+//     "VIEW_ITEM",
 //     "ADD_ITEM",
 //     "EDIT_ITEM",
 
@@ -27,22 +27,22 @@
 //     "EDIT_INVOICE",
 
 //     // CUSTOMERS
-//     "VIEW_CUSTOMERS",
+//     "VIEW_CUSTOMER",
 //     "ADD_CUSTOMER",
 
 //     // PAYMENTS
-//     "VIEW_PAYMENTS",
+//     "VIEW_PAYMENT",
 //   ],
 
 //   ADMIN: [
-//     "REPORTS_MODULE",
-//     "VIEW_REPORTS",
+//     "REPORT_MODULE",
+//     "VIEW_REPORT",
 
-//     "ACCOUNTS_MODULE",
+//     "ACCOUNT_MODULE",
 //     "VIEW_ACCOUNTS",
 
-//     "USERS_MODULE",
-//     "VIEW_USERS",
+//     "USER_MODULE",
+//     "VIEW_USER",
 //   ],
 // };
 

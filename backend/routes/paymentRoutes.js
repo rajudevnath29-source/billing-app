@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
+const permissionMiddleware = require("../middleware/permissionMiddleware");
 
 const {
   createPayment,
@@ -10,13 +11,25 @@ const {
   deletePayment,
 } = require("../controllers/paymentController");
 
-// CREATE
-router.post("/", authMiddleware, createPayment);
+router.post(
+  "/",
+  authMiddleware,
+  permissionMiddleware("ADD_PAYMENT"),
+  createPayment,
+);
 
-// GET
-router.get("/", authMiddleware, getPayments);
+router.get(
+  "/",
+  authMiddleware,
+  permissionMiddleware("VIEW_PAYMENT"),
+  getPayments,
+);
 
-//Delete
-router.delete("/:id", authMiddleware, deletePayment);
+router.delete(
+  "/:id",
+  authMiddleware,
+  permissionMiddleware("DELETE_PAYMENT"),
+  deletePayment,
+);
 
 module.exports = router;

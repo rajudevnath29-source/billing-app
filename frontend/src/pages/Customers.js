@@ -3,6 +3,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config/api";
+import { hasPermission } from "../utils/permissions";
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -49,14 +50,11 @@ export default function Customers() {
 
   const deleteCustomer = async () => {
     try {
-      await axios.delete(
-        `${API_URL}/customers/${customerToDelete._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      await axios.delete(`${API_URL}/customers/${customerToDelete._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       closeDeleteModal();
       fetchCustomers();
@@ -88,13 +86,14 @@ export default function Customers() {
       {/* TOP BAR */}
       <div style={styles.topBar}>
         <h2>👥 Customers</h2>
-
-        <button
-          style={styles.primaryBtn}
-          onClick={() => navigate("/customers/add")}
-        >
-          ➕ Add Customer
-        </button>
+        {hasPermission("ADD_CUSTOMER") && (
+          <button
+            style={styles.primaryBtn}
+            onClick={() => navigate("/customers/add")}
+          >
+            ➕ Add Customer
+          </button>
+        )}
       </div>
 
       {/* SEARCH */}
@@ -136,35 +135,41 @@ export default function Customers() {
 
               <td style={styles.td}>
                 <div style={styles.actionWrap}>
-                  <button
-                    className="app-action-btn app-action-view"
-                    style={styles.iconBtn}
-                    title="View customer"
-                    aria-label="View customer"
-                    onClick={() => setViewCustomer(customer)}
-                  >
-                    👁
-                  </button>
-
-                  <button
-                    className="app-action-btn app-action-edit"
-                    style={styles.iconBtn}
-                    title="Edit customer"
-                    aria-label="Edit customer"
-                    onClick={() => navigate(`/customers/edit/${customer._id}`)}
-                  >
-                    ✎
-                  </button>
-
-                  <button
-                    className="app-action-btn app-action-delete"
-                    style={styles.iconBtn}
-                    title="Delete customer"
-                    aria-label="Delete customer"
-                    onClick={() => openDeleteModal(customer)}
-                  >
-                    🗑
-                  </button>
+                  {hasPermission("VIEW_CUSTOMER") && (
+                    <button
+                      className="app-action-btn app-action-view"
+                      style={styles.iconBtn}
+                      title="View customer"
+                      aria-label="View customer"
+                      onClick={() => setViewCustomer(customer)}
+                    >
+                      👁
+                    </button>
+                  )}
+                  {hasPermission("EDIT_CUSTOMER") && (
+                    <button
+                      className="app-action-btn app-action-edit"
+                      style={styles.iconBtn}
+                      title="Edit customer"
+                      aria-label="Edit customer"
+                      onClick={() =>
+                        navigate(`/customers/edit/${customer._id}`)
+                      }
+                    >
+                      ✎
+                    </button>
+                  )}
+                  {hasPermission("DELETE_CUSTOMER") && (
+                    <button
+                      className="app-action-btn app-action-delete"
+                      style={styles.iconBtn}
+                      title="Delete customer"
+                      aria-label="Delete customer"
+                      onClick={() => openDeleteModal(customer)}
+                    >
+                      🗑
+                    </button>
+                  )}
                 </div>
               </td>
             </tr>

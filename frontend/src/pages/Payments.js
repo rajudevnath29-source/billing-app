@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { API_URL } from "../config/api";
+import { hasPermission } from "../utils/permissions";
 
 export default function Payments() {
   const [invoices, setInvoices] = useState([]);
@@ -126,14 +127,11 @@ export default function Payments() {
 
   const deletePayment = async () => {
     try {
-      await axios.delete(
-        `${API_URL}/payments/${selectedPayment._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      await axios.delete(`${API_URL}/payments/${selectedPayment._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       toast.success("Payment deleted successfully");
 
@@ -162,47 +160,48 @@ export default function Payments() {
           </p>
         </div>
       </div>
+      {hasPermission("ADD_PAYMENT") && (
+        <div style={styles.formCard}>
+          <div style={styles.formGrid}>
+            {/* FORM */}
 
-      <div style={styles.formCard}>
-        <div style={styles.formGrid}>
-          {/* FORM */}
+            <select
+              style={styles.input}
+              value={selectedInvoice}
+              onChange={(e) => setSelectedInvoice(e.target.value)}
+            >
+              <option value="">Select Invoice</option>
 
-          <select
-            style={styles.input}
-            value={selectedInvoice}
-            onChange={(e) => setSelectedInvoice(e.target.value)}
-          >
-            <option value="">Select Invoice</option>
+              {invoices.map((inv) => (
+                <option key={inv._id} value={inv._id}>
+                  {inv.invoice_number} | {inv.customer_name}
+                  {" | Due ₹"}
+                  {Number(inv.due_amount).toLocaleString("en-IN")}
+                </option>
+              ))}
+            </select>
 
-            {invoices.map((inv) => (
-              <option key={inv._id} value={inv._id}>
-                {inv.invoice_number} | {inv.customer_name}
-                {" | Due ₹"}
-                {Number(inv.due_amount).toLocaleString("en-IN")}
-              </option>
-            ))}
-          </select>
+            <input
+              style={styles.input}
+              type="number"
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
 
-          <input
-            style={styles.input}
-            type="number"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
+            <input
+              style={styles.input}
+              placeholder="Note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
 
-          <input
-            style={styles.input}
-            placeholder="Note"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
-
-          <button style={styles.primaryBtn} onClick={collectPayment}>
-            + Collect Payment
-          </button>
+            <button style={styles.primaryBtn} onClick={collectPayment}>
+              + Collect Payment
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* PAYMENT HISTORY */}
       <div style={styles.card}>
@@ -224,16 +223,18 @@ export default function Payments() {
                 <td>{new Date(pay.createdAt).toLocaleDateString("en-IN")}</td>
                 <td>{pay.note || "-"}</td>
                 <td>
-                  <button
-                    className="app-action-btn app-action-delete"
-                    style={styles.iconBtn}
-                    onClick={() => {
-                      setSelectedPayment(pay);
-                      setDeleteModal(true);
-                    }}
-                  >
-                    🗑
-                  </button>
+                  {hasPermission("DELETE_PAYMENT") && (
+                    <button
+                      className="app-action-btn app-action-delete"
+                      style={styles.iconBtn}
+                      onClick={() => {
+                        setSelectedPayment(pay);
+                        setDeleteModal(true);
+                      }}
+                    >
+                      🗑
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

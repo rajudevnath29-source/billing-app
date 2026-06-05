@@ -116,7 +116,7 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       )}
 
       {/* ITEMS MODULE */}
-      {hasPermission("ITEMS_MODULE") && (
+      {hasPermission("ITEM_MODULE") && (
         <>
           {expanded && <p style={styles.section}>Inventory</p>}
 
@@ -126,7 +126,7 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
             </Link>
           )}
 
-          {hasPermission("VIEW_ITEMS") && (
+          {hasPermission("VIEW_ITEM") && (
             <Link style={styles.link} to="/items">
               📦 {expanded && "Items"}
             </Link>
@@ -154,7 +154,7 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       )}
 
       {/* CUSTOMERS MODULE */}
-      {hasPermission("CUSTOMERS_MODULE") && (
+      {hasPermission("CUSTOMER_MODULE") && (
         <>
           {expanded && <p style={styles.section}>Customers</p>}
 
@@ -164,7 +164,7 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
             </Link>
           )}
 
-          {hasPermission("VIEW_CUSTOMERS") && (
+          {hasPermission("VIEW_CUSTOMER") && (
             <Link style={styles.link} to="/customers">
               👥 {expanded && "Customers View"}
             </Link>
@@ -179,11 +179,11 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       )}
 
       {/* PAYMENTS MODULE */}
-      {hasPermission("PAYMENTS_MODULE") && (
+      {hasPermission("PAYMENT_MODULE") && (
         <>
           {expanded && <p style={styles.section}>Payments</p>}
 
-          {hasPermission("VIEW_PAYMENTS") && (
+          {hasPermission("VIEW_PAYMENT") && (
             <Link style={styles.link} to="/payments">
               💰 {expanded && "Payments"}
             </Link>
@@ -192,10 +192,10 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       )}
 
       {/* REPORTS */}
-      {hasPermission("REPORTS_MODULE") && (
+      {hasPermission("REPORT_MODULE") && (
         <>
           {expanded && <p style={styles.section}>Reports</p>}
-          {hasPermission("VIEW_REPORTS") && (
+          {hasPermission("VIEW_REPORT") && (
             <Link style={styles.link} to="/reports">
               📊 {expanded && "Reports"}
             </Link>
@@ -204,10 +204,10 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       )}
 
       {/* EXPENSES */}
-      {hasPermission("EXPENSES_MODULE") && (
+      {hasPermission("EXPENSE_MODULE") && (
         <>
           {expanded && <p style={styles.section}>Expenses</p>}
-          {hasPermission("CREATE_EXPENSES") && (
+          {hasPermission("VIEW_EXPENSE") && (
             <Link style={styles.link} to="/expenses">
               💸 {expanded && "Expenses"}
             </Link>
@@ -216,17 +216,17 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       )}
 
       {/* ACCOUNTS */}
-      {hasPermission("ACCOUNTS_MODULE") && (
+      {hasPermission("ACCOUNT_MODULE") && (
         <>
           {expanded && <p style={styles.section}>Accounts</p>}
 
-          {hasPermission("CREATE_ACCOUNTS") && (
+          {hasPermission("VIEW_ACCOUNT") && (
             <Link style={styles.link} to="/accounts">
               🏦 {expanded && "Accounts"}
             </Link>
           )}
 
-          {hasPermission("CREATE_VOUCHERS") && (
+          {hasPermission("VIEW_VOUCHER") && (
             <Link style={styles.link} to="/vouchers">
               💳 {expanded && "Vouchers"}
             </Link>
@@ -248,11 +248,11 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
       )}
 
       {/* USERS */}
-      {hasPermission("USERS_MODULE") && (
+      {hasPermission("USER_MODULE") && (
         <>
           {expanded && <p style={styles.section}>Users</p>}
 
-          {hasPermission("VIEW_USERS") && (
+          {hasPermission("VIEW_USER") && (
             <Link style={styles.link} to="/users">
               👥 {!expanded ? "" : "User List"}
             </Link>

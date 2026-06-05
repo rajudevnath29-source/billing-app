@@ -3,8 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
-
-const roleMiddleware = require("../middleware/roleMiddleware");
+const permissionMiddleware = require("../middleware/permissionMiddleware");
 
 const {
   createCustomer,
@@ -15,34 +14,44 @@ const {
   deleteCustomer,
 } = require("../controllers/customerController");
 
-// CREATE
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware(["SUPER_ADMIN", "INVOICE_USER"]),
+  permissionMiddleware("ADD_CUSTOMER"),
   createCustomer,
 );
 
-// GET ALL
-router.get("/", authMiddleware, getCustomers);
-router.get("/with-sales", authMiddleware, getCustomersWithSales);
+router.get(
+  "/",
+  authMiddleware,
+  permissionMiddleware("VIEW_CUSTOMER"),
+  getCustomers,
+);
+router.get(
+  "/with-sales",
+  authMiddleware,
+  permissionMiddleware("VIEW_CUSTOMER"),
+  getCustomersWithSales,
+);
 
-// GET SINGLE
-router.get("/:id", authMiddleware, getCustomerById);
+router.get(
+  "/:id",
+  authMiddleware,
+  permissionMiddleware("VIEW_CUSTOMER"),
+  getCustomerById,
+);
 
-// UPDATE
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware(["SUPER_ADMIN", "INVOICE_USER"]),
+  permissionMiddleware("EDIT_CUSTOMER"),
   updateCustomer,
 );
 
-// DELETE
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(["SUPER_ADMIN"]),
+  permissionMiddleware("DELETE_CUSTOMER"),
   deleteCustomer,
 );
 

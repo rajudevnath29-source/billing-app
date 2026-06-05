@@ -24,7 +24,7 @@ router.post("/", authMiddleware, permissionMiddleware("CREATE_PURCHASE"), create
 // 📄 GET PURCHASES
 // ====================================
 
-router.get("/", authMiddleware, getPurchases);
+router.get("/", authMiddleware, permissionMiddleware("VIEW_PURCHASE"), getPurchases);
 
 router.get("/:id", authMiddleware, permissionMiddleware("VIEW_PURCHASE"), getPurchaseById);
 
