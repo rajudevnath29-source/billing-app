@@ -8,6 +8,7 @@ export default function EditCustomer() {
   const { id } = useParams();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(true);
 
   const [form, setForm] = useState({
     customer_name: "",
@@ -33,6 +34,8 @@ export default function EditCustomer() {
         setForm(res.data.customer || {});
       } catch (error) {
         toast.error("Failed to load customer");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -62,6 +65,9 @@ export default function EditCustomer() {
       toast.error("Error updating customer");
     }
   };
+  if (loading) {
+    return <div style={styles.loading}>Loading customer...</div>;
+  }
 
   return (
     <div style={styles.page}>
@@ -70,7 +76,10 @@ export default function EditCustomer() {
           <h1 style={styles.title}>Edit Customer</h1>
           <p style={styles.subtitle}>Update customer profile and balance</p>
         </div>
-        <button style={styles.secondaryBtn} onClick={() => navigate("/customers")}>
+        <button
+          style={styles.secondaryBtn}
+          onClick={() => navigate("/customers")}
+        >
           Back
         </button>
       </div>
@@ -104,7 +113,11 @@ export default function EditCustomer() {
         </label>
 
         <div style={styles.actions}>
-          <button type="button" style={styles.secondaryBtn} onClick={() => navigate("/customers")}>
+          <button
+            type="button"
+            style={styles.secondaryBtn}
+            onClick={() => navigate("/customers")}
+          >
             Cancel
           </button>
           <button type="submit" style={styles.primaryBtn}>
@@ -191,5 +204,10 @@ const styles = {
     borderRadius: 6,
     cursor: "pointer",
     fontWeight: 700,
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

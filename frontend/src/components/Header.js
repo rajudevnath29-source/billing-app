@@ -22,17 +22,14 @@ export default function Header({ collapsed, setCollapsed }) {
         ☰
       </button>
 
-      <img
-        src="/L.png"
-        alt="Raaj Computer Service"
-        style={styles.logo}
-      />
+      <img src="/L.png" alt="Raaj Computer Service" style={styles.logo} />
       {/* <h3>ERP Dashboard</h3> */}
 
       {/* RIGHT SIDE ACTIONS */}
       <div style={styles.right}>
         {/* PROFILE */}
         <div style={styles.profileWrapper}>
+          <p style={styles.userName}>{user?.name}</p>
           <img
             src={
               user?.profile_image
@@ -56,7 +53,10 @@ export default function Header({ collapsed, setCollapsed }) {
 
         {/* POWER / LOGOUT */}
         <div style={styles.powerBtn} onClick={logout} title="Logout">
-          <i className="fa fa-power-off" style={{ fontSize: "24px", color: "#f35959" }}></i>
+          <i
+            className="fa fa-power-off"
+            style={{ fontSize: "24px", color: "#f35959" }}
+          ></i>
         </div>
       </div>
     </div>
@@ -128,5 +128,11 @@ const styles = {
     padding: "6px 10px",
     borderRadius: 8,
     transition: "0.2s",
+  },
+  userName: {
+    marginRight: 10,
+    fontSize: 14,
+    fontWeight: 500,
+    color: "#333",
   },
 };

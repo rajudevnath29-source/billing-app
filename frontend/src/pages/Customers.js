@@ -12,6 +12,7 @@ export default function Customers() {
   const [viewCustomer, setViewCustomer] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState(null);
+  const [loading, setLoading] = useState(true);
   const pageSize = 10;
 
   const token = localStorage.getItem("token");
@@ -30,6 +31,9 @@ export default function Customers() {
       setCustomers(res.data.customers);
     } catch (err) {
       console.log(err);
+      toast.error("Failed to load customers");
+    } finally {
+      setLoading(false);
     }
   }, [token]);
 
@@ -80,6 +84,9 @@ export default function Customers() {
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
+  if (loading) {
+    return <div style={styles.loading}>Loading customers...</div>;
+  }
 
   return (
     <>
@@ -494,5 +501,10 @@ const styles = {
     color: "#fff",
     cursor: "pointer",
     fontWeight: 600,
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

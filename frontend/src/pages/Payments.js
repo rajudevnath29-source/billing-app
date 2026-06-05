@@ -19,6 +19,7 @@ export default function Payments() {
   const [deleteModal, setDeleteModal] = useState(false);
 
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
@@ -61,6 +62,9 @@ export default function Payments() {
       setPayments(paymentRes.data.payments);
     } catch (error) {
       console.log(error);
+      toast.error("Failed to load payments");
+    } finally {
+      setLoading(false);
     }
   }, [token]);
 
@@ -150,6 +154,10 @@ export default function Payments() {
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
+  if (loading) {
+    return <div style={styles.loading}>Loading payments...</div>;
+  }
+
   return (
     <div style={styles.page}>
       <div style={styles.topBar}>
@@ -505,5 +513,10 @@ const styles = {
     color: "#fff",
     cursor: "not-allowed",
     opacity: 0.8,
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

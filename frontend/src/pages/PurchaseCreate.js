@@ -192,7 +192,7 @@ export default function PurchaseCreate() {
   };
 
   if (loading) {
-    return <h2>Loading...</h2>;
+    return <div style={styles.loading}>Loading purchase...</div>;
   }
 
   return (
@@ -656,5 +656,10 @@ const styles = {
     color: "#16a34a",
     marginTop: 20,
     whiteSpace: "nowrap",
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

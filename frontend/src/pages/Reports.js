@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import axios from "axios";
-
+import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -26,7 +26,7 @@ export default function Reports() {
   const [purchases, setPurchases] = useState([]);
   const [items, setItems] = useState([]);
   const [expenses, setExpenses] = useState([]);
-
+  const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
   const pageRef = useRef();
 
@@ -39,10 +39,9 @@ export default function Reports() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const purchaseRes = await axios.get(
-        `${API_URL}/purchases`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      const purchaseRes = await axios.get(`${API_URL}/purchases`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const itemRes = await axios.get(`${API_URL}/items`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -58,6 +57,9 @@ export default function Reports() {
       setExpenses(expenseRes.data.expenses || []);
     } catch (error) {
       console.log(error);
+      toast.error("Failed to load reports");
+    } finally {
+      setLoading(false);
     }
   }, [token]);
 
@@ -173,6 +175,10 @@ export default function Reports() {
     pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
     pdf.save("ERP_Report.pdf");
   };
+
+  if (loading) {
+    return <div style={loadingdiv}>Loading reports...</div>;
+  }
 
   // =========================
   // UI
@@ -436,4 +442,10 @@ const headerRow = {
 const buttonRow = {
   display: "flex",
   gap: 8,
+};
+
+const loadingdiv = {
+  padding: 50,
+  textAlign: "center",
+  fontSize: 18,
 };

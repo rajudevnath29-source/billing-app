@@ -19,6 +19,7 @@ export default function Expenses() {
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const pageSize = 10;
 
   // ====================================
@@ -40,6 +41,9 @@ export default function Expenses() {
       setExpenses(res.data.expenses);
     } catch (error) {
       console.log(error);
+      toast.error("Failed to load expense");
+    } finally {
+      setLoading(false);
     }
   }, [token]);
 
@@ -90,14 +94,11 @@ export default function Expenses() {
 
   const deleteExpense = async () => {
     try {
-      await axios.delete(
-        `${API_URL}/expenses/${selectedExpense._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      await axios.delete(`${API_URL}/expenses/${selectedExpense._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       toast.success("Expense deleted successfully");
 
@@ -126,6 +127,9 @@ export default function Expenses() {
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
+  if (loading) {
+    return <div style={styles.loading}>Loading expense...</div>;
+  }
 
   return (
     <div style={styles.page}>
@@ -502,5 +506,10 @@ const styles = {
     color: "#fff",
     cursor: "not-allowed",
     opacity: 0.85,
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

@@ -8,6 +8,7 @@ export default function CustomerLedger() {
   const [customerInvoices, setCustomerInvoices] = useState([]);
   const [search, setSearch] = useState("");
   const [loadingLedger, setLoadingLedger] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const LEDGER_PAGE_SIZE = 10;
 
@@ -33,6 +34,8 @@ export default function CustomerLedger() {
       setCustomers(res.data.customers || []);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }, [authHeader]);
 
@@ -109,6 +112,9 @@ export default function CustomerLedger() {
     Number(value || 0).toLocaleString("en-IN", {
       maximumFractionDigits: 0,
     });
+  if (loading) {
+    return <div style={styles.loading}>Loading customers...</div>;
+  }
 
   return (
     <div style={styles.page}>
@@ -497,5 +503,9 @@ const styles = {
     cursor: "not-allowed",
     opacity: 0.8,
   },
-
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
+  },
 };

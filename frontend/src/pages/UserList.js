@@ -20,8 +20,7 @@ export default function UserList() {
 
   const [selectedPermissions, setSelectedPermissions] = useState([]);
 
-  const [showPermissionsModal, setShowPermissionsModal] =
-    useState(false);
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
 
   const [deleteModal, setDeleteModal] = useState(false);
 
@@ -32,14 +31,11 @@ export default function UserList() {
   // =========================
   const getUsers = useCallback(async () => {
     try {
-      const res = await axios.get(
-        `${API_URL}/users`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const res = await axios.get(`${API_URL}/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       setUsers(res.data);
 
@@ -67,14 +63,11 @@ export default function UserList() {
   // =========================
   const confirmDelete = async () => {
     try {
-      await axios.delete(
-        `${API_URL}/users/${selectedUser._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      await axios.delete(`${API_URL}/users/${selectedUser._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       toast.success("User deleted successfully");
 
@@ -91,16 +84,10 @@ export default function UserList() {
   // =========================
   const filteredUsers = users.filter((user) => {
     const matchSearch =
-      user.name
-        .toLowerCase()
-        .includes(search.toLowerCase()) ||
-      user.email
-        .toLowerCase()
-        .includes(search.toLowerCase());
+      user.name.toLowerCase().includes(search.toLowerCase()) ||
+      user.email.toLowerCase().includes(search.toLowerCase());
 
-    const matchRole =
-      roleFilter === "ALL" ||
-      user.role === roleFilter;
+    const matchRole = roleFilter === "ALL" || user.role === roleFilter;
 
     return matchSearch && matchRole;
   });
@@ -116,7 +103,7 @@ export default function UserList() {
   );
 
   if (loading) {
-    return <h2>Loading...</h2>;
+    return <div style={styles.loading}>Loading users...</div>;
   }
 
   return (
@@ -124,13 +111,9 @@ export default function UserList() {
       {/* TOP */}
       <div style={styles.topBar}>
         <div>
-          <h1 style={styles.title}>
-            👥 User Management
-          </h1>
+          <h1 style={styles.title}>👥 User Management</h1>
 
-          <p style={styles.subtitle}>
-            Manage users, roles and permissions
-          </p>
+          <p style={styles.subtitle}>Manage users, roles and permissions</p>
         </div>
       </div>
 
@@ -140,32 +123,22 @@ export default function UserList() {
           type="text"
           placeholder="Search user..."
           value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
+          onChange={(e) => setSearch(e.target.value)}
           style={styles.search}
         />
 
         <select
           value={roleFilter}
-          onChange={(e) =>
-            setRoleFilter(e.target.value)
-          }
+          onChange={(e) => setRoleFilter(e.target.value)}
           style={styles.select}
         >
           <option value="ALL">All Roles</option>
 
-          <option value="SUPER_ADMIN">
-            SUPER_ADMIN
-          </option>
+          <option value="SUPER_ADMIN">SUPER_ADMIN</option>
 
-          <option value="ITEM_MANAGER">
-            ITEM_MANAGER
-          </option>
+          <option value="ITEM_MANAGER">ITEM_MANAGER</option>
 
-          <option value="INVOICE_USER">
-            INVOICE_USER
-          </option>
+          <option value="INVOICE_USER">INVOICE_USER</option>
         </select>
       </div>
 
@@ -178,9 +151,7 @@ export default function UserList() {
 
               <th style={styles.th}>Role</th>
 
-              <th style={styles.th}>
-                Permissions
-              </th>
+              <th style={styles.th}>Permissions</th>
 
               <th style={styles.th}>Actions</th>
             </tr>
@@ -203,13 +174,9 @@ export default function UserList() {
                     />
 
                     <div>
-                      <h4 style={{ margin: 0 }}>
-                        {user.name}
-                      </h4>
+                      <h4 style={{ margin: 0 }}>{user.name}</h4>
 
-                      <p style={styles.email}>
-                        {user.email}
-                      </p>
+                      <p style={styles.email}>{user.email}</p>
                     </div>
                   </div>
                 </td>
@@ -221,20 +188,16 @@ export default function UserList() {
                       ...styles.roleBadge,
 
                       background:
-                        user.role ===
-                          "SUPER_ADMIN"
+                        user.role === "SUPER_ADMIN"
                           ? "#fee2e2"
-                          : user.role ===
-                            "ITEM_MANAGER"
+                          : user.role === "ITEM_MANAGER"
                             ? "#dcfce7"
                             : "#dbeafe",
 
                       color:
-                        user.role ===
-                          "SUPER_ADMIN"
+                        user.role === "SUPER_ADMIN"
                           ? "#dc2626"
-                          : user.role ===
-                            "ITEM_MANAGER"
+                          : user.role === "ITEM_MANAGER"
                             ? "#15803d"
                             : "#2563eb",
                     }}
@@ -245,62 +208,34 @@ export default function UserList() {
 
                 {/* PERMISSIONS */}
                 <td style={styles.td}>
-                  <div
-                    style={
-                      styles.permissionWrap
-                    }
-                  >
-                    {(user.permissions || [])
-                      .length === 0 ? (
-                      <span
-                        style={
-                          styles.noPermission
-                        }
-                      >
-                        No Permissions
-                      </span>
+                  <div style={styles.permissionWrap}>
+                    {(user.permissions || []).length === 0 ? (
+                      <span style={styles.noPermission}>No Permissions</span>
                     ) : (
                       <>
                         {(user.permissions || [])
                           .slice(0, 3)
-                          .map(
-                            (permission) => (
-                              <span
-                                key={
-                                  permission._id
-                                }
-                                style={
-                                  styles.permissionBadge
-                                }
-                              >
-                                {permission.label ||
-                                  permission.name}
-                              </span>
-                            ),
-                          )}
-
-                        {(user.permissions ||
-                          []).length > 3 && (
-                            <button
-                              style={
-                                styles.moreBtn
-                              }
-                              onClick={() => {
-                                setSelectedPermissions(
-                                  user.permissions,
-                                );
-
-                                setShowPermissionsModal(
-                                  true,
-                                );
-                              }}
+                          .map((permission) => (
+                            <span
+                              key={permission._id}
+                              style={styles.permissionBadge}
                             >
-                              +{" "}
-                              {(user.permissions ||
-                                []).length -
-                                3}
-                            </button>
-                          )}
+                              {permission.label || permission.name}
+                            </span>
+                          ))}
+
+                        {(user.permissions || []).length > 3 && (
+                          <button
+                            style={styles.moreBtn}
+                            onClick={() => {
+                              setSelectedPermissions(user.permissions);
+
+                              setShowPermissionsModal(true);
+                            }}
+                          >
+                            + {(user.permissions || []).length - 3}
+                          </button>
+                        )}
                       </>
                     )}
                   </div>
@@ -308,9 +243,7 @@ export default function UserList() {
 
                 {/* ACTIONS */}
                 <td style={styles.td}>
-                  <div
-                    style={styles.actionWrap}
-                  >
+                  <div style={styles.actionWrap}>
                     <Link
                       to={`/users/edit/${user._id}`}
                       className="app-action-btn app-action-edit"
@@ -322,9 +255,7 @@ export default function UserList() {
                     </Link>
 
                     <button
-                      onClick={() =>
-                        openDeleteModal(user)
-                      }
+                      onClick={() => openDeleteModal(user)}
                       className="app-action-btn app-action-delete"
                       style={styles.iconBtn}
                       title="Delete user"
@@ -340,9 +271,7 @@ export default function UserList() {
         </table>
 
         {filteredUsers.length === 0 && (
-          <div style={styles.empty}>
-            No users found
-          </div>
+          <div style={styles.empty}>No users found</div>
         )}
       </div>
 
@@ -411,36 +340,22 @@ export default function UserList() {
               }}
             >
               <div style={styles.modalHeader}>
-                <h3 style={{ margin: 0 }}>
-                  All Permissions
-                </h3>
+                <h3 style={{ margin: 0 }}>All Permissions</h3>
 
                 <button
                   style={styles.closeBtn}
-                  onClick={() =>
-                    setShowPermissionsModal(
-                      false,
-                    )
-                  }
+                  onClick={() => setShowPermissionsModal(false)}
                 >
                   ✕
                 </button>
               </div>
 
               <div style={styles.modalBody}>
-                {selectedPermissions.map(
-                  (permission) => (
-                    <span
-                      key={permission._id}
-                      style={
-                        styles.permissionBadge
-                      }
-                    >
-                      {permission.label ||
-                        permission.name}
-                    </span>
-                  ),
-                )}
+                {selectedPermissions.map((permission) => (
+                  <span key={permission._id} style={styles.permissionBadge}>
+                    {permission.label || permission.name}
+                  </span>
+                ))}
               </div>
             </motion.div>
           </motion.div>
@@ -471,37 +386,23 @@ export default function UserList() {
                 opacity: 0,
               }}
             >
-              <div style={styles.deleteIcon}>
-                🗑️
-              </div>
+              <div style={styles.deleteIcon}>🗑️</div>
 
-              <h2 style={styles.deleteTitle}>
-                Delete User?
-              </h2>
+              <h2 style={styles.deleteTitle}>Delete User?</h2>
 
               <p style={styles.deleteText}>
-                Are you sure you want to
-                delete{" "}
-                <b>
-                  {selectedUser?.name}
-                </b>
-                ?
+                Are you sure you want to delete <b>{selectedUser?.name}</b>?
               </p>
 
               <div style={styles.modalActions}>
                 <button
                   style={styles.cancelBtn}
-                  onClick={() =>
-                    setDeleteModal(false)
-                  }
+                  onClick={() => setDeleteModal(false)}
                 >
                   Cancel
                 </button>
 
-                <button
-                  style={styles.confirmBtn}
-                  onClick={confirmDelete}
-                >
+                <button style={styles.confirmBtn} onClick={confirmDelete}>
                   Delete
                 </button>
               </div>
@@ -558,8 +459,7 @@ const styles = {
     background: "#fff",
     borderRadius: 10,
     overflow: "hidden",
-    boxShadow:
-      "0 2px 8px rgba(0,0,0,0.08)",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
 
   table: {
@@ -684,8 +584,7 @@ const styles = {
   modalOverlay: {
     position: "fixed",
     inset: 0,
-    background:
-      "rgba(15,23,42,0.45)",
+    background: "rgba(15,23,42,0.45)",
     backdropFilter: "blur(8px)",
     display: "flex",
     alignItems: "center",
@@ -695,12 +594,10 @@ const styles = {
 
   modal: {
     width: 450,
-    background:
-      "rgba(255,255,255,0.9)",
+    background: "rgba(255,255,255,0.9)",
     borderRadius: 24,
     padding: 25,
-    boxShadow:
-      "0 20px 60px rgba(0,0,0,0.2)",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
   },
 
   modalHeader: {
@@ -725,14 +622,12 @@ const styles = {
 
   deleteModal: {
     width: 420,
-    background:
-      "rgba(255,255,255,0.9)",
+    background: "rgba(255,255,255,0.9)",
     backdropFilter: "blur(20px)",
     borderRadius: 28,
     padding: 30,
     textAlign: "center",
-    boxShadow:
-      "0 20px 60px rgba(0,0,0,0.2)",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
   },
 
   deleteIcon: {
@@ -776,5 +671,10 @@ const styles = {
     color: "#fff",
     cursor: "pointer",
     fontWeight: 600,
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

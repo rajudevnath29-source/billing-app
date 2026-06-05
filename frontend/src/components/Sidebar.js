@@ -247,6 +247,15 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
         </>
       )}
 
+      {/* EXTRA */}
+      {/* <>
+        {expanded && <p style={styles.section}>Stock</p>}
+
+          <Link style={styles.link} to="/user-access">
+            📊 {expanded && "User Access"}
+          </Link>
+      </> */}
+
       {/* USERS */}
       {hasPermission("USER_MODULE") && (
         <>

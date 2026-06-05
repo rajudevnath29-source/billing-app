@@ -92,7 +92,7 @@ export default function EditItem() {
   };
 
   if (loading) {
-    return <h2>Loading...</h2>;
+    return <div style={styles.loading}>Loading Item...</div>;
   }
 
   return (

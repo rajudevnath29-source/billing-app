@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { API_URL } from "../config/api";
 
 export default function StockHistory() {
@@ -8,7 +9,7 @@ export default function StockHistory() {
   const [typeFilter, setTypeFilter] = useState("ALL");
   const [dateFilter, setDateFilter] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
-
+  const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
   const pageSize = 15;
 
@@ -23,6 +24,9 @@ export default function StockHistory() {
       setHistory(res.data.history || []);
     } catch (error) {
       console.log(error);
+      toast.error("Failed to load stock history");
+    } finally {
+      setLoading(false);
     }
   }, [token]);
 
@@ -75,6 +79,9 @@ export default function StockHistory() {
         return "#64748b";
     }
   };
+  if (loading) {
+    return <div style={styles.loading}>Loading stock history...</div>;
+  }
 
   return (
     <div style={styles.page}>
@@ -151,7 +158,9 @@ export default function StockHistory() {
           </tbody>
         </table>
 
-        {filtered.length === 0 && <div style={styles.empty}>No stock history found</div>}
+        {filtered.length === 0 && (
+          <div style={styles.empty}>No stock history found</div>
+        )}
       </div>
 
       {filtered.length > 0 && (
@@ -261,5 +270,10 @@ const styles = {
     color: "#fff",
     cursor: "not-allowed",
     opacity: 0.85,
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

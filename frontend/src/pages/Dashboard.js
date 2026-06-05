@@ -67,14 +67,11 @@ export default function Dashboard() {
         },
       });
 
-      const purchaseRes = await axios.get(
-        `${API_URL}/purchases`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const purchaseRes = await axios.get(`${API_URL}/purchases`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
       setPurchases(purchaseRes.data.purchases || []);
       setItems(itemRes.data.items || []);
       setInvoices(invoiceRes.data.invoices || []);
@@ -208,7 +205,7 @@ export default function Dashboard() {
   }));
 
   if (loading) {
-    return <h2>Loading Dashboard...</h2>;
+    return <div style={styles.loading}>Loading Dashboard...</div>;
   }
 
   return (
@@ -726,5 +723,10 @@ const styles = {
     padding: 12,
     borderRadius: 10,
     border: "1px solid #fecaca",
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

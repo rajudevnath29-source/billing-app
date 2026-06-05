@@ -20,7 +20,7 @@ export default function Vouchers() {
   const [note, setNote] = useState("");
 
   const token = localStorage.getItem("token");
-
+  const [loading, setLoading] = useState(true);
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,6 +58,9 @@ export default function Vouchers() {
       setVouchers(vouRes.data.vouchers);
     } catch (error) {
       console.log(error);
+      toast.error("Failed to load vouchers");
+    } finally {
+      setLoading(false);
     }
   }, [token]);
 
@@ -110,14 +113,11 @@ export default function Vouchers() {
 
   const deleteVoucher = async () => {
     try {
-      await axios.delete(
-        `${API_URL}/vouchers/${selectedVoucher._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      await axios.delete(`${API_URL}/vouchers/${selectedVoucher._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       toast.success("Voucher deleted successfully");
 
@@ -136,6 +136,9 @@ export default function Vouchers() {
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
+  if (loading) {
+    return <div style={styles.loading}>Loading vouchers...</div>;
+  }
 
   return (
     <div style={styles.page}>
@@ -151,79 +154,79 @@ export default function Vouchers() {
       {/* FORM */}
 
       {hasPermission("CREATE_VOUCHER") && (
-      <div style={styles.formCard}>
-        <div style={styles.formGrid}>
-          <select
-            style={styles.input}
-            value={voucher_type}
-            onChange={(e) => setVoucherType(e.target.value)}
-          >
-            <option value="CREDIT">CREDIT</option>
-
-            <option value="DEBIT">DEBIT</option>
-
-            <option value="TRANSFER">TRANSFER</option>
-          </select>
-
-          {/* ACCOUNT */}
-
-          <select
-            style={styles.input}
-            value={account}
-            onChange={(e) => {
-              setAccount(e.target.value);
-              setToAccount("");
-            }}
-          >
-            <option value="">Select Account</option>
-
-            {accounts.map((acc) => (
-              <option key={acc._id} value={acc._id}>
-                {acc.account_name} - ₹{acc.balance}
-              </option>
-            ))}
-          </select>
-
-          {/* TRANSFER */}
-
-          {voucher_type === "TRANSFER" && (
+        <div style={styles.formCard}>
+          <div style={styles.formGrid}>
             <select
               style={styles.input}
-              value={to_account}
-              onChange={(e) => setToAccount(e.target.value)}
+              value={voucher_type}
+              onChange={(e) => setVoucherType(e.target.value)}
             >
-              <option value="">To Account</option>
+              <option value="CREDIT">CREDIT</option>
 
-              {accounts
-                .filter((acc) => acc._id !== account)
-                .map((acc) => (
-                  <option key={acc._id} value={acc._id}>
-                    {acc.account_name}
-                  </option>
-                ))}
+              <option value="DEBIT">DEBIT</option>
+
+              <option value="TRANSFER">TRANSFER</option>
             </select>
-          )}
 
-          <input
-            style={styles.input}
-            type="number"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
+            {/* ACCOUNT */}
 
-          <input
-            style={styles.input}
-            placeholder="Note"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
+            <select
+              style={styles.input}
+              value={account}
+              onChange={(e) => {
+                setAccount(e.target.value);
+                setToAccount("");
+              }}
+            >
+              <option value="">Select Account</option>
 
-          <button style={styles.primaryBtn} onClick={createVoucher}>
-            + Save Voucher
-          </button>
+              {accounts.map((acc) => (
+                <option key={acc._id} value={acc._id}>
+                  {acc.account_name} - ₹{acc.balance}
+                </option>
+              ))}
+            </select>
+
+            {/* TRANSFER */}
+
+            {voucher_type === "TRANSFER" && (
+              <select
+                style={styles.input}
+                value={to_account}
+                onChange={(e) => setToAccount(e.target.value)}
+              >
+                <option value="">To Account</option>
+
+                {accounts
+                  .filter((acc) => acc._id !== account)
+                  .map((acc) => (
+                    <option key={acc._id} value={acc._id}>
+                      {acc.account_name}
+                    </option>
+                  ))}
+              </select>
+            )}
+
+            <input
+              style={styles.input}
+              type="number"
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+
+            <input
+              style={styles.input}
+              placeholder="Note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+
+            <button style={styles.primaryBtn} onClick={createVoucher}>
+              + Save Voucher
+            </button>
+          </div>
         </div>
-      </div>
       )}
 
       {/* TABLE */}
@@ -559,5 +562,10 @@ const styles = {
     color: "#fff",
     cursor: "not-allowed",
     opacity: 0.85,
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

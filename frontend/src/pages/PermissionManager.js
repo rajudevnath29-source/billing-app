@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { API_URL } from "../config/api";
 
 export default function PermissionManager() {
@@ -7,7 +8,7 @@ export default function PermissionManager() {
   const [search, setSearch] = useState("");
 
   const token = localStorage.getItem("token");
-
+  const [loading, setLoading] = useState(true);
   const fetchPermissions = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/permissions`, {
@@ -19,6 +20,9 @@ export default function PermissionManager() {
       setPermissions(res.data);
     } catch (error) {
       console.log(error);
+      toast.error("Failed to load permissions");
+    } finally {
+      setLoading(false);
     }
   }, [token]);
 
@@ -31,6 +35,9 @@ export default function PermissionManager() {
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.label.toLowerCase().includes(search.toLowerCase()),
   );
+  if (loading) {
+    return <div style={styles.loading}>Loading permissions...</div>;
+  }
 
   return (
     <div style={styles.container}>
@@ -91,5 +98,10 @@ const styles = {
     padding: 20,
     borderRadius: 20,
     boxShadow: "0 5px 20px rgba(0,0,0,0.06)",
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

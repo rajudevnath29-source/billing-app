@@ -128,7 +128,9 @@ export default function EditUser() {
     setFormData({
       ...formData,
       role: roleName,
-      permissions: [...new Set([...formData.permissions, ...rolePermissionNames])],
+      permissions: [
+        ...new Set([...formData.permissions, ...rolePermissionNames]),
+      ],
     });
   };
 
@@ -165,7 +167,7 @@ export default function EditUser() {
   };
 
   if (loading) {
-    return <h2>Loading...</h2>;
+    return <div style={styles.loading}>Loading user...</div>;
   }
 
   return (
@@ -349,5 +351,10 @@ const styles = {
     fontSize: 16,
     cursor: "pointer",
     fontWeight: "bold",
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

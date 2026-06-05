@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { API_URL } from "../config/api";
 
 const isRolePermission = (permissionName = "") => {
@@ -15,7 +16,7 @@ export default function RoleManager() {
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
   const [search, setSearch] = useState("");
-
+  const [loading, setLoading] = useState(true);
   const [openModules, setOpenModules] = useState({});
 
   const [formData, setFormData] = useState({
@@ -27,10 +28,17 @@ export default function RoleManager() {
 
   // ================= FETCH =================
   const fetchRoles = useCallback(async () => {
-    const res = await axios.get(`${API_URL}/roles`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setRoles(res.data);
+    try {
+      const res = await axios.get(`${API_URL}/roles`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRoles(res.data);
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to load roles");
+    } finally {
+      setLoading(false);
+    }
   }, [token]);
 
   const fetchPermissions = useCallback(async () => {
@@ -128,9 +136,7 @@ export default function RoleManager() {
   const handleSelectAll = (perms) => {
     const ids = perms.map((p) => p._id);
 
-    const allSelected = ids.every((id) =>
-      formData.permissions.includes(id),
-    );
+    const allSelected = ids.every((id) => formData.permissions.includes(id));
 
     setFormData((prev) => ({
       ...prev,
@@ -139,6 +145,9 @@ export default function RoleManager() {
         : [...new Set([...prev.permissions, ...ids])],
     }));
   };
+  if (loading) {
+    return <div style={styles.loading}>Loading roles...</div>;
+  }
 
   return (
     <div style={styles.container}>
@@ -304,5 +313,10 @@ const styles = {
     background: "#fff",
     padding: 15,
     borderRadius: 12,
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

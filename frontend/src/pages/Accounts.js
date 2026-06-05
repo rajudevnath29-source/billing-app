@@ -12,6 +12,7 @@ export default function Accounts() {
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   const pageSize = 10;
 
@@ -32,6 +33,8 @@ export default function Accounts() {
       setAccounts(res.data.accounts);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }, [token]);
 
@@ -75,14 +78,11 @@ export default function Accounts() {
 
   const deleteAccount = async () => {
     try {
-      await axios.delete(
-        `${API_URL}/accounts/${selectedAccount._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      await axios.delete(`${API_URL}/accounts/${selectedAccount._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       toast.success("Account deleted successfully");
 
@@ -112,6 +112,10 @@ export default function Accounts() {
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
+  if (loading) {
+    return <div style={styles.loading}>Loading accounts...</div>;
+  }
+
   return (
     <div style={styles.page}>
       {/* HEADER */}
@@ -505,5 +509,10 @@ const styles = {
   table: {
     width: "100%",
     borderCollapse: "collapse",
+  },
+  loading: {
+    padding: 50,
+    textAlign: "center",
+    fontSize: 18,
   },
 };

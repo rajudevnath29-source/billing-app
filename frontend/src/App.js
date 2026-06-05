@@ -47,6 +47,7 @@ import PermissionManager from "./pages/PermissionManager";
 
 import RoleManager from "./pages/RoleManager";
 import BulkInvoice from "./pages/BulkInvoice";
+import UserAccessManager from "./pages/UserAccessManager";
 
 function App() {
   useEffect(() => {
@@ -70,6 +71,7 @@ function App() {
         >
           {/* DASHBOARD */}
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/user-access" element={<UserAccessManager />} />
 
           {/* PROFILE */}
           <Route path="/profile" element={<Profile />} />
