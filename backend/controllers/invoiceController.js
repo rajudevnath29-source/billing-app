@@ -1,7 +1,14 @@
 const Invoice = require("../models/Invoice");
 const Item = require("../models/Item");
 const Customer = require("../models/Customer");
+const GstSettings = require("../models/GstSettings");
+const GstLedger = require("../models/GstLedger");
 const createStockHistory = require("../utils/createStockHistory");
+const {
+  isSameState,
+  canDetermineGstType,
+  getPlaceOfSupply,
+} = require("../utils/gstHelper");
 const Counter = require("../models/Counter");
 
 const createInvoice = async (req, res) => {
@@ -142,9 +149,34 @@ const createInvoice = async (req, res) => {
     // 💰 CALCULATIONS
     const afterDiscount = sub_total - Number(discount);
     let gst_amount = 0;
+    let cgst_amount = 0;
+    let sgst_amount = 0;
+    let igst_amount = 0;
+    let gst_type = "NONE";
+    let place_of_supply = "";
+
+    const customerData = await Customer.findById(customerId);
 
     if (gst_enabled) {
-      gst_amount = (afterDiscount * gst_rate) / 100;
+      const gstSettings = await GstSettings.findOne();
+
+      if (canDetermineGstType(gstSettings, customerData)) {
+        place_of_supply = getPlaceOfSupply(customerData);
+
+        if (isSameState(gstSettings, customerData)) {
+          gst_type = "INTRA";
+          cgst_amount = (afterDiscount * gst_rate) / 200;
+          sgst_amount = cgst_amount;
+          gst_amount = cgst_amount + sgst_amount;
+        } else {
+          gst_type = "INTER";
+          igst_amount = (afterDiscount * gst_rate) / 100;
+          gst_amount = igst_amount;
+        }
+      } else {
+        gst_type = "NONE";
+        gst_amount = (afterDiscount * gst_rate) / 100;
+      }
     }
     const grand_total = afterDiscount + gst_amount;
     const due_amount = grand_total - paid_amount;
@@ -160,12 +192,18 @@ const createInvoice = async (req, res) => {
       customer: customerId,
       customer_name,
       customer_mobile,
+      customer_gstin: customerData?.gst_number || "",
       items: formattedItems,
       sub_total,
       discount,
       gst_enabled,
       gst_rate,
       gst_amount,
+      cgst_amount,
+      sgst_amount,
+      igst_amount,
+      gst_type,
+      place_of_supply,
       paid_amount,
       due_amount,
       payment_status,
@@ -173,6 +211,34 @@ const createInvoice = async (req, res) => {
       grand_total,
       created_by: req.user.id,
     });
+
+    // =========================
+    // 📊 STORE OUTPUT GST IN LEDGER
+    // =========================
+    if (gst_enabled && gst_amount > 0) {
+      const parsedInvoiceDate = new Date(invoiceDate);
+      const month = parsedInvoiceDate.toLocaleString("en-US", { month: "long" });
+      const year = parsedInvoiceDate.getFullYear();
+
+      await GstLedger.create({
+        transaction_type: "OUTPUT",
+        transaction_id: invoice._id,
+        transaction_number: invoice_number,
+        transaction_date: parsedInvoiceDate,
+        party_name: customer_name,
+        party_gstin: customerData?.gst_number || "",
+        taxable_amount: afterDiscount,
+        cgst_amount: cgst_amount,
+        sgst_amount: sgst_amount,
+        igst_amount: igst_amount,
+        total_gst: gst_amount,
+        gst_rate: gst_rate,
+        gst_type: gst_type,
+        place_of_supply: place_of_supply,
+        month: month,
+        year: year,
+      });
+    }
 
     res.status(201).json({
       message: "Invoice created successfully",
@@ -368,9 +434,36 @@ const updateInvoice = async (req, res) => {
 
     const afterDiscount = sub_total - safeDiscount;
 
-    const gstAmount = gst_enabled
-      ? (afterDiscount * Number(gst_rate || 0)) / 100
-      : 0;
+    let gstAmount = 0;
+    let cgst_amount = 0;
+    let sgst_amount = 0;
+    let igst_amount = 0;
+    let gst_type = "NONE";
+    let place_of_supply = "";
+
+    const customerData = await Customer.findById(customerId);
+
+    if (gst_enabled) {
+      const gstSettings = await GstSettings.findOne();
+
+      if (canDetermineGstType(gstSettings, customerData)) {
+        place_of_supply = getPlaceOfSupply(customerData);
+
+        if (isSameState(gstSettings, customerData)) {
+          gst_type = "INTRA";
+          cgst_amount = (afterDiscount * Number(gst_rate || 0)) / 200;
+          sgst_amount = cgst_amount;
+          gstAmount = cgst_amount + sgst_amount;
+        } else {
+          gst_type = "INTER";
+          igst_amount = (afterDiscount * Number(gst_rate || 0)) / 100;
+          gstAmount = igst_amount;
+        }
+      } else {
+        gst_type = "NONE";
+        gstAmount = (afterDiscount * Number(gst_rate || 0)) / 100;
+      }
+    }
 
     const grand_total = afterDiscount + gstAmount;
     const due_amount = grand_total - Number(paid_amount || 0);
@@ -386,6 +479,7 @@ const updateInvoice = async (req, res) => {
     invoice.customer_name = customer_name?.trim() || "Cash";
     invoice.customer_mobile = customer_mobile || "";
     invoice.customer = customerId;
+    invoice.customer_gstin = customerData?.gst_number || "";
     invoice.items = formattedItems;
 
     invoice.sub_total = sub_total;
@@ -393,6 +487,11 @@ const updateInvoice = async (req, res) => {
     invoice.gst_enabled = gst_enabled;
     invoice.gst_rate = gst_rate;
     invoice.gst_amount = gstAmount;
+    invoice.cgst_amount = cgst_amount;
+    invoice.sgst_amount = sgst_amount;
+    invoice.igst_amount = igst_amount;
+    invoice.gst_type = gst_type;
+    invoice.place_of_supply = place_of_supply;
 
     invoice.grand_total = grand_total;
     invoice.paid_amount = Number(paid_amount || 0);
@@ -402,6 +501,52 @@ const updateInvoice = async (req, res) => {
     invoice.invoiceDate = invoiceDate || invoice.invoiceDate || new Date();
 
     await invoice.save();
+
+    // =========================
+    // 📊 UPDATE OUTPUT GST IN LEDGER
+    // =========================
+    if (gst_enabled && gstAmount > 0) {
+      const existingLedger = await GstLedger.findOne({
+        transaction_id: invoice._id,
+        transaction_type: "OUTPUT",
+      });
+
+      const invoiceDate = new Date(invoice.invoiceDate || invoice.createdAt);
+      const month = invoiceDate.toLocaleString("en-US", { month: "long" });
+      const year = invoiceDate.getFullYear();
+
+      if (existingLedger) {
+        existingLedger.taxable_amount = afterDiscount;
+        existingLedger.cgst_amount = cgst_amount;
+        existingLedger.sgst_amount = sgst_amount;
+        existingLedger.igst_amount = igst_amount;
+        existingLedger.total_gst = gstAmount;
+        existingLedger.gst_rate = gst_rate;
+        existingLedger.gst_type = gst_type;
+        existingLedger.place_of_supply = place_of_supply;
+        existingLedger.party_gstin = customerData?.gst_number || "";
+        await existingLedger.save();
+      } else {
+        await GstLedger.create({
+          transaction_type: "OUTPUT",
+          transaction_id: invoice._id,
+          transaction_number: invoice.invoice_number,
+          transaction_date: invoiceDate,
+          party_name: customer_name,
+          party_gstin: customerData?.gst_number || "",
+          taxable_amount: afterDiscount,
+          cgst_amount: cgst_amount,
+          sgst_amount: sgst_amount,
+          igst_amount: igst_amount,
+          total_gst: gstAmount,
+          gst_rate: gst_rate,
+          gst_type: gst_type,
+          place_of_supply: place_of_supply,
+          month: month,
+          year: year,
+        });
+      }
+    }
 
     return res.json({
       message: "Invoice updated successfully",

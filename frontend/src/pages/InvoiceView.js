@@ -24,6 +24,9 @@ export default function InvoiceView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModal, setDeleteModal] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
+  const [gstSettings, setGstSettings] = useState(null);
+  const [customerData, setCustomerData] = useState(null);
+  const [itemsWithHsn, setItemsWithHsn] = useState([]);
 
   const authHeader = useMemo(
     () => ({
@@ -78,12 +81,72 @@ export default function InvoiceView() {
     currentPage * PAGE_SIZE,
   );
 
-  const openInvoice = (invoice) => {
+  const openInvoice = async (invoice) => {
     setSelectedInvoice(invoice);
+
+    // Fetch GST Settings
+    try {
+      const gstRes = await axios.get(`${API_URL}/gst-settings`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setGstSettings(gstRes.data);
+    } catch (error) {
+      console.error("Error fetching GST settings:", error);
+    }
+
+    // Fetch Customer details if customer exists
+    if (invoice.customer) {
+      try {
+        const customerRes = await axios.get(
+          `${API_URL}/customers/${invoice.customer}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setCustomerData(customerRes.data.customer);
+      } catch (error) {
+        console.error("Error fetching customer:", error);
+      }
+    }
+
+    // Fetch items with HSN codes
+    try {
+      const itemsWithHsnData = await Promise.all(
+        (invoice.items || []).map(async (item) => {
+          try {
+            const itemRes = await axios.get(`${API_URL}/items/${item.item_id}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            return {
+              ...item,
+              hsn_code: itemRes.data.item?.hsn_code || "",
+            };
+          } catch (error) {
+            return {
+              ...item,
+              hsn_code: "",
+            };
+          }
+        })
+      );
+      setItemsWithHsn(itemsWithHsnData);
+    } catch (error) {
+      console.error("Error fetching items with HSN:", error);
+      setItemsWithHsn(invoice.items || []);
+    }
   };
 
   const closeInvoice = () => {
     setSelectedInvoice(null);
+    setGstSettings(null);
+    setCustomerData(null);
+    setItemsWithHsn([]);
   };
 
   const deleteInvoice = async () => {
@@ -502,26 +565,40 @@ export default function InvoiceView() {
                   />
 
                   <div style={styles.companySection}>
-                    <h1 style={styles.companyName}>Raaj Computer Service</h1>
+                    <h1 style={styles.companyName}>
+                      {gstSettings?.business_name || "Raaj Computer Service"}
+                    </h1>
 
                     <p style={styles.companyText}>
-                      Vigyan Nagar Kota 8824824473, Rajasthan,
+                      {gstSettings?.address || "Vigyan Nagar Kota 8824824473, Rajasthan,"}
                     </p>
+
+                    {gstSettings?.gstin && (
+                      <p style={styles.companyText}>GSTIN: {gstSettings.gstin}</p>
+                    )}
+
+                    {gstSettings?.phone && (
+                      <p style={styles.companyText}>Phone: {gstSettings.phone}</p>
+                    )}
+
+                    {gstSettings?.email && (
+                      <p style={styles.companyText}>Email: {gstSettings.email}</p>
+                    )}
                   </div>
                 </div>
 
                 <div style={styles.invoiceInfoBar}>
                   <div style={styles.invoiceInfoLeft}>
-                    <b>Invoice No.:</b> {selectedInvoice.invoice_number}
+                    <b>TAX INVOICE</b>
                   </div>
 
                   <div style={styles.invoiceInfoCenter}>
-                    <b>Invoice Date:</b>{" "}
-                    {formatInvoiceDate(getInvoiceDate(selectedInvoice))}
+                    <b>Invoice No.:</b> {selectedInvoice.invoice_number}
                   </div>
 
                   <div style={styles.invoiceInfoRight}>
-                    <b>Due Date:</b> {formatInvoiceDate(invoiceDueDate)}
+                    <b>Invoice Date:</b>{" "}
+                    {formatInvoiceDate(getInvoiceDate(selectedInvoice))}
                   </div>
                 </div>
 
@@ -533,6 +610,21 @@ export default function InvoiceView() {
                   </div>
 
                   <div>Mobile : {selectedInvoice.customer_mobile || "-"}</div>
+
+                  {customerData?.address && (
+                    <div>Address : {customerData.address}</div>
+                  )}
+
+                  {customerData?.city && customerData?.state && (
+                    <div>
+                      {customerData.city}, {customerData.state}{" "}
+                      {customerData.pincode && `- ${customerData.pincode}`}
+                    </div>
+                  )}
+
+                  {selectedInvoice.customer_gstin && (
+                    <div>GSTIN : {selectedInvoice.customer_gstin}</div>
+                  )}
                 </div>
 
                 <table style={styles.billTable}>
@@ -542,6 +634,9 @@ export default function InvoiceView() {
                         style={{ ...styles.billTableHead, ...styles.itemCol }}
                       >
                         ITEMS
+                      </th>
+                      <th style={{ ...styles.billTableHead, ...styles.qtyCol }}>
+                        HSN
                       </th>
                       <th style={{ ...styles.billTableHead, ...styles.qtyCol }}>
                         QTY.
@@ -560,7 +655,7 @@ export default function InvoiceView() {
                   </thead>
 
                   <tbody>
-                    {(selectedInvoice.items || []).map((item, index) => (
+                    {(itemsWithHsn || []).map((item, index) => (
                       <tr key={index}>
                         <td
                           style={{ ...styles.billTableCell, ...styles.itemCol }}
@@ -572,6 +667,12 @@ export default function InvoiceView() {
                               {item.serial_number}
                             </div>
                           )}
+                        </td>
+
+                        <td
+                          style={{ ...styles.billTableCell, ...styles.qtyCol }}
+                        >
+                          {item.hsn_code || "-"}
                         </td>
 
                         <td
@@ -627,12 +728,48 @@ export default function InvoiceView() {
                     )}
 
                     {selectedInvoice.gst_enabled && (
-                      <div style={styles.totalDetailRow}>
-                        <span>GST ({selectedInvoice.gst_rate}%)</span>
-                        <span style={styles.amountValue}>
-                          Rs {formatMoney(selectedInvoice.gst_amount)}
-                        </span>
-                      </div>
+                      <>
+                        {selectedInvoice.place_of_supply && (
+                          <div style={styles.totalDetailRow}>
+                            <span>Place of Supply</span>
+                            <span style={styles.amountValue}>
+                              {selectedInvoice.place_of_supply}
+                            </span>
+                          </div>
+                        )}
+                        {selectedInvoice.gst_type === "INTRA" && (
+                          <>
+                            <div style={styles.totalDetailRow}>
+                              <span>CGST ({selectedInvoice.gst_rate / 2}%)</span>
+                              <span style={styles.amountValue}>
+                                Rs {formatMoney(selectedInvoice.cgst_amount)}
+                              </span>
+                            </div>
+                            <div style={styles.totalDetailRow}>
+                              <span>SGST ({selectedInvoice.gst_rate / 2}%)</span>
+                              <span style={styles.amountValue}>
+                                Rs {formatMoney(selectedInvoice.sgst_amount)}
+                              </span>
+                            </div>
+                          </>
+                        )}
+                        {selectedInvoice.gst_type === "INTER" && (
+                          <div style={styles.totalDetailRow}>
+                            <span>IGST ({selectedInvoice.gst_rate}%)</span>
+                            <span style={styles.amountValue}>
+                              Rs {formatMoney(selectedInvoice.igst_amount)}
+                            </span>
+                          </div>
+                        )}
+                        {selectedInvoice.gst_type === "NONE" && (
+                          <div style={styles.totalDetailRow}>
+                            <span>GST ({selectedInvoice.gst_rate}%)</span>
+                            <span style={styles.amountValue}>
+                              Rs {formatMoney(selectedInvoice.gst_amount)}
+                            </span>
+                          </div>
+                        )}
+                      </>
                     )}
 
                     <div style={styles.totalDetailRowStrong}>
@@ -662,6 +799,16 @@ export default function InvoiceView() {
                       <strong>Total Amount (in words)</strong>
                       <p>{amountInWords}</p>
                     </div>
+                  </div>
+                </div>
+
+                <div style={styles.signatureSection}>
+                  <div style={styles.signatureBlock}>
+                    <div style={styles.signatureLine}></div>
+                    <div style={styles.signatureLabel}>
+                      For {gstSettings?.business_name || "Raaj Computer Service"}
+                    </div>
+                    <div style={styles.signatureLabel}>Authorized Signatory</div>
                   </div>
                 </div>
 
@@ -1106,7 +1253,7 @@ const styles = {
   },
 
   qtyCol: {
-    width: "12%",
+    width: "10%",
     textAlign: "center",
   },
 
@@ -1201,6 +1348,28 @@ const styles = {
     color: "#000",
     fontSize: "13px",
     fontWeight: 600,
+  },
+
+  signatureSection: {
+    marginTop: "40px",
+    display: "flex",
+    justifyContent: "flex-end",
+  },
+
+  signatureBlock: {
+    textAlign: "center",
+    width: "200px",
+  },
+
+  signatureLine: {
+    borderBottom: "1px solid #000",
+    marginBottom: "8px",
+  },
+
+  signatureLabel: {
+    fontSize: "12px",
+    fontWeight: 600,
+    marginBottom: "4px",
   },
   deleteModal: {
     background: "#fff",

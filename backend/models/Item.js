@@ -36,6 +36,16 @@ const itemSchema = new mongoose.Schema(
     image: {
       type: String, // (URL or file path later)
     },
+
+    hsn_code: {
+      type: String,
+      default: "",
+    },
+
+    gst_rate: {
+      type: Number,
+      default: 18,
+    },
   },
   { timestamps: true },
 );

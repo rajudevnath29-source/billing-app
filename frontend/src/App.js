@@ -47,6 +47,8 @@ import PermissionManager from "./pages/PermissionManager";
 
 import RoleManager from "./pages/RoleManager";
 import BulkInvoice from "./pages/BulkInvoice";
+import GstSettings from "./pages/GstSettings";
+import GstReports from "./pages/GstReports";
 // import UserAccessManager from "./pages/UserAccessManager";
 
 function App() {
@@ -252,6 +254,26 @@ function App() {
             element={
               <PermissionGuard permission="VIEW_VOUCHER">
                 <Vouchers />
+              </PermissionGuard>
+            }
+          />
+
+          {/* GST SETTINGS */}
+          <Route
+            path="/gst-settings"
+            element={
+              <PermissionGuard permission="VIEW_ACCOUNT">
+                <GstSettings />
+              </PermissionGuard>
+            }
+          />
+
+          {/* GST REPORTS */}
+          <Route
+            path="/gst-reports"
+            element={
+              <PermissionGuard permission="VIEW_REPORT">
+                <GstReports />
               </PermissionGuard>
             }
           />

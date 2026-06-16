@@ -15,6 +15,9 @@ export default function PurchaseCreate() {
 
   const [supplier_name, setSupplierName] = useState("");
   const [supplier_mobile, setSupplierMobile] = useState("");
+  const [supplier_gstin, setSupplierGstin] = useState("");
+  const [invoice_no, setInvoiceNo] = useState("");
+  const [invoice_date, setInvoiceDate] = useState("");
 
   const [gstEnabled, setGstEnabled] = useState(false);
   const [gstRate, setGstRate] = useState(18);
@@ -142,6 +145,10 @@ export default function PurchaseCreate() {
 
   const gstAmount = gstEnabled ? (subTotal * Number(gstRate)) / 100 : 0;
 
+  const cgstAmount = gstEnabled ? (subTotal * Number(gstRate)) / 200 : 0;
+  const sgstAmount = cgstAmount;
+  const igstAmount = gstEnabled ? (subTotal * Number(gstRate)) / 100 : 0;
+
   const grandTotal = subTotal + gstAmount;
   // =========================
   // CREATE PURCHASE
@@ -164,6 +171,9 @@ export default function PurchaseCreate() {
         {
           supplier_name,
           supplier_mobile,
+          supplier_gstin,
+          invoice_no,
+          invoice_date,
           items: cart,
           gst_enabled: gstEnabled,
           gst_rate: gstRate,
@@ -180,6 +190,9 @@ export default function PurchaseCreate() {
       setCart([]);
       setSupplierName("");
       setSupplierMobile("");
+      setSupplierGstin("");
+      setInvoiceNo("");
+      setInvoiceDate("");
       setGstEnabled(false);
       setGstRate(18);
 
@@ -226,6 +239,39 @@ export default function PurchaseCreate() {
               value={supplier_mobile}
               onChange={(e) => setSupplierMobile(e.target.value)}
               placeholder="Mobile number"
+            />
+          </div>
+
+          <div>
+            <label>Supplier GSTIN</label>
+
+            <input
+              style={styles.input}
+              value={supplier_gstin}
+              onChange={(e) => setSupplierGstin(e.target.value)}
+              placeholder="22AAAAA0000A1Z5"
+            />
+          </div>
+
+          <div>
+            <label>Invoice No</label>
+
+            <input
+              style={styles.input}
+              value={invoice_no}
+              onChange={(e) => setInvoiceNo(e.target.value)}
+              placeholder="Supplier invoice number"
+            />
+          </div>
+
+          <div>
+            <label>Invoice Date</label>
+
+            <input
+              style={styles.input}
+              type="date"
+              value={invoice_date}
+              onChange={(e) => setInvoiceDate(e.target.value)}
             />
           </div>
         </div>
@@ -386,8 +432,25 @@ export default function PurchaseCreate() {
                 <span>₹{subTotal.toFixed(2)}</span>
               </div>
 
+              {gstEnabled && (
+                <>
+                  <div style={styles.totalRow}>
+                    <span>CGST ({gstRate / 2}%) :</span>
+                    <span>₹{cgstAmount.toFixed(2)}</span>
+                  </div>
+                  <div style={styles.totalRow}>
+                    <span>SGST ({gstRate / 2}%) :</span>
+                    <span>₹{sgstAmount.toFixed(2)}</span>
+                  </div>
+                  <div style={styles.totalRow}>
+                    <span>IGST ({gstRate}%) :</span>
+                    <span>₹{igstAmount.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
+
               <div style={styles.totalRow}>
-                <span>GST :</span>
+                <span>Total GST :</span>
                 <span>₹{gstAmount.toFixed(2)}</span>
               </div>
 

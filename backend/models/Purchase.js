@@ -38,6 +38,20 @@ const purchaseSchema = new mongoose.Schema(
       type: String,
     },
 
+    supplier_gstin: {
+      type: String,
+      default: "",
+    },
+
+    invoice_no: {
+      type: String,
+    },
+
+    invoice_date: {
+      type: Date,
+      default: Date.now,
+    },
+
     items: [purchaseItemSchema],
 
     sub_total: Number,
@@ -55,6 +69,32 @@ const purchaseSchema = new mongoose.Schema(
     gst_amount: {
       type: Number,
       default: 0,
+    },
+
+    cgst_amount: {
+      type: Number,
+      default: 0,
+    },
+
+    sgst_amount: {
+      type: Number,
+      default: 0,
+    },
+
+    igst_amount: {
+      type: Number,
+      default: 0,
+    },
+
+    gst_type: {
+      type: String,
+      enum: ["INTRA", "INTER", "NONE"],
+      default: "NONE",
+    },
+
+    place_of_supply: {
+      type: String,
+      default: "",
     },
 
     grand_total: Number,

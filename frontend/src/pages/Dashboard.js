@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [items, setItems] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [expence, setExpence] = useState([]);
+  const [gstLiability, setGstLiability] = useState(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -72,10 +73,18 @@ export default function Dashboard() {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      const gstRes = await axios.get(`${API_URL}/gst-liability`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setPurchases(purchaseRes.data.purchases || []);
       setItems(itemRes.data.items || []);
       setInvoices(invoiceRes.data.invoices || []);
       setExpence(expenceRes.data.expenses || []);
+      setGstLiability(gstRes.data || null);
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -196,6 +205,10 @@ export default function Dashboard() {
   const actualProfit =
     totalSales - totalPurchase - pendingPayments - totalExpences;
 
+  const outputGst = gstLiability?.outputGst?.totalGst || 0;
+  const inputGst = gstLiability?.inputGst?.totalGst || 0;
+  const netGstPayable = gstLiability?.netLiability?.total || 0;
+
   // =========================
   // CHART DATA
   // =========================
@@ -287,6 +300,21 @@ export default function Dashboard() {
             <div style={styles.card}>
               <h3>🛒 Purchases</h3>
               <h1>₹ {totalPurchase}</h1>
+            </div>
+
+            <div style={styles.card}>
+              <h3>📤 Output GST</h3>
+              <h1>₹ {outputGst}</h1>
+            </div>
+
+            <div style={styles.card}>
+              <h3>📥 Input GST</h3>
+              <h1>₹ {inputGst}</h1>
+            </div>
+
+            <div style={netGstPayable >= 0 ? styles.profitCard : styles.lossCard}>
+              <h3>💳 Net GST Payable</h3>
+              <h1>₹ {netGstPayable}</h1>
             </div>
 
             <div style={pendingPayments >= 0 ? styles.lossCard : styles.card}>

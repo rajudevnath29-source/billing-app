@@ -30,6 +30,8 @@ const stockHistoryRoutes = require("./routes/stockHistoryRoutes");
 const userRoutes = require("./routes/userRoutes");
 const permissionRoutes = require("./routes/permissionRoutes");
 const roleRoutes = require("./routes/roleRoutes");
+const gstSettingsRoutes = require("./routes/gstSettingsRoutes");
+const gstLiabilityRoutes = require("./routes/gstLiabilityRoutes");
 
 // USE ROUTES
 app.use("/api/auth", authRoutes);
@@ -46,6 +48,8 @@ app.use("/api/stock-history", stockHistoryRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/permissions", permissionRoutes);
 app.use("/api/roles", roleRoutes);
+app.use("/api/gst-settings", gstSettingsRoutes);
+app.use("/api/gst-liability", gstLiabilityRoutes);
 
 // STATIC UPLOADS
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

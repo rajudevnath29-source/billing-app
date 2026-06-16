@@ -20,6 +20,8 @@ export default function EditItem() {
     purchase_price: "",
     opening_stock: "",
     low_stock_alert: "",
+    hsn_code: "",
+    gst_rate: 18,
   });
 
   // =========================
@@ -44,6 +46,8 @@ export default function EditItem() {
           purchase_price: item.purchase_price || "",
           opening_stock: item.opening_stock || 0,
           low_stock_alert: item.low_stock_alert || 0,
+          hsn_code: item.hsn_code || "",
+          gst_rate: item.gst_rate || 18,
         });
       }
 
@@ -188,6 +192,41 @@ export default function EditItem() {
                 placeholder="Minimum quantity"
                 style={styles.input}
               />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label>
+                HSN Code{" "}
+                <small style={{ fontSize: "11px", color: "#64748b" }}>
+                  (Required for GST)
+                </small>
+              </label>
+
+              <input
+                type="text"
+                name="hsn_code"
+                value={form.hsn_code}
+                onChange={handleChange}
+                placeholder="e.g., 8471"
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label>GST Rate (%)</label>
+
+              <select
+                name="gst_rate"
+                value={form.gst_rate}
+                onChange={handleChange}
+                style={styles.input}
+              >
+                <option value={0}>0% (Exempt)</option>
+                <option value={5}>5%</option>
+                <option value={12}>12%</option>
+                <option value={18}>18%</option>
+                <option value={28}>28%</option>
+              </select>
             </div>
           </div>
 

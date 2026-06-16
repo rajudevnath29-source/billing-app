@@ -24,6 +24,10 @@ const invoiceSchema = new mongoose.Schema(
 
     customer_name: String,
     customer_mobile: String,
+    customer_gstin: {
+      type: String,
+      default: "",
+    },
 
     invoiceDate: Date,
 
@@ -55,6 +59,32 @@ const invoiceSchema = new mongoose.Schema(
     gst_amount: {
       type: Number,
       default: 0,
+    },
+
+    cgst_amount: {
+      type: Number,
+      default: 0,
+    },
+
+    sgst_amount: {
+      type: Number,
+      default: 0,
+    },
+
+    igst_amount: {
+      type: Number,
+      default: 0,
+    },
+
+    gst_type: {
+      type: String,
+      enum: ["INTRA", "INTER", "NONE"],
+      default: "NONE",
+    },
+
+    place_of_supply: {
+      type: String,
+      default: "",
     },
 
     grand_total: Number,

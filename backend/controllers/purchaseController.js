@@ -1,5 +1,7 @@
 const Purchase = require("../models/Purchase");
 const Item = require("../models/Item");
+const GstSettings = require("../models/GstSettings");
+const GstLedger = require("../models/GstLedger");
 const createStockHistory = require("../utils/createStockHistory");
 const Counter = require("../models/Counter");
 
@@ -11,6 +13,9 @@ const createPurchase = async (req, res) => {
     const {
       supplier_name,
       supplier_mobile,
+      supplier_gstin,
+      invoice_no,
+      invoice_date,
       items,
       gst_enabled = false,
       gst_rate = 0,
@@ -97,9 +102,37 @@ const createPurchase = async (req, res) => {
     // 💰 CALCULATIONS
     // ==================================
     let gst_amount = 0;
+    let cgst_amount = 0;
+    let sgst_amount = 0;
+    let igst_amount = 0;
+    let gst_type = "NONE";
+    let place_of_supply = "";
 
     if (gst_enabled) {
-      gst_amount = (sub_total * gst_rate) / 100;
+      const gstSettings = await GstSettings.findOne();
+      const businessState = gstSettings?.state_code || "";
+      
+      if (supplier_gstin && supplier_gstin.length >= 2) {
+        const supplierState = supplier_gstin.substring(0, 2);
+        
+        if (businessState && supplierState) {
+          if (businessState === supplierState) {
+            gst_type = "INTRA";
+            cgst_amount = (sub_total * gst_rate) / 200;
+            sgst_amount = cgst_amount;
+            gst_amount = cgst_amount + sgst_amount;
+            place_of_supply = supplierState;
+          } else {
+            gst_type = "INTER";
+            igst_amount = (sub_total * gst_rate) / 100;
+            gst_amount = igst_amount;
+            place_of_supply = supplierState;
+          }
+        }
+      } else {
+        gst_type = "NONE";
+        gst_amount = (sub_total * gst_rate) / 100;
+      }
     }
 
     const grand_total = sub_total + gst_amount;
@@ -111,14 +144,50 @@ const createPurchase = async (req, res) => {
       purchase_number,
       supplier_name,
       supplier_mobile,
+      supplier_gstin,
+      invoice_no,
+      invoice_date,
       items: formattedItems,
       sub_total,
       gst_enabled,
       gst_rate,
       gst_amount,
+      cgst_amount,
+      sgst_amount,
+      igst_amount,
+      gst_type,
+      place_of_supply,
       grand_total,
       created_by: req.user.id,
     });
+
+    // =========================
+    // 📊 STORE INPUT GST IN LEDGER
+    // =========================
+    if (gst_enabled && gst_amount > 0) {
+      const purchaseDate = new Date(invoice_date || Date.now());
+      const month = purchaseDate.toLocaleString("en-US", { month: "long" });
+      const year = purchaseDate.getFullYear();
+
+      await GstLedger.create({
+        transaction_type: "INPUT",
+        transaction_id: purchase._id,
+        transaction_number: purchase_number,
+        transaction_date: purchaseDate,
+        party_name: supplier_name,
+        party_gstin: supplier_gstin || "",
+        taxable_amount: sub_total,
+        cgst_amount: cgst_amount,
+        sgst_amount: sgst_amount,
+        igst_amount: igst_amount,
+        total_gst: gst_amount,
+        gst_rate: gst_rate,
+        gst_type: gst_type,
+        place_of_supply: place_of_supply,
+        month: month,
+        year: year,
+      });
+    }
 
     return res.status(201).json({
       message: "Purchase created successfully",
@@ -189,6 +258,9 @@ const updatePurchase = async (req, res) => {
     const {
       supplier_name,
       supplier_mobile,
+      supplier_gstin,
+      invoice_no,
+      invoice_date,
       items,
       gst_enabled = false,
       gst_rate = 0,
@@ -264,20 +336,104 @@ const updatePurchase = async (req, res) => {
       });
     }
 
-    const gst_amount = gst_enabled
-      ? (sub_total * Number(gst_rate || 0)) / 100
-      : 0;
+    let gst_amount = 0;
+    let cgst_amount = 0;
+    let sgst_amount = 0;
+    let igst_amount = 0;
+    let gst_type = "NONE";
+    let place_of_supply = "";
+
+    if (gst_enabled) {
+      const gstSettings = await GstSettings.findOne();
+      const businessState = gstSettings?.state_code || "";
+      
+      if (supplier_gstin && supplier_gstin.length >= 2) {
+        const supplierState = supplier_gstin.substring(0, 2);
+        
+        if (businessState && supplierState) {
+          if (businessState === supplierState) {
+            gst_type = "INTRA";
+            cgst_amount = (sub_total * Number(gst_rate || 0)) / 200;
+            sgst_amount = cgst_amount;
+            gst_amount = cgst_amount + sgst_amount;
+            place_of_supply = supplierState;
+          } else {
+            gst_type = "INTER";
+            igst_amount = (sub_total * Number(gst_rate || 0)) / 100;
+            gst_amount = igst_amount;
+            place_of_supply = supplierState;
+          }
+        }
+      } else {
+        gst_type = "NONE";
+        gst_amount = (sub_total * Number(gst_rate || 0)) / 100;
+      }
+    }
 
     purchase.supplier_name = supplier_name;
     purchase.supplier_mobile = supplier_mobile;
+    purchase.supplier_gstin = supplier_gstin;
+    purchase.invoice_no = invoice_no;
+    purchase.invoice_date = invoice_date;
     purchase.items = formattedItems;
     purchase.sub_total = sub_total;
     purchase.gst_enabled = gst_enabled;
     purchase.gst_rate = gst_rate;
     purchase.gst_amount = gst_amount;
+    purchase.cgst_amount = cgst_amount;
+    purchase.sgst_amount = sgst_amount;
+    purchase.igst_amount = igst_amount;
+    purchase.gst_type = gst_type;
+    purchase.place_of_supply = place_of_supply;
     purchase.grand_total = sub_total + gst_amount;
 
     await purchase.save();
+
+    // =========================
+    // 📊 UPDATE INPUT GST IN LEDGER
+    // =========================
+    if (gst_enabled && gst_amount > 0) {
+      const existingLedger = await GstLedger.findOne({
+        transaction_id: purchase._id,
+        transaction_type: "INPUT",
+      });
+
+      const purchaseDate = new Date(invoice_date || Date.now());
+      const month = purchaseDate.toLocaleString("en-US", { month: "long" });
+      const year = purchaseDate.getFullYear();
+
+      if (existingLedger) {
+        existingLedger.taxable_amount = sub_total;
+        existingLedger.cgst_amount = cgst_amount;
+        existingLedger.sgst_amount = sgst_amount;
+        existingLedger.igst_amount = igst_amount;
+        existingLedger.total_gst = gst_amount;
+        existingLedger.gst_rate = gst_rate;
+        existingLedger.gst_type = gst_type;
+        existingLedger.place_of_supply = place_of_supply;
+        existingLedger.party_gstin = supplier_gstin || "";
+        await existingLedger.save();
+      } else {
+        await GstLedger.create({
+          transaction_type: "INPUT",
+          transaction_id: purchase._id,
+          transaction_number: purchase.purchase_number,
+          transaction_date: purchaseDate,
+          party_name: supplier_name,
+          party_gstin: supplier_gstin || "",
+          taxable_amount: sub_total,
+          cgst_amount: cgst_amount,
+          sgst_amount: sgst_amount,
+          igst_amount: igst_amount,
+          total_gst: gst_amount,
+          gst_rate: gst_rate,
+          gst_type: gst_type,
+          place_of_supply: place_of_supply,
+          month: month,
+          year: year,
+        });
+      }
+    }
 
     return res.json({
       message: "Purchase updated",

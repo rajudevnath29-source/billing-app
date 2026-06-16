@@ -69,12 +69,12 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
     >
       {/* LOGO */}
 
-      <img
+      {/* <img
         src="/D.png"
         alt="Raaj Computer Services"
         style={expanded ? styles.collapsedlogo : styles.logo}
-      />
-      {/* <h2 style={styles.logo}>{expanded ? "ERP" : "🧾"}</h2> */}
+      /> */}
+      <h2 style={styles.logo}>{expanded ? "ERP" : "🧾"}</h2>
 
       {/* DASHBOARD */}
       {hasPermission("DASHBOARD_ACCESS") && (
@@ -229,6 +229,23 @@ export default function Sidebar({ collapsed, hovered, setHovered }) {
           {hasPermission("VIEW_VOUCHER") && (
             <Link style={styles.link} to="/vouchers">
               💳 {expanded && "Vouchers"}
+            </Link>
+          )}
+        </>
+      )}
+
+      {/* GST SETTINGS */}
+      {hasPermission("ACCOUNT_MODULE") && (
+        <>
+          {expanded && <p style={styles.section}>GST</p>}
+
+          <Link style={styles.link} to="/gst-settings">
+            ⚙️ {expanded && "GST Settings"}
+          </Link>
+
+          {hasPermission("VIEW_REPORT") && (
+            <Link style={styles.link} to="/gst-reports">
+              📊 {expanded && "GST Reports"}
             </Link>
           )}
         </>

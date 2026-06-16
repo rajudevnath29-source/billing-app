@@ -10,7 +10,9 @@ exports.createItem = async (req, res) => {
       purchase_price,
       opening_stock,
       low_stock_alert,
-      image
+      image,
+      hsn_code,
+      gst_rate
     } = req.body;
 
     const item = await Item.create({
@@ -20,7 +22,9 @@ exports.createItem = async (req, res) => {
       purchase_price,
       opening_stock,
       low_stock_alert,
-      image
+      image,
+      hsn_code: hsn_code || "",
+      gst_rate: gst_rate || 18
     });
 
     res.status(201).json({
