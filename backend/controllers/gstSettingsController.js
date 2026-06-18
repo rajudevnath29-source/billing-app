@@ -3,12 +3,12 @@ const GstSettings = require("../models/GstSettings");
 const getGstSettings = async (req, res) => {
   try {
     let settings = await GstSettings.findOne();
-    
+
     if (!settings) {
       settings = await GstSettings.create({});
     }
 
-    res.json({ settings });
+    res.json(settings);
   } catch (error) {
     res.status(500).json({
       message: "Error fetching GST settings",
@@ -79,7 +79,7 @@ const updateGstSettings = async (req, res) => {
 
     res.json({
       message: "GST settings updated successfully",
-      settings,
+      ...settings.toObject(),
     });
   } catch (error) {
     res.status(500).json({

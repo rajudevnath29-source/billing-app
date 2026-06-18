@@ -39,23 +39,23 @@ export default function GstSettings() {
         },
       });
 
-      if (res.data.settings) {
+      if (res.data) {
         setForm({
-          business_name: res.data.settings.business_name || "",
-          gstin: res.data.settings.gstin || "",
-          address: res.data.settings.address || "",
-          city: res.data.settings.city || "",
-          state: res.data.settings.state || "",
-          state_code: res.data.settings.state_code || "",
-          pincode: res.data.settings.pincode || "",
-          phone: res.data.settings.phone || "",
-          email: res.data.settings.email || "",
-          bank_name: res.data.settings.bank_name || "",
-          account_number: res.data.settings.account_number || "",
-          ifsc_code: res.data.settings.ifsc_code || "",
-          pan_number: res.data.settings.pan_number || "",
-          invoice_prefix: res.data.settings.invoice_prefix || "INV",
-          terms_and_conditions: res.data.settings.terms_and_conditions || "",
+          business_name: res.data.business_name || "",
+          gstin: res.data.gstin || "",
+          address: res.data.address || "",
+          city: res.data.city || "",
+          state: res.data.state || "",
+          state_code: res.data.state_code || "",
+          pincode: res.data.pincode || "",
+          phone: res.data.phone || "",
+          email: res.data.email || "",
+          bank_name: res.data.bank_name || "",
+          account_number: res.data.account_number || "",
+          ifsc_code: res.data.ifsc_code || "",
+          pan_number: res.data.pan_number || "",
+          invoice_prefix: res.data.invoice_prefix || "INV",
+          terms_and_conditions: res.data.terms_and_conditions || "",
         });
       }
 

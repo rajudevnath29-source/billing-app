@@ -55,6 +55,11 @@ function isSameState(gstSettings, partyData) {
   const partyStateName = normalizeState(partyData?.state);
   const partyStateCode = getStateCodeFromGstin(partyData?.gst_number);
 
+  // If party state is not available, default to same state (INTRA)
+  if (!partyStateName && !partyStateCode) {
+    return true;
+  }
+
   if (businessStateName && partyStateName && businessStateName === partyStateName) {
     return true;
   }
@@ -82,8 +87,8 @@ function isSameState(gstSettings, partyData) {
 
 function canDetermineGstType(gstSettings, partyData) {
   const hasBusinessState = !!(gstSettings?.state_code || gstSettings?.state);
-  const hasPartyState = !!(partyData?.state || getStateCodeFromGstin(partyData?.gst_number));
-  return hasBusinessState && hasPartyState;
+  // Party state is optional now - if missing, will default to INTRA
+  return hasBusinessState;
 }
 
 function getPlaceOfSupply(partyData) {

@@ -175,7 +175,7 @@ const createInvoice = async (req, res) => {
         }
       } else {
         gst_type = "NONE";
-        gst_amount = (afterDiscount * gst_rate) / 100;
+        gst_amount = 0;
       }
     }
     const grand_total = afterDiscount + gst_amount;
@@ -461,7 +461,7 @@ const updateInvoice = async (req, res) => {
         }
       } else {
         gst_type = "NONE";
-        gstAmount = (afterDiscount * Number(gst_rate || 0)) / 100;
+        gstAmount = 0;
       }
     }
 

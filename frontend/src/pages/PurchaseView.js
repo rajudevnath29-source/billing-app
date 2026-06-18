@@ -414,12 +414,38 @@ export default function PurchaseView() {
                   <strong>₹ {formatMoney(selectedPurchase.sub_total)}</strong>
                 </div>
                 {selectedPurchase.gst_enabled && (
-                  <div style={styles.totalRow}>
-                    <span>GST ({selectedPurchase.gst_rate}%)</span>
-                    <strong>
-                      ₹ {formatMoney(selectedPurchase.gst_amount)}
-                    </strong>
-                  </div>
+                  <>
+                    <div style={styles.totalRow}>
+                      <span>GST ({selectedPurchase.gst_rate}%)</span>
+                      <strong>
+                        ₹ {formatMoney(selectedPurchase.gst_amount)}
+                      </strong>
+                    </div>
+                    {selectedPurchase.gst_type === "INTRA" && (
+                      <>
+                        <div style={{ paddingLeft: '20px', ...styles.totalRow }}>
+                          <span style={{ fontSize: '0.9em', color: '#666' }}>CGST ({selectedPurchase.gst_rate / 2}%)</span>
+                          <strong>
+                            ₹ {formatMoney(selectedPurchase.cgst_amount)}
+                          </strong>
+                        </div>
+                        <div style={{ paddingLeft: '20px', ...styles.totalRow }}>
+                          <span style={{ fontSize: '0.9em', color: '#666' }}>SGST ({selectedPurchase.gst_rate / 2}%)</span>
+                          <strong>
+                            ₹ {formatMoney(selectedPurchase.sgst_amount)}
+                          </strong>
+                        </div>
+                      </>
+                    )}
+                    {selectedPurchase.gst_type === "INTER" && (
+                      <div style={{ paddingLeft: '20px', ...styles.totalRow }}>
+                        <span style={{ fontSize: '0.9em', color: '#666' }}>IGST ({selectedPurchase.gst_rate}%)</span>
+                        <strong>
+                          ₹ {formatMoney(selectedPurchase.igst_amount)}
+                        </strong>
+                      </div>
+                    )}
+                  </>
                 )}
                 <div style={styles.grandRow}>
                   <span>Grand Total</span>

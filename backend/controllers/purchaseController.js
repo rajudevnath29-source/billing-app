@@ -131,7 +131,7 @@ const createPurchase = async (req, res) => {
         }
       } else {
         gst_type = "NONE";
-        gst_amount = (sub_total * gst_rate) / 100;
+        gst_amount = 0;
       }
     }
 
@@ -366,7 +366,7 @@ const updatePurchase = async (req, res) => {
         }
       } else {
         gst_type = "NONE";
-        gst_amount = (sub_total * Number(gst_rate || 0)) / 100;
+        gst_amount = 0;
       }
     }
 

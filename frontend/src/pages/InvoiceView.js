@@ -565,25 +565,26 @@ export default function InvoiceView() {
                   />
 
                   <div style={styles.companySection}>
-                    <h1 style={styles.companyName}>
-                      {gstSettings?.business_name || "Raaj Computer Service"}
-                    </h1>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                      <h1 style={styles.companyName}>
+                        {gstSettings?.business_name || "Raaj Computer Service"}
+                      </h1>
+                      {gstSettings?.gstin && (
+                        <p style={{ ...styles.companyText, fontWeight: 'bold' }}>GSTIN: {gstSettings.gstin}</p>
+                      )}
+                    </div>
 
-                    <p style={styles.companyText}>
-                      {gstSettings?.address || "Vigyan Nagar Kota 8824824473, Rajasthan,"}
-                    </p>
-
-                    {gstSettings?.gstin && (
-                      <p style={styles.companyText}>GSTIN: {gstSettings.gstin}</p>
-                    )}
-
-                    {gstSettings?.phone && (
-                      <p style={styles.companyText}>Phone: {gstSettings.phone}</p>
-                    )}
-
-                    {gstSettings?.email && (
-                      <p style={styles.companyText}>Email: {gstSettings.email}</p>
-                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
+                      <p style={styles.companyText}>
+                        {gstSettings?.address || "Vigyan Nagar Kota 8824824473, Rajasthan,"}
+                      </p>
+                      {gstSettings?.phone && (
+                        <p style={styles.companyText}>Phone: {gstSettings.phone}</p>
+                      )}
+                      {gstSettings?.email && (
+                        <p style={styles.companyText}>Email: {gstSettings.email}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -737,16 +738,22 @@ export default function InvoiceView() {
                             </span>
                           </div>
                         )}
+                        <div style={styles.totalDetailRow}>
+                          <span>GST ({selectedInvoice.gst_rate}%)</span>
+                          <span style={styles.amountValue}>
+                            Rs {formatMoney(selectedInvoice.gst_amount)}
+                          </span>
+                        </div>
                         {selectedInvoice.gst_type === "INTRA" && (
                           <>
-                            <div style={styles.totalDetailRow}>
-                              <span>CGST ({selectedInvoice.gst_rate / 2}%)</span>
+                            <div style={styles.totalgstDetailRow}>
+                              <span style={{ fontSize: '0.9em', color: '#666' }}>CGST ({selectedInvoice.gst_rate / 2}%)</span>
                               <span style={styles.amountValue}>
                                 Rs {formatMoney(selectedInvoice.cgst_amount)}
                               </span>
                             </div>
-                            <div style={styles.totalDetailRow}>
-                              <span>SGST ({selectedInvoice.gst_rate / 2}%)</span>
+                            <div style={styles.totalgstDetailRow}>
+                              <span style={{ fontSize: '0.9em', color: '#666' }}>SGST ({selectedInvoice.gst_rate / 2}%)</span>
                               <span style={styles.amountValue}>
                                 Rs {formatMoney(selectedInvoice.sgst_amount)}
                               </span>
@@ -754,18 +761,10 @@ export default function InvoiceView() {
                           </>
                         )}
                         {selectedInvoice.gst_type === "INTER" && (
-                          <div style={styles.totalDetailRow}>
-                            <span>IGST ({selectedInvoice.gst_rate}%)</span>
+                          <div style={styles.totalgstDetailRow}>
+                            <span style={{ fontSize: '0.9em', color: '#666' }}>IGST ({selectedInvoice.gst_rate}%)</span>
                             <span style={styles.amountValue}>
                               Rs {formatMoney(selectedInvoice.igst_amount)}
-                            </span>
-                          </div>
-                        )}
-                        {selectedInvoice.gst_type === "NONE" && (
-                          <div style={styles.totalDetailRow}>
-                            <span>GST ({selectedInvoice.gst_rate}%)</span>
-                            <span style={styles.amountValue}>
-                              Rs {formatMoney(selectedInvoice.gst_amount)}
                             </span>
                           </div>
                         )}
@@ -1319,6 +1318,16 @@ const styles = {
     padding: "7px 0",
     borderTop: "1px solid #8a8a8a",
   },
+
+  totalgstDetailRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "18px",
+    padding: "7px 0",
+    borderTop: "1px solid #8a8a8a",
+    paddingLeft: '20px',
+  },
+
 
   totalDetailRowStrong: {
     display: "flex",
